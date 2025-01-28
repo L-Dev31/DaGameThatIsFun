@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Party Game Lobby</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/mobile_style.css">
+</head>
+<script>
+    // Introduction screen
+    document.addEventListener("DOMContentLoaded", function() {
+        const hasVisited = localStorage.getItem("hasVisited");
+        if (hasVisited) {
+            const introScreen = document.getElementById("introScreen");
+            introScreen.style.display = "none";
+        } else {
+            localStorage.setItem("hasVisited", "true");
+        }
+    });
+</script>
+<body>
+    <button class="sound-control" id="soundToggle">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+    </button>
+    
+    <div class="bg"></div>
+    
+    <div id="introScreen" class="intro-screen">
+        <div class="intro-content">
+            <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="intro-logo">
+            <p class="intro-text">Avertissement !</p>
+        </div>
+        <div class="security-text">Veuillez noter que ce jeu peut contenir du contenu grossier ou inapproprié pour certains publics. <br><br>
+             Ce n’est en aucun cas notre intention de blesser quiconque, il s’agit simplement d’un jeu conçu pour s’amuser et rire ensemble :)</div>
+    </div>
+
+    <div class="logo-container">
+        <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
+    </div>
+
+    <div class="container">
+        <div class="grid">
+            <div>
+                <div class="game-buttons">
+                    <button class="game-button active" data-game="draw-contest">
+                        <img src="/static/images/logo/draw-contest.png" alt="Draw Contest" class="game-logo">
+                    </button>
+                    <button class="game-button" data-game="pictionary">
+                        <img src="/static/images/logo/pictionary.png" alt="Pictionary" class="game-logo">
+                    </button>
+                    <button class="game-button" data-game="quiz-rush">
+                        <img src="/static/images/logo/quiz-rush.png" alt="Quiz Rush" class="game-logo">
+                    </button>
+                    <button class="game-button" data-game="object-tales">
+                        <img src="/static/images/logo/object-tales.png" alt="Object Tales" class="game-logo">
+                    </button>
+                </div>
+            </div>
+
+            <div class="preview-card">
+                <div class="tv-static"></div>
+                <img src="/static/images/preview/draw-contest.png" alt="Game Preview" class="preview-image" id="previewImage">
+                <div class="preview-content">
+                    <h3 class="preview-title" id="previewTitle">Dessine moi un Désastre</h3>
+                    <p class="preview-description" id="previewDescription">
+                        Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence !
+                    </p>
+                    <p class="preview-player-number" id="previewPlayerNumber">4-8 Joueurs</p>
+                    <button class="preview-button">
+                        Lancer le jeu !
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-actions">
+            <a href="create_lobby.html">
+                <button class="action-button create-lobby">
+                    <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"></path>
+                    </svg>
+                    <span class="button-text">Créer Lobby</span>
+                </button>
+            </a>
+
+            <a href="join_lobby.html">
+                <button class="action-button join-lobby">
+                    <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span class="button-text">Rejoindre</span>
+                </button>
+            </a>
+
+            <a href="credits.html">
+                <button class="action-button credits">
+                    <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="8" r="7"></circle>
+                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                    </svg>
+                    <span class="button-text">Credits</span>
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <audio id="staticSound" src="/static/music/tv-static.mp3"></audio>
+
+    <script src="Javascript/index.js"></script>
+</body>
+</html>

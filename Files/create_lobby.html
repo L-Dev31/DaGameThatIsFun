@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un Lobby</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/mobile_style.css">
+</head>
+<body>
+    <div class="bg"></div>
+    <div class="logo-container">
+        <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
+    </div>
+    
+    <div class="container">
+        <h1 class="title">Créer un Lobby</h1>
+        
+        <form id="createLobbyForm">
+            <div class="profile-selector">
+                <button class="nav-button prev" id="prevAvatar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                </button>
+                
+                <div class="profile-circle">
+                    <img src="static/images/avatar/1.png" alt="Profile" class="profile-image" id="avatarImage">
+                </div>
+        
+                <div class="speech-bubble">
+                    <p id="avatarName"></p>
+                </div>
+        
+                <button class="nav-button next" id="nextAvatar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label for="playerName" class="form-label">Votre pseudo</label>
+                <input type="text" id="playerName" class="form-input" placeholder="Entrez votre pseudo..." required>
+            </div>
+            
+            <div class="password-toggle">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="passwordToggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="form-label">Protéger par mot de passe</span>
+            </div>
+            
+            <div class="form-group" id="passwordInput">
+                <label for="password" class="form-label">Mot de passe</label>
+                <input type="password" id="password" class="form-input" placeholder="Entrez un mot de passe...">
+            </div>
+            
+            <div class="button-container">
+                <button type="button" class="button button-secondary" onclick="window.history.back()">Retour</button>
+                <button type="submit" class="button button-primary">Créer le salon</button>
+            </div>
+        </form>
+    </div>
+
+    <script type="module">
+        import { avatars } from './Javascript/avatar.js';
+
+        let currentAvatarIndex = 0;
+
+        function updateAvatarDisplay() {
+            const avatarImage = document.getElementById('avatarImage');
+            const avatarName = document.getElementById('avatarName');
+            avatarImage.src = avatars[currentAvatarIndex].image; // Problème potentiel ici
+            avatarName.textContent = avatars[currentAvatarIndex].name; // Problème signalé ici
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAvatarDisplay();
+
+            document.getElementById('prevAvatar').addEventListener('click', () => {
+                currentAvatarIndex = (currentAvatarIndex - 1 + avatars.length) % avatars.length;
+                updateAvatarDisplay();
+            });
+
+            document.getElementById('nextAvatar').addEventListener('click', () => {
+                currentAvatarIndex = (currentAvatarIndex + 1) % avatars.length;
+                updateAvatarDisplay();
+            });
+
+            const passwordToggle = document.getElementById('passwordToggle');
+            const passwordInput = document.getElementById('passwordInput');
+            passwordInput.style.display = 'none';
+
+            passwordToggle.addEventListener('change', (e) => {
+                const passwordField = document.getElementById('password');
+                if (e.target.checked) {
+                    passwordInput.style.display = 'block';
+                    passwordField.required = true;
+                } else {
+                    passwordInput.style.display = 'none';
+                    passwordField.required = false;
+                    passwordField.value = '';
+                }
+            });
+
+            document.getElementById('createLobbyForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const playerName = document.getElementById('playerName').value;
+                const password = passwordToggle.checked
+                    ? document.getElementById('password').value
+                    : null;
+
+                const avatarIndex = currentAvatarIndex;
+
+                try {
+                    const response = await fetch('/create_lobby', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            playerName,
+                            password,
+                            avatarIndex,
+                        }),
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        localStorage.setItem('roomCode', data.roomCode);
+                        localStorage.setItem('userId', data.userId);
+                        localStorage.setItem('playerName', playerName);
+                        localStorage.setItem('playerAvatarIndex', avatarIndex);
+                        window.location.href = `waiting_room.html?roomCode=${data.roomCode}`;
+                    } else {
+                        alert('Erreur lors de la création du salon : ' + data.message);
+                    }
+                } catch (error) {
+                    alert('Une erreur s\'est produite. Veuillez réessayer.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

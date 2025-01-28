@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salon d'attente</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/mobile_style.css">
+</head>
+<body>
+    <div class="bg"></div>
+    <div class="logo-container">
+        <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
+    </div>
+
+    <div class="container">
+        <div class="waiting-room">
+            <div class="room-info">
+                <h2 class="title">Salon d'attente</h2>
+                <div class="room-code">
+                    CODE: <span id="roomCode"></span>
+                </div>
+            </div>
+
+            <div class="players-grid" id="playersGrid">
+                <!-- Les joueurs seront ajoutés ici dynamiquement -->
+            </div>
+
+            <div class="button-container">
+                <button type="button" class="button button-secondary" id="leaveButton">Quitter le salon</button>
+                <button type="button" class="button button-primary" id="startButton" disabled>
+                    Lancer la partie (1/8)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation -->
+    <div class="modal-overlay" id="confirmationModal">
+        <div class="modal-container">
+            <h2 class="modal-title">Quitter le Salon ?</h2>
+            <div class="modal-content">
+                <p id="modalMessage">Êtes-vous sûr de vouloir quitter le salon ?</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button modal-button-secondary" id="cancelButton">Annuler</button>
+                <button class="modal-button modal-button-primary" id="confirmButton">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let isOwner = false;
+        let currentUsers = {};
+        const userId = localStorage.getItem('userId');
+        const roomCode = localStorage.getItem('roomCode');
+
+        if (!roomCode || !userId) {
+            window.location.href = document.referrer || '/';
+        }
+
+
+        // Gestion du modal
+        const modal = document.getElementById('confirmationModal');
+        const leaveButton = document.getElementById('leaveButton');
+        const cancelButton = document.getElementById('cancelButton');
+        const confirmButton = document.getElementById('confirmButton');
+        const modalMessage = document.getElementById('modalMessage');
+
+        function showModal(message, isOwnerLeaving = false) {
+            modalMessage.textContent = message;
+            modal.classList.add('active');
+            
+            confirmButton.onclick = () => {
+                if (isOwnerLeaving) {
+                    deleteLobby();
+                } else {
+                    leaveLobby();
+                }
+            };
+        }
+
+        function hideModal() {
+            modal.classList.remove('active');
+        }
+
+        // Gestion des événements du modal
+        leaveButton.addEventListener('click', () => {
+            const message = isOwner 
+                ? "Attention ! Si vous quittez cette page, le salon sera supprimé. Êtes-vous sûr de vouloir continuer ?"
+                : "Êtes-vous sûr de vouloir quitter le salon ?";
+            showModal(message, isOwner);
+        });
+
+        cancelButton.addEventListener('click', hideModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) hideModal();
+        });
+
+        // Mise à jour des joueurs
+        function updatePlayersGrid(users) {
+            const playersGrid = document.getElementById('playersGrid');
+            playersGrid.innerHTML = '';
+            
+            // Créer 8 slots
+            for (let i = 0; i < 8; i++) {
+                const playerSlot = document.createElement('div');
+                playerSlot.classList.add('player-slot');
+                
+                if (i < Object.keys(users).length) {
+                    // Slot avec joueur
+                    const user = Object.values(users)[i];
+                    playerSlot.innerHTML = `
+                        <div class="player-avatar${user.id === userId ? ' current-player' : ''}">
+                            <img src="/static/images/avatar/${user.avatar_index + 1}.png" alt="${user.name}">
+                        </div>
+                        <span class="waiting-text">
+                            <strong>${user.name}</strong>
+                            ${user.id === userId ? ' (Vous)' : ''}
+                        </span>
+                    `;
+                } else {
+                    // Slot vide
+                    playerSlot.innerHTML = `
+                        <div class="player-avatar empty">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                        <span class="waiting-text">En attente...</span>
+                    `;
+                }
+                
+                playersGrid.appendChild(playerSlot);
+            }
+        }
+
+        // Mise à jour du bouton de démarrage
+        function updateStartButton(userCount, maxPlayers) {
+            const startButton = document.getElementById('startButton');
+            startButton.textContent = `Lancer la partie (${userCount}/${maxPlayers})`;
+            startButton.disabled = !isOwner || userCount < 2;
+        }
+
+        // Mise à jour du salon
+        function updateRoom() {
+            fetch(`/api/lobby/${roomCode}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Lobby not found');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Mettre à jour les contrôles du propriétaire
+                    isOwner = data.owner === userId;
+                    
+                    // Mettre à jour la liste des joueurs
+                    currentUsers = data.users;
+                    updatePlayersGrid(data.users);
+                    
+                    // Mettre à jour le bouton de démarrage
+                    updateStartButton(Object.keys(data.users).length, 8);
+                })
+                .catch(err => {
+                    console.error('Erreur lors de la mise à jour du salon:', err);
+                    if (err.message === 'Lobby not found') {
+                        alert('Le salon n\'existe plus !');
+                        window.location.href = '/';
+                    }
+                });
+        }
+
+        // Quitter le salon
+        async function leaveLobby() {
+            try {
+                const response = await fetch(`/api/lobby/${roomCode}/leave`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId })
+                });
+
+                if (response.ok) {
+                    localStorage.removeItem('roomCode');
+                    localStorage.removeItem('userId');
+                    window.location.href = '/';
+                } else {
+                    throw new Error('Failed to leave lobby');
+                }
+            } catch (err) {
+                console.error('Erreur lors de la sortie du salon:', err);
+                window.location.href = '/';
+            }
+        }
+
+        // Supprimer le salon (propriétaire uniquement)
+        async function deleteLobby() {
+            try {
+                const response = await fetch(`/api/lobby/delete/${roomCode}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    localStorage.removeItem('roomCode');
+                    localStorage.removeItem('userId');
+                    window.location.href = '/';
+                } else {
+                    throw new Error('Failed to delete lobby');
+                }
+            } catch (err) {
+                console.error('Erreur lors de la suppression du salon:', err);
+                window.location.href = '/';
+            }
+        }
+
+        // Gérer le bouton de démarrage
+        document.getElementById('startButton').addEventListener('click', () => {
+            if (isOwner) {
+                // Ajouter ici la logique de démarrage du jeu
+                console.log('Démarrage du jeu...');
+            }
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('roomCode').textContent = roomCode;
+            updateRoom();
+        });
+
+        // Mise à jour automatique du salon
+        setInterval(updateRoom, 3000);
+
+        // Gérer la fermeture de la fenêtre
+        window.addEventListener('beforeunload', (e) => {
+            if (isOwner) {
+                deleteLobby();
+            } else {
+                leaveLobby();
+            }
+        });
+    </script>
+</body>
+</html>

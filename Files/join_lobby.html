@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rejoindre un Lobby</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/mobile_style.css">
+</head>
+<body>
+    <div class="bg"></div>
+    <div class="logo-container">
+        <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
+    </div>
+    
+    <div class="container create-lobby-container">
+        <h1 class="title">Rejoindre un Salon</h1>
+        
+        <form id="joinLobbyForm">
+            <div class="form-group">
+                <div class="profile-selector">
+                    <button type="button" class="nav-button prev" id="prevAvatar">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                    </button>
+                    
+                    <div class="profile-circle">
+                        <img src="/static/images/avatar/1.png" alt="Profile" class="profile-image" id="avatarImage">
+                    </div>
+            
+                    <div class="speech-bubble">
+                        <p id="avatarName"></p>
+                    </div>
+            
+                    <button type="button" class="nav-button next" id="nextAvatar">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="playerName" class="form-label">Votre pseudo</label>
+                <input type="text" id="playerName" class="form-input" placeholder="Entrez votre pseudo..." required>
+            </div>
+
+            <div class="form-group">
+                <label for="roomCode" class="form-label">Code du salon</label>
+                <div class="room-code-input">
+                    <input type="text" id="roomCode" class="form-input" 
+                        placeholder="ABCD" 
+                        pattern="[A-Za-z0-9]{4}"
+                        maxlength="4"
+                        required>
+                </div>
+            </div>
+            
+            <div class="form-group" id="passwordInput" style="display:none;">
+                <label for="password" class="form-label">Mot de passe</label>
+                <input type="password" id="password" class="form-input" placeholder="Entrez le mot de passe du salon...">
+            </div>
+
+            <div class="available-lobbies">
+                <h2 class="subtitle">Salons disponibles</h2>
+                <div class="lobby-list" id="lobbyList"></div>
+            </div>
+            
+            <div class="button-container">
+                <button type="button" class="button button-secondary" onclick="window.history.back()">Retour</button>
+                <button type="submit" class="button button-primary">Rejoindre le salon</button>
+            </div>
+        </form>
+    </div>
+
+    <script type="module">
+    import { avatars } from './Javascript/avatar.js';
+
+    let currentAvatarIndex = 0;
+
+    function updateAvatarDisplay() {
+        const avatarImage = document.getElementById('avatarImage');
+        const avatarName = document.getElementById('avatarName');
+        avatarImage.src = avatars[currentAvatarIndex].image;
+        avatarName.textContent = avatars[currentAvatarIndex].name;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateAvatarDisplay();
+
+        document.getElementById('prevAvatar').addEventListener('click', () => {
+            currentAvatarIndex = (currentAvatarIndex - 1 + avatars.length) % avatars.length;
+            updateAvatarDisplay();
+        });
+
+        document.getElementById('nextAvatar').addEventListener('click', () => {
+            currentAvatarIndex = (currentAvatarIndex + 1) % avatars.length;
+            updateAvatarDisplay();
+        });
+
+        document.getElementById('roomCode').addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 4);
+        });
+
+        function renderLobbies(lobbies) {
+            const lobbyList = document.getElementById('lobbyList');
+            if (!lobbies || lobbies.length === 0) {
+                lobbyList.innerHTML = `
+                    <div class="no-lobbies">
+                        <p><strong>Aucun salon n'est actuellement disponible.</strong></p>
+                        <p>Créez un salon ou attendez que d'autres joueurs en créent un.</p>
+                    </div>
+                `;
+                return;
+            }
+            lobbyList.innerHTML = lobbies.map(lobby => {
+                const userCount = Object.keys(lobby.users).length;
+                return `
+                    <div class="lobby-item" onclick="selectLobby('${lobby.code}', ${lobby.hasPassword})">
+                        <div class="lobby-info">
+                            <span class="lobby-name">${lobby.name}</span>
+                            <span class="lobby-details">${userCount}/8 joueurs</span>
+                        </div>
+                        <div class="lobby-status">
+                            ${lobby.hasPassword ? `
+                                <span class="lobby-locked">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                </span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectLobby(code, hasPassword) {
+            const roomCodeInput = document.getElementById('roomCode');
+            const passwordInputContainer = document.getElementById('passwordInput');
+            roomCodeInput.value = code;
+            passwordInputContainer.style.display = hasPassword ? 'block' : 'none';
+            if (!hasPassword) {
+                const passwordInput = document.getElementById('password');
+                passwordInput.value = '';
+            }
+        }
+
+        function updateLobbies() {
+            fetch('/api/lobbies')
+                .then(response => response.json())
+                .then(data => renderLobbies(data.lobbies))
+                .catch(err => {
+                    console.error('Erreur de récupération des salons:', err);
+                    document.getElementById('lobbyList').innerHTML = '<p>Erreur de chargement des salons.</p>';
+                });
+        }
+
+        setInterval(updateLobbies, 3000);
+        updateLobbies();
+
+        document.getElementById('joinLobbyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const playerName = document.getElementById('playerName').value;
+            const roomCode = document.getElementById('roomCode').value.toUpperCase();
+            const password = document.getElementById('password').value;
+            const data = {
+                playerName,
+                roomCode,
+                password,
+                avatarIndex: currentAvatarIndex
+            };
+            try {
+                const response = await fetch('/api/lobby/join', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                const responseData = await response.json();
+                if (responseData.success) {
+                    localStorage.setItem('roomCode', roomCode);
+                    localStorage.setItem('userId', responseData.userId);
+                    localStorage.setItem('playerName', playerName);
+                    localStorage.setItem('playerAvatarIndex', currentAvatarIndex);
+                    window.location.href = `/waiting_room.html`;
+                } else {
+                    alert(responseData.error || 'Erreur lors de la connexion au salon');
+                }
+            } catch (err) {
+                console.error('Erreur lors de la tentative de rejoindre le lobby:', err);
+                alert('Erreur de connexion au serveur');
+            }
+        });
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+qrcode
+flask-socketio
+requests
+pillow
+
+

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Rush</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="overlay-gradient"></div>
+    <div id="black-overlay"></div>
+    <div id="title-container">
+        <div id="question"></div>
+        <div id="category"></div>
+    </div>
+    <div id="answers-container"></div>
+    <div id="timer-container">
+        <div id="timer-bar"></div>
+    </div>
+
+    <script>
+        let selectedAnswer = null;
+
+        async function loadQuiz() {
+            const response = await fetch('quiz-list.json');
+            const data = await response.json();
+
+            // Choisir une catégorie au hasard
+            const categories = Object.keys(data);
+            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+            const questions = data[randomCategory];
+
+            // Choisir une question aléatoire dans la catégorie
+            const randomIndex = Math.floor(Math.random() * questions.length);
+            const question = questions[randomIndex];
+
+            return { question, category: randomCategory };
+        }
+
+        async function initQuiz() {
+            const quizData = await loadQuiz();
+
+            // Mettre à jour l'arrière-plan
+            document.body.style.backgroundImage = `url('images/${quizData.category}BG.jpg')`;
+
+            // Afficher la question et la catégorie
+            const questionContainer = document.getElementById('question');
+            const categoryContainer = document.getElementById('category');
+            questionContainer.textContent = quizData.question.question;
+            categoryContainer.textContent = `Catégorie : ${quizData.category}`;
+
+            // Afficher les réponses
+            const answersContainer = document.getElementById('answers-container');
+            answersContainer.innerHTML = '';
+            quizData.question.answers.forEach(answer => {
+                const answerDiv = document.createElement('div');
+                answerDiv.className = 'answer';
+                answerDiv.textContent = answer;
+                answersContainer.appendChild(answerDiv);
+
+                // Sélection de la réponse
+                answerDiv.addEventListener('click', () => {
+                    if (selectedAnswer) {
+                        selectedAnswer.classList.remove('selected');
+                    }
+                    selectedAnswer = answerDiv;
+                    answerDiv.classList.add('selected');
+                });
+            });
+
+            // Animation de transition
+            setTimeout(() => {
+                document.getElementById('title-container').classList.add('moved');
+                document.getElementById('black-overlay').style.opacity = '0';
+                answersContainer.style.opacity = '1';
+
+                document.querySelectorAll('.answer').forEach((answer, index) => {
+                    setTimeout(() => {
+                        answer.style.opacity = '1';
+                        answer.style.transform = 'translateX(0)';
+                    }, 200 * index);
+                });
+
+                document.getElementById('timer-bar').style.transform = 'scaleX(1)';
+
+                // Timer de 20 secondes avant validation
+                setTimeout(() => {
+                    validateAnswers(quizData.question.correct);
+                }, 20000);
+            }, 2000);
+        }
+
+        function validateAnswers(correctAnswer) {
+            document.querySelectorAll('.answer').forEach(answer => {
+                if (answer.textContent === correctAnswer) {
+                    answer.classList.add('correct');
+                } else {
+                    answer.classList.add('wrong');
+                }
+            });
+        }
+
+        initQuiz();
+    </script>
+</body>
+</html>

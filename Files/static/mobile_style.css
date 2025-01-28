@@ -1,0 +1,378 @@
+@media screen and (max-width: 768px) {
+    /* Base */
+    body {
+        padding: 0.5rem;
+        overflow-x: hidden;
+    }
+
+    /* Conteneur */
+    .container {
+        min-width: 100%;
+        padding: 1rem;
+        margin: 0;
+        border-radius: 1rem;
+        overflow-x: hidden;
+    }
+
+    /* Logo */
+    .logo-container {
+        padding: 0 1rem;
+    }
+
+    .logo {
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    /* Grille */
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    /* Boutons de jeu */
+    .game-buttons {
+        gap: 0.75rem;
+    }
+
+    .game-button {
+        height: 6rem;
+        border-radius: 0.5rem;
+    }
+
+    /* Preview Card & Effets */
+    .preview-card {
+        height: 350px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 0.5rem;
+    }
+
+    .preview-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .preview-content {
+        padding: 1rem;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6), transparent);
+    }
+
+    .preview-title {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .preview-description {
+        font-size: 0.875rem;
+        line-height: 1.4;
+        margin-bottom: 0.5rem;
+    }
+
+    .preview-button {
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+    }
+
+    /* Effets de transition */
+    .preview-content.switching,
+    .preview-image.switching {
+        opacity: 0;
+        transition: opacity 0.1s;
+    }
+
+    .tv-static {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Avatar Selection */
+    .profile-selector {
+        padding: 1rem 0;
+        position: relative;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .profile-circle {
+        width: 120px;
+        height: 120px;
+        border-width: 3px;
+    }
+
+    .speech-bubble {
+        visibility: hidden;
+    }
+
+    .speech-bubble::after {
+        display: none;
+    }
+
+    .nav-button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 32px;
+        height: 32px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-button.prev {
+        left: 0;
+    }
+
+    .nav-button.next {
+        right: 0;
+    }
+
+    /* Bottom Actions */
+    .bottom-actions {
+        margin-top: 1.5rem;
+        padding: 0 0.5rem;
+        gap: 4rem;
+        justify-content: center;
+    }
+
+    .action-button {
+        width: 4rem;
+        height: 4rem;
+        padding: 1px;
+    }
+
+    .button-text {
+        font-size: 0.7rem;
+    }
+
+    /* Formulaires */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-input {
+        padding: 0.75rem;
+        font-size: 1rem;
+    }
+
+    /* Boutons */
+    .button-container {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .button {
+        width: 100%;
+        padding: 0.75rem;
+    }
+
+    /* Toggle Switch */
+    .password-toggle {
+        margin-bottom: 0.75rem;
+    }
+
+    .toggle-switch {
+        width: 2.5rem;
+        height: 1.25rem;
+    }
+
+    /* Modal */
+    .modal-container {
+        width: 90%;
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+    }
+
+    .modal-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes showStatic {
+        0% { opacity: 0; }
+        10% { opacity: 0.8; }
+        90% { opacity: 0.8; }
+        100% { opacity: 0; }
+    }
+
+    .show-static {
+        animation: showStatic 0.5s ease-out forwards;
+    }
+
+    /* Controls Sons */
+    .sound-control {
+        top: 0.5rem;
+        right: 0.5rem;
+        padding: 0.5rem;
+        z-index: 1000;
+        background-color: rgba(0, 0, 0, 0.5);
+        outline: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.80);
+    }
+
+    /* Waiting Room */
+    .waiting-room {
+        padding: 1rem;
+    }
+
+    .players-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .player-slot {
+        gap: 0.5rem;
+    }
+
+    .player-avatar {
+        width: 80px;
+        height: 80px;
+    }
+
+    .room-code {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+    }
+
+    /* Lobby List */
+    .lobby-list {
+        max-height: 250px;
+    }
+
+    .lobby-item {
+        padding: 0.75rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .lobby-status {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .intro-logo {
+        width: 300px;
+        height: 75px;
+    }
+    
+    .security-text {
+        max-width: 300px;
+        text-align: justify;
+        font-size: 20px;
+        margin-top: 20px;
+        opacity: 0;
+        animation: fadeIn 3s ease-in-out 2s forwards;
+    }
+}
+
+/* Small phones */
+@media screen and (max-width: 360px) {
+    .intro-logo {
+        width: 300px;
+        height: 75px;
+    }
+    
+    .security-text {
+        max-width: 300px;
+        text-align: justify;
+        font-size: 20px;
+        margin-top: 20px;
+        opacity: 0;
+        animation: fadeIn 3s ease-in-out 2s forwards;
+    }
+
+    .container {
+        padding: 1rem;
+    }
+
+    .profile-circle {
+        width: 100px;
+        height: 100px;
+    }
+
+    .preview-card {
+        height: 350px;
+    }
+
+    .players-grid {
+        grid-template-columns: -2fr;
+    }
+
+    .bottom-actions {
+        margin-top: 1.5rem;
+        padding: 0 0.5rem;
+        gap: 3.5rem;
+        justify-content: center;
+    }
+
+    .action-button {
+        width: 4rem;
+        height: 4rem;
+        padding: 1px;
+    }
+
+    .button-text {
+        font-size: 0.7rem;
+    }
+
+    .button-text {
+        font-size: 0.65rem;
+    }
+}
+
+/* Landscape Mode */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    .intro-logo {
+        width: 300px;
+        height: 75px;
+    }
+    
+    .security-text {
+        max-width: 300px;
+        text-align: justify;
+        font-size: 20px;
+        margin-top: 20px;
+        opacity: 0;
+        animation: fadeIn 3s ease-in-out 2s forwards;
+    }
+    
+    .preview-card {
+        height: 160px;
+    }
+
+    .profile-selector {
+        flex-direction: row;
+        justify-content: center;
+        gap: 2rem;
+    }
+
+    .speech-bubble {
+        visibility: hidden;
+    }
+
+    .players-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
