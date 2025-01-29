@@ -72,8 +72,8 @@
         function updateAvatarDisplay() {
             const avatarImage = document.getElementById('avatarImage');
             const avatarName = document.getElementById('avatarName');
-            avatarImage.src = avatars[currentAvatarIndex].image; // Problème potentiel ici
-            avatarName.textContent = avatars[currentAvatarIndex].name; // Problème signalé ici
+            avatarImage.src = avatars[currentAvatarIndex].image;
+            avatarName.textContent = avatars[currentAvatarIndex].name;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -116,7 +116,7 @@
                 const avatarIndex = currentAvatarIndex;
 
                 try {
-                    const response = await fetch('/create_lobby', {
+                    const response = await fetch('/api/lobby/create', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

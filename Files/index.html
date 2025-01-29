@@ -6,9 +6,45 @@
     <title>Party Game Lobby</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/mobile_style.css">
+    <style>
+        /* Animation CSS pour la transition cartoonesque */
+        @keyframes cartoonTransition {
+            0% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.5) rotate(180deg);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .cartoon-transition {
+            animation: cartoonTransition 1s ease-in-out forwards;
+        }
+
+        /* Styles pour l'overlay de transition */
+        .transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+        }
+    </style>
 </head>
 <script>
-    // Introduction screen
+    // Gestion de l'écran d'introduction et de la transition
     document.addEventListener("DOMContentLoaded", function() {
         const hasVisited = localStorage.getItem("hasVisited");
         if (hasVisited) {
@@ -17,6 +53,28 @@
         } else {
             localStorage.setItem("hasVisited", "true");
         }
+
+        const previewButton = document.querySelector('.preview-button');
+        const transitionOverlay = document.getElementById('transitionOverlay');
+        const staticSound = document.getElementById('staticSound');
+
+        previewButton.addEventListener('click', function() {
+            // Jouer l'effet sonore
+            staticSound.play();
+
+            // Afficher l'overlay de transition
+            transitionOverlay.style.display = 'flex';
+            
+            // Ajouter la classe d'animation
+            setTimeout(() => {
+                transitionOverlay.classList.add('cartoon-transition');
+            }, 10);
+
+            // Rediriger après la fin de l'animation
+            setTimeout(() => {
+                window.location.href = 'Games/quiz-rush/quiz-rush.html';
+            }, 1000); // 1 seconde, correspond à la durée de l'animation
+        });
     });
 </script>
 <body>
@@ -112,6 +170,10 @@
         </div>
     </div>
 
+    <!-- Overlay pour la transition -->
+    <div id="transitionOverlay" class="transition-overlay"></div>
+
+    <!-- Effet sonore -->
     <audio id="staticSound" src="/static/music/tv-static.mp3"></audio>
 
     <script src="Javascript/index.js"></script>

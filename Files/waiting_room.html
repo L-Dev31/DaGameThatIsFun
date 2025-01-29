@@ -54,7 +54,7 @@
         let isOwner = false;
         let currentUsers = {};
         const userId = localStorage.getItem('userId');
-        const roomCode = localStorage.getItem('roomCode');
+        const roomCode = new URLSearchParams(window.location.search).get('roomCode');
 
         if (!roomCode || !userId) {
             window.location.href = document.referrer || '/';
@@ -146,23 +146,21 @@
 
         // Mise à jour du salon
         function updateRoom() {
-            fetch(`/api/lobby/${roomCode}`)
+            fetch(`/api/lobby/${roomCode}`) // Utilisation directe de la variable roomCode
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Lobby not found');
+                        if (response.status === 404) {
+                            throw new Error('Lobby not found');
+                        }
+                        throw new Error('HTTP error ' + response.status);
                     }
                     return response.json();
                 })
                 .then(data => {
-                    // Mettre à jour les contrôles du propriétaire
                     isOwner = data.owner === userId;
-                    
-                    // Mettre à jour la liste des joueurs
                     currentUsers = data.users;
                     updatePlayersGrid(data.users);
-                    
-                    // Mettre à jour le bouton de démarrage
-                    updateStartButton(Object.keys(data.users).length, 8);
+                    updateStartButton(Object.keys(data.users).length, data.max_players); // Utilisation de max_players
                 })
                 .catch(err => {
                     console.error('Erreur lors de la mise à jour du salon:', err);
@@ -201,18 +199,27 @@
         async function deleteLobby() {
             try {
                 const response = await fetch(`/api/lobby/delete/${roomCode}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('sessionToken')}`
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        confirmation: true
+                    })
                 });
 
-                if (response.ok) {
-                    localStorage.removeItem('roomCode');
-                    localStorage.removeItem('userId');
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.clear();
                     window.location.href = '/';
                 } else {
-                    throw new Error('Failed to delete lobby');
+                    alert('Erreur: ' + data.error);
                 }
             } catch (err) {
-                console.error('Erreur lors de la suppression du salon:', err);
+                console.error('Erreur suppression:', err);
                 window.location.href = '/';
             }
         }
@@ -235,11 +242,19 @@
         setInterval(updateRoom, 3000);
 
         // Gérer la fermeture de la fenêtre
-        window.addEventListener('beforeunload', (e) => {
+        window.addEventListener('beforeunload', async (e) => {
             if (isOwner) {
-                deleteLobby();
+                await fetch(`/api/lobby/delete/${roomCode}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId })
+                });
             } else {
-                leaveLobby();
+                await fetch(`/api/lobby/${roomCode}/leave`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId })
+                });
             }
         });
     </script>
