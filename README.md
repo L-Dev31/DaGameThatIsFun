@@ -43,4 +43,4 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
 
 ## ⚠️ **Avertissement**
 
-Ce jeu peut contenir du contenu humoristique et parfois absurde qui ne conviendra peut être pas à tout le monde, ce jeu est conçu pour faire rire et s'amuser. Si vous êtes prêt à passer un bon moment, cessez donc de lire lancez vous ! 
+Ce jeu peut contenir du contenu humoristique et parfois absurde qui ne conviendra peut être pas à tout le monde, ce jeu est conçu pour faire rire et s'amuser. Si vous êtes prêt à passer un bon moment, cessez donc de lire et lancez vous ptn ! 
