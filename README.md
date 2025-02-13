@@ -31,7 +31,7 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
 ## 📱 **Comment Jouer ?**
 
 1. **Créez ou Rejoignez un Lobby** :
-   - Le créateur du lobby lance une partie et partage un **QR code** ou un **lien** pour que les autres joueurs puissent rejoindre la partie.
+   - Le joueur qui host le jeux sur son PC envoie un QR-Code ou bien un URL pour faire rejoindre tout les autres joueurs, ensuite les joueurs peuvent creer leurs lobbies ou bien en rejoindre.
    
 2. **Choisissez un Mode de Jeu** :
    - Sélectionnez l'un des modes de jeu disponibles et laissez-vous guider par les instructions à l'écran.
