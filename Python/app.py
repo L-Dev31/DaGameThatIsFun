@@ -1,3 +1,4 @@
+#Créé par Léo TOSKU | 2024-2025
 import os
 import time
 import threading
@@ -7,7 +8,7 @@ from System.server import run_server
 from System.utils import cleanup_inactive_lobbies
 from System.lobby import active_sessions
 
-init(autoreset=True)  # Active colorama
+init(autoreset=True)
 
 DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Files"))
 
@@ -19,7 +20,7 @@ if __name__ == "__main__":
     print(Fore.GREEN + "✅ Nettoyage des lobbys démarré.")
 
     server_thread = threading.Thread(target=run_server, daemon=True)
-    server_thread.start()  # Démarre le serveur
+    server_thread.start()  # Démarre le serveur local sur le port du PC
     print(Fore.GREEN + "✅ Serveur HTTP lancé sur le port 8000.")
 
     webbrowser.open(f"http://localhost:8000")  # Ouvre le navigateur
@@ -31,7 +32,7 @@ if __name__ == "__main__":
     print(Fore.CYAN + "======================================")
 
     try:
-        while True:  # Boucle pour garder le serveur en vie
+        while True:  # Boucle pour garder le serveur en vie (ce serait con autrement ptdr)
             time.sleep(1)
     except KeyboardInterrupt:
         print(Fore.RED + "\n⛔ Arrêt du serveur...")

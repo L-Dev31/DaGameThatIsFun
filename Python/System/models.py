@@ -1,3 +1,4 @@
+# Classes de "modèles" utilisés par les appels API
 from dataclasses import dataclass
 from typing import Dict, Optional, List
 

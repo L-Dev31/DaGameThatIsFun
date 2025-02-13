@@ -1,3 +1,4 @@
+# Codes relatifs au lobbys (serveurs)
 import random
 import string
 import time
@@ -6,12 +7,14 @@ from System.models import LobbySession, User, ChatMessage
 
 active_sessions: Dict[str, LobbySession] = {}
 
+# Codes de Lobby
 def generate_code() -> str:
     while True:
         code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
         if code not in active_sessions:
             return code
 
+# Création du lobby
 def create_lobby(player_name: str, password: Optional[str], avatar_index: int, max_players: int, client_ip: str) -> dict:
     if not player_name:
         raise ValueError("Le nom du joueur est requis")
@@ -50,6 +53,7 @@ def create_lobby(player_name: str, password: Optional[str], avatar_index: int, m
         'sessionData': lobby_session.to_dict()
     }
 
+# Rejoindre le lobby
 def join_lobby(room_code: str, player_name: str, password: Optional[str], avatar_index: int, client_ip: str) -> dict:
     if not room_code or not player_name:
         raise ValueError("Le code du salon et le nom du joueur sont requis")
@@ -82,6 +86,7 @@ def join_lobby(room_code: str, player_name: str, password: Optional[str], avatar
         'sessionData': lobby.to_dict()
     }
 
+# Quitter le lobby
 def leave_lobby(room_code: str, user_id: str) -> dict:
     if not room_code or not user_id:
         raise ValueError("Le code du salon et l'ID utilisateur sont requis")
@@ -94,41 +99,10 @@ def leave_lobby(room_code: str, user_id: str) -> dict:
     if user_id not in lobby.users:
         raise ValueError("Utilisateur non trouvé dans le salon")
         
-    # Si c'est le propriétaire qui part, supprimer le salon
+    # Si c'est l'host qui part, supprimer le salon
     if user_id == lobby.owner:
         del active_sessions[room_code]
     else:
         del lobby.users[user_id]
         
     return {'success': True}
-
-def add_chat_message(room_code: str, user_id: str, content: str) -> dict:
-    if not room_code or not user_id or not content:
-        raise ValueError("Informations manquantes pour le message")
-        
-    if room_code not in active_sessions:
-        raise ValueError("Le salon n'existe pas")
-        
-    lobby = active_sessions[room_code]
-    
-    if user_id not in lobby.users:
-        raise ValueError("Utilisateur non trouvé dans le salon")
-        
-    message = ChatMessage(
-        user_id=user_id,
-        username=lobby.users[user_id].name,
-        content=content,
-        timestamp=time.time()
-    )
-    
-    lobby.chat_messages.append(message)
-    
-    return {
-        'success': True,
-        'message': {
-            'user_id': message.user_id,
-            'username': message.username,
-            'content': message.content,
-            'timestamp': message.timestamp
-        }
-    }

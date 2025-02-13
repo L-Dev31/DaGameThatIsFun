@@ -1,3 +1,4 @@
+# Permet de voir les serveurs actifs (utile pour les devs)
 import requests
 import time
 import os

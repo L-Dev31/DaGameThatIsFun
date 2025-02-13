@@ -1,9 +1,10 @@
-# System/qr.py
+# Permet de generer un lien/qrcode pour faire rejoindre plus facilement d'autres joueurs
 import socket
 import qrcode
 import base64
 import io
 
+# Récupère l'ip locale
 def get_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(0)
@@ -16,14 +17,14 @@ def get_local_ip():
         s.close()
     return ip
 
-# System/qr.py
+# Génère le QRCode
 def generate_qr_code(ip, port):
     url = f'http://{ip}:{port}'
     qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4)
     qr.add_data(url)
     qr.make(fit=True)
     
-    # Créer une image du QR code
+    # Créer l'image du QR code
     img = qr.make_image(fill='black', back_color='white')
     img = img.convert("RGBA")
     

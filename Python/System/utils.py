@@ -2,6 +2,7 @@ import time
 from typing import Dict
 from System.models import LobbySession
 
+# Supprime les lobbys inactifs
 def cleanup_inactive_lobbies(active_sessions: Dict[str, LobbySession]):
     while True:
         current_time = time.time()
