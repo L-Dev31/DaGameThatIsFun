@@ -6,22 +6,22 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
 
 ## 🎲 **Modes de Jeu Disponibles**
 
-### 1. **Dessine-moi un Désastre 🎨**
+![draw-contest](https://github.com/user-attachments/assets/c41e81ed-81a5-47da-9bc4-3599c3a0e863)
    - **Description** : Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence !
    - **Nombre de joueurs** : 4 à 8
    - **Objectif** : Dessinez ce qui vous est demandé et votez pour le meilleur (ou le pire) dessin !
 
-### 2. **Gribouilles & Embrouilles 🖌️**
+![pictionary](https://github.com/user-attachments/assets/9b916380-0aa5-437a-b36a-fde3ca097894)
    - **Description** : Montrez vos talents artistiques ! Un joueur dessine pendant que les autres se dépêchent de deviner le mot. Votre chef-d'œuvre sera-t-il compris ou hilaramment mal interprété ?
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Devinez le mot le plus vite possible ou soyez celui qui fait rire tout le monde avec vos dessins !
 
-### 3. **Quiz Rush ❓**
+![quiz-rush](https://github.com/user-attachments/assets/0b42fa8c-9759-46b4-8d25-8740845c1ce1)
    - **Description** : Pensez vite ! Répondez à des questions originales dans ce quiz effréné. Plus vous répondez vite, plus vous marquez de points – mais méfiez-vous des questions pièges !
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Soyez le plus rapide et le plus malin pour remporter la victoire !
 
-### 4. **La Quête Légendaire 🗡️**
+![object-tales](https://github.com/user-attachments/assets/7eeb9dd4-7bd1-4155-81bf-343ecbae7c59)
    - **Description** : Devenez le maître du récit ! Inventez l'histoire la plus drôle ou intrigante à propos d'un objet étrange. Parviendrez-vous à captiver le public avec votre imagination débordante ?
    - **Nombre de joueurs** : 4 à 8
    - **Objectif** : Créez l'histoire la plus originale et amusez vos amis avec vos idées farfelues !
