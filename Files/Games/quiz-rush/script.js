@@ -172,11 +172,11 @@ function validateAnswers(correctAnswer) {
         }
     });
 
-    // Passer à la question suivante après 3 secondes
+    // Passer à la question suivante
     setTimeout(() => {
         currentQuestionIndex++;
         initQuiz();
-    }, 3000);
+    }, 5000);
 }
 
 // Fonction pour récupérer les catégories
