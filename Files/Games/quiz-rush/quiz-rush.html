@@ -5,102 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Rush</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
 </head>
 <body>
-    <div class="overlay-gradient"></div>
-    <div id="black-overlay"></div>
-    <div id="title-container">
-        <div id="question"></div>
-        <div id="category"></div>
+    <!-- Vidéo d'arrière-plan -->
+    <video id="video-bg" autoplay muted loop>
+        <source src="images/PatternBG.mp4" type="video/mp4">
+        Votre navigateur ne supporte pas la vidéo.
+    </video>
+
+    <!-- Image de catégorie superposée -->
+    <div id="category-overlay"></div>
+
+    <!-- Écran de chargement -->
+    <div id="loading-screen">
+        <img src="images/loadImage.gif" alt="Loading...">
     </div>
-    <div id="answers-container"></div>
-    <div id="timer-container">
-        <div id="timer-bar"></div>
+
+    <!-- Popup pour demander si l'utilisateur veut voir la vidéo -->
+    <div id="video-popup-overlay" class="modal-overlay">
+        <div class="modal-container">
+            <h2 class="modal-title">Vidéo de présentation</h2>
+            <div class="modal-content">
+                <p>Voulez-vous voir la vidéo de présentation du jeu ?</p>
+            </div>
+            <div class="modal-buttons">
+                <button id="yes-button" class="modal-button modal-button-primary">Oui</button>
+                <button id="no-button" class="modal-button modal-button-secondary">Non</button>
+            </div>
+        </div>
     </div>
 
-    <script>
-        let selectedAnswer = null;
+    <!-- Lecteur vidéo -->
+    <video id="intro-video" controls autoplay muted style="display: none;">
+        <source src="images/intro.mp4" type="video/mp4">
+        Votre navigateur ne supporte pas la vidéo.
+    </video>
 
-        async function loadQuiz() {
-            const response = await fetch('quiz-list.json');
-            const data = await response.json();
+    <!-- Contenu du quiz (masqué au départ) -->
+    <div id="quiz-content" style="display: none;">
+        <div class="overlay-gradient"></div>
+        <div id="black-overlay"></div>
+        <div id="title-container">
+            <div id="question"></div>
+            <div id="category"></div>
+        </div>
+        <div id="answers-container"></div>
+        <div id="timer-container">
+            <div id="timer-bar"></div>
+        </div>
+    </div>
 
-            // Choisir une catégorie au hasard
-            const categories = Object.keys(data);
-            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-            const questions = data[randomCategory];
-
-            // Choisir une question aléatoire dans la catégorie
-            const randomIndex = Math.floor(Math.random() * questions.length);
-            const question = questions[randomIndex];
-
-            return { question, category: randomCategory };
-        }
-
-        async function initQuiz() {
-            const quizData = await loadQuiz();
-
-            // Mettre à jour l'arrière-plan
-            document.body.style.backgroundImage = `url('images/${quizData.category}BG.jpg')`;
-
-            // Afficher la question et la catégorie
-            const questionContainer = document.getElementById('question');
-            const categoryContainer = document.getElementById('category');
-            questionContainer.textContent = quizData.question.question;
-            categoryContainer.textContent = `Catégorie : ${quizData.category}`;
-
-            // Afficher les réponses
-            const answersContainer = document.getElementById('answers-container');
-            answersContainer.innerHTML = '';
-            quizData.question.answers.forEach(answer => {
-                const answerDiv = document.createElement('div');
-                answerDiv.className = 'answer';
-                answerDiv.textContent = answer;
-                answersContainer.appendChild(answerDiv);
-
-                // Sélection de la réponse
-                answerDiv.addEventListener('click', () => {
-                    if (selectedAnswer) {
-                        selectedAnswer.classList.remove('selected');
-                    }
-                    selectedAnswer = answerDiv;
-                    answerDiv.classList.add('selected');
-                });
-            });
-
-            // Animation de transition
-            setTimeout(() => {
-                document.getElementById('title-container').classList.add('moved');
-                document.getElementById('black-overlay').style.opacity = '0';
-                answersContainer.style.opacity = '1';
-
-                document.querySelectorAll('.answer').forEach((answer, index) => {
-                    setTimeout(() => {
-                        answer.style.opacity = '1';
-                        answer.style.transform = 'translateX(0)';
-                    }, 200 * index);
-                });
-
-                document.getElementById('timer-bar').style.transform = 'scaleX(1)';
-
-                // Timer de 20 secondes avant validation
-                setTimeout(() => {
-                    validateAnswers(quizData.question.correct);
-                }, 20000);
-            }, 2000);
-        }
-
-        function validateAnswers(correctAnswer) {
-            document.querySelectorAll('.answer').forEach(answer => {
-                if (answer.textContent === correctAnswer) {
-                    answer.classList.add('correct');
-                } else {
-                    answer.classList.add('wrong');
-                }
-            });
-        }
-
-        initQuiz();
-    </script>
+    
+    <script src="script.js"></script>
 </body>
 </html>

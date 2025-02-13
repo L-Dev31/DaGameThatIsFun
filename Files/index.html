@@ -6,78 +6,65 @@
     <title>Party Game Lobby</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/mobile_style.css">
-    <style>
-        /* Animation CSS pour la transition cartoonesque */
-        @keyframes cartoonTransition {
-            0% {
-                transform: scale(1) rotate(0deg);
-                opacity: 1;
-            }
-            50% {
-                transform: scale(1.5) rotate(180deg);
-                opacity: 0.5;
-            }
-            100% {
-                transform: scale(0) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
-        .cartoon-transition {
-            animation: cartoonTransition 1s ease-in-out forwards;
-        }
-
-        /* Styles pour l'overlay de transition */
-        .transition-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            z-index: 1000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-        }
-    </style>
+    <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
 </head>
 <script>
-    // Gestion de l'écran d'introduction et de la transition
     document.addEventListener("DOMContentLoaded", function() {
         const hasVisited = localStorage.getItem("hasVisited");
         if (hasVisited) {
-            const introScreen = document.getElementById("introScreen");
-            introScreen.style.display = "none";
+            document.getElementById("introScreen").style.display = "none";
         } else {
             localStorage.setItem("hasVisited", "true");
         }
+    });
 
-        const previewButton = document.querySelector('.preview-button');
-        const transitionOverlay = document.getElementById('transitionOverlay');
-        const staticSound = document.getElementById('staticSound');
+    function showModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) modal.classList.add("active");
+    }
 
-        previewButton.addEventListener('click', function() {
-            // Jouer l'effet sonore
-            staticSound.play();
+    function hideModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) modal.classList.remove("active");
+    }
 
-            // Afficher l'overlay de transition
-            transitionOverlay.style.display = 'flex';
-            
-            // Ajouter la classe d'animation
-            setTimeout(() => {
-                transitionOverlay.classList.add('cartoon-transition');
-            }, 10);
-
-            // Rediriger après la fin de l'animation
-            setTimeout(() => {
-                window.location.href = 'Games/quiz-rush/quiz-rush.html';
-            }, 1000); // 1 seconde, correspond à la durée de l'animation
+    document.addEventListener("click", (event) => {
+        document.querySelectorAll(".modal-overlay.active").forEach((modal) => {
+            if (event.target === modal) hideModal(modal.id);
         });
     });
+
+    async function showQrCodePopup() {
+        try {
+            const response = await fetch("/get_ip");
+            if (!response.ok) throw new Error(`Erreur HTTP : ${response.status}`);
+            const data = await response.json();
+            document.getElementById("qrCodeImage").src = `data:image/png;base64,${data.qr_code}`;
+            document.getElementById("qrCodeUrl").textContent = data.url;
+            showModal("qrCodeModal");
+        } catch (error) {
+            console.error("Erreur lors de la récupération du QR code :", error);
+            alert("Impossible de charger le QR code. Veuillez réessayer.");
+        }
+    }
+
+    function copyLink() {
+        const link = document.getElementById("qrCodeUrl").textContent;
+        navigator.clipboard.writeText(link).then(() => {
+            alert("Lien copié !");
+        }).catch((error) => {
+            console.error("Erreur lors de la copie du lien :", error);
+            alert("Impossible de copier le lien. Veuillez réessayer.");
+        });
+    }
 </script>
 <body>
+    <!-- Bouton pour afficher le QR code -->
+    <button class="share-control" id="shareToggle" onclick="showQrCodePopup()">
+        <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 30 30" width="24px" fill="white" height="24px"><path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"/></svg>
+    </button>
+
+    <!-- Bouton de contrôle du son -->
     <button class="sound-control" id="soundToggle">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
@@ -85,6 +72,29 @@
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
         </svg>
     </button>
+
+    <!-- Modale pour le QR code -->
+    <div id="qrCodeModal" class="modal-overlay">
+        <div class="modal-container">
+            <h2 class="modal-title">Partager le lien</h2>
+            <div class="modal-content">
+                <p id="qrCodeUrl" style="word-break: break-all; margin-bottom: 1rem;"></p>
+                <img id="qrCodeImage" alt="QR Code" style="width: 200px; height: 200px; margin: 0 auto;">
+
+                <!-- Lien à copier -->
+                <div style="margin-top: 1rem; text-align: center;">
+                    <p id="qrCodeUrl" style="word-break: break-all; margin-bottom: 1rem;"></p>
+                    <button onclick="copyLink()" class="modal-button modal-button-secondary">
+                        Copier le lien
+                    </button>
+                </div>
+                
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button modal-button-primary" onclick="hideModal('qrCodeModal')">Fermer
+            </div>
+        </div>
+    </div>
     
     <div class="bg"></div>
     
@@ -170,10 +180,6 @@
         </div>
     </div>
 
-    <!-- Overlay pour la transition -->
-    <div id="transitionOverlay" class="transition-overlay"></div>
-
-    <!-- Effet sonore -->
     <audio id="staticSound" src="/static/music/tv-static.mp3"></audio>
 
     <script src="Javascript/index.js"></script>

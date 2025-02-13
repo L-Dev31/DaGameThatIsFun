@@ -6,6 +6,7 @@
     <title>Créer un Lobby</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/mobile_style.css">
+    <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
 </head>
 <body>
     <div class="bg"></div>
@@ -72,9 +73,10 @@
         function updateAvatarDisplay() {
             const avatarImage = document.getElementById('avatarImage');
             const avatarName = document.getElementById('avatarName');
-            avatarImage.src = avatars[currentAvatarIndex].image;
-            avatarName.textContent = avatars[currentAvatarIndex].name;
+            avatarImage.src = avatars[currentAvatarIndex].image; // Problème potentiel ici
+            avatarName.textContent = avatars[currentAvatarIndex].name; // Problème signalé ici
         }
+
 
         document.addEventListener('DOMContentLoaded', () => {
             updateAvatarDisplay();

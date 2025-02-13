@@ -1,262 +1,257 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salon d'attente</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="/static/mobile_style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salon d'attente</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/mobile_style.css">
+  <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
+  <style>
+  </style>
 </head>
 <body>
-    <div class="bg"></div>
-    <div class="logo-container">
-        <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
-    </div>
+  <div class="bg"></div>
+  <div class="logo-container">
+    <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
+  </div>
 
-    <div class="container">
-        <div class="waiting-room">
-            <div class="room-info">
-                <h2 class="title">Salon d'attente</h2>
-                <div class="room-code">
-                    CODE: <span id="roomCode"></span>
-                </div>
-            </div>
-
-            <div class="players-grid" id="playersGrid">
-                <!-- Les joueurs seront ajoutés ici dynamiquement -->
-            </div>
-
-            <div class="button-container">
-                <button type="button" class="button button-secondary" id="leaveButton">Quitter le salon</button>
-                <button type="button" class="button button-primary" id="startButton" disabled>
-                    Lancer la partie (1/8)
-                </button>
-            </div>
+  <div class="container">
+    <div class="waiting-room">
+      <div class="room-info">
+        <h2 class="title">Salon d'attente</h2>
+        <div class="room-code">
+          CODE: <span id="roomCode"></span>
         </div>
+      </div>
+
+      <div class="players-grid" id="playersGrid">
+        <!-- Les joueurs seront ajoutés ici dynamiquement -->
+      </div>
+
+      <div class="button-container">
+        <button type="button" class="button button-secondary" id="leaveButton">Quitter le salon</button>
+        <button type="button" class="button button-primary" id="startButton" disabled>
+          Lancer la partie (1/8)
+        </button>
+      </div>
     </div>
+  </div>
 
-    <!-- Modal de confirmation -->
-    <div class="modal-overlay" id="confirmationModal">
-        <div class="modal-container">
-            <h2 class="modal-title">Quitter le Salon ?</h2>
-            <div class="modal-content">
-                <p id="modalMessage">Êtes-vous sûr de vouloir quitter le salon ?</p>
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-button modal-button-secondary" id="cancelButton">Annuler</button>
-                <button class="modal-button modal-button-primary" id="confirmButton">Confirmer</button>
-            </div>
-        </div>
+  <!-- Modal de confirmation (pour quitter le salon) -->
+  <div class="modal-overlay" id="confirmationModal">
+    <div class="modal-container">
+      <h2 class="modal-title">Quitter le Salon ?</h2>
+      <div class="modal-content">
+        <p id="modalMessage">Êtes-vous sûr de vouloir quitter le salon ?</p>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-button modal-button-secondary" id="cancelButton">Annuler</button>
+        <button class="modal-button modal-button-primary" id="confirmButton">Confirmer</button>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // Variables globales
-        let isOwner = false;
-        let currentUsers = {};
-        const userId = localStorage.getItem('userId');
-        const roomCode = new URLSearchParams(window.location.search).get('roomCode');
+  <!-- Overlay de décompte -->
+  <div class="countdown-overlay" id="countdownOverlay">
+    <div class="countdown-content">
+      <div id="countdownNumber" class="countdown-number">3</div>
+      <button type="button" id="cancelCountdown" class="button button-secondary">Annuler</button>
+    </div>
+  </div>
 
-        if (!roomCode || !userId) {
-            window.location.href = document.referrer || '/';
+  <script>
+    // Variables globales
+    let isOwner = false;
+    let currentUsers = {};
+    const userId = localStorage.getItem('userId');
+    const roomCode = localStorage.getItem('roomCode');
+
+    if (!roomCode || !userId) {
+      window.location.href = document.referrer || '/';
+    }
+
+    // Gestion du modal de confirmation pour quitter le salon
+    const modal = document.getElementById('confirmationModal');
+    const leaveButton = document.getElementById('leaveButton');
+    const cancelButton = document.getElementById('cancelButton');
+    const confirmButton = document.getElementById('confirmButton');
+    const modalMessage = document.getElementById('modalMessage');
+
+    function showModal(message, isOwnerLeaving = false) {
+      modalMessage.textContent = message;
+      modal.classList.add('active');
+
+      confirmButton.onclick = () => {
+        if (isOwnerLeaving) {
+          deleteLobby();
+        } else {
+          leaveLobby();
         }
+      };
+    }
 
+    function hideModal() {
+      modal.classList.remove('active');
+    }
 
-        // Gestion du modal
-        const modal = document.getElementById('confirmationModal');
-        const leaveButton = document.getElementById('leaveButton');
-        const cancelButton = document.getElementById('cancelButton');
-        const confirmButton = document.getElementById('confirmButton');
-        const modalMessage = document.getElementById('modalMessage');
+    leaveButton.addEventListener('click', () => {
+      const message = isOwner 
+        ? "Attention ! Si vous quittez cette page, le salon sera supprimé. Êtes-vous sûr de vouloir continuer ?"
+        : "Êtes-vous sûr de vouloir quitter le salon ?";
+      showModal(message, isOwner);
+    });
 
-        function showModal(message, isOwnerLeaving = false) {
-            modalMessage.textContent = message;
-            modal.classList.add('active');
-            
-            confirmButton.onclick = () => {
-                if (isOwnerLeaving) {
-                    deleteLobby();
-                } else {
-                    leaveLobby();
-                }
-            };
+    cancelButton.addEventListener('click', hideModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) hideModal();
+    });
+
+    // Mise à jour de l'affichage des joueurs
+    function updatePlayersGrid(users, ownerId) {
+      const playersGrid = document.getElementById('playersGrid');
+      playersGrid.innerHTML = '';
+
+      for (let i = 0; i < 8; i++) {
+        const playerSlot = document.createElement('div');
+        playerSlot.classList.add('player-slot');
+
+        if (i < Object.keys(users).length) {
+          const user = Object.values(users)[i];
+          playerSlot.innerHTML = `
+            <div class="player-avatar${user.id === userId ? ' current-player' : ''}">
+              <img src="/static/images/avatar/${user.avatar_index + 1}.png" alt="${user.name}">
+            </div>
+            <span class="waiting-text">
+              <strong>${user.name}</strong>
+              ${user.id === ownerId ? ' 👑' : ''} 
+              ${user.id === userId ? ' (Vous)' : ''}
+            </span>
+          `;
+        } else {
+          playerSlot.innerHTML = `
+            <div class="player-avatar empty">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <span class="waiting-text">En attente...</span>
+          `;
         }
+        playersGrid.appendChild(playerSlot);
+      }
+    }
 
-        function hideModal() {
-            modal.classList.remove('active');
-        }
+    // Mise à jour du bouton de démarrage
+    function updateStartButton(userCount, maxPlayers) {
+      const startButton = document.getElementById('startButton');
+      startButton.textContent = `Lancer la partie (${userCount}/${maxPlayers})`;
+      // Seul le propriétaire avec au moins 2 joueurs peut cliquer sur le bouton
+      startButton.disabled = !isOwner || userCount < 2;
+    }
 
-        // Gestion des événements du modal
-        leaveButton.addEventListener('click', () => {
-            const message = isOwner 
-                ? "Attention ! Si vous quittez cette page, le salon sera supprimé. Êtes-vous sûr de vouloir continuer ?"
-                : "Êtes-vous sûr de vouloir quitter le salon ?";
-            showModal(message, isOwner);
+    // Mise à jour du salon via l'API
+    function updateRoom() {
+      fetch(`/api/lobby/${roomCode}`)
+        .then(response => {
+          if (!response.ok) throw new Error('Lobby not found');
+          return response.json();
+        })
+        .then(data => {
+          isOwner = data.owner === userId;
+          currentUsers = data.users;
+          updatePlayersGrid(data.users, data.owner);
+          updateStartButton(Object.keys(data.users).length, 8);
+        })
+        .catch(err => {
+          console.error('Erreur:', err);
+          if (err.message === 'Lobby not found') {
+            alert('Le salon n\'existe plus !');
+            window.location.href = '/';
+          }
         });
+    }
 
-        cancelButton.addEventListener('click', hideModal);
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) hideModal();
+    // Fonctions de gestion du lobby
+    async function leaveLobby() {
+      try {
+        await fetch(`/api/lobby/${roomCode}/leave`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId })
         });
+        localStorage.clear();
+        window.location.href = '/';
+      } catch (err) {
+        console.error('Erreur:', err);
+        window.location.href = '/';
+      }
+    }
 
-        // Mise à jour des joueurs
-        function updatePlayersGrid(users) {
-            const playersGrid = document.getElementById('playersGrid');
-            playersGrid.innerHTML = '';
-            
-            // Créer 8 slots
-            for (let i = 0; i < 8; i++) {
-                const playerSlot = document.createElement('div');
-                playerSlot.classList.add('player-slot');
-                
-                if (i < Object.keys(users).length) {
-                    // Slot avec joueur
-                    const user = Object.values(users)[i];
-                    playerSlot.innerHTML = `
-                        <div class="player-avatar${user.id === userId ? ' current-player' : ''}">
-                            <img src="/static/images/avatar/${user.avatar_index + 1}.png" alt="${user.name}">
-                        </div>
-                        <span class="waiting-text">
-                            <strong>${user.name}</strong>
-                            ${user.id === userId ? ' (Vous)' : ''}
-                        </span>
-                    `;
-                } else {
-                    // Slot vide
-                    playerSlot.innerHTML = `
-                        <div class="player-avatar empty">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                        </div>
-                        <span class="waiting-text">En attente...</span>
-                    `;
-                }
-                
-                playersGrid.appendChild(playerSlot);
-            }
+    async function deleteLobby() {
+      try {
+        await fetch(`/api/lobby/delete/${roomCode}`, { method: 'DELETE' });
+        localStorage.clear();
+        window.location.href = '/';
+      } catch (err) {
+        console.error('Erreur:', err);
+        window.location.href = '/';
+      }
+    }
+
+    // Gestion du décompte avec animation
+    const startButton = document.getElementById('startButton');
+    const countdownOverlay = document.getElementById('countdownOverlay');
+    const countdownNumber = document.getElementById('countdownNumber');
+    const cancelCountdown = document.getElementById('cancelCountdown');
+    let countdownInterval;
+
+    startButton.addEventListener('click', () => {
+      // Ne rien faire si le bouton est désactivé (ce qui sera le cas pour les non-propriétaires)
+      if (startButton.disabled) return;
+
+      // Afficher l'overlay
+      countdownOverlay.style.display = 'flex';
+      let counter = 5;
+      countdownNumber.textContent = counter;
+
+      // Pour chaque chiffre, on recréera l'animation en réaffectant la classe
+      countdownInterval = setInterval(() => {
+        counter--;
+        if (counter < 0) {
+          clearInterval(countdownInterval);
+          // Rediriger vers index.html après le décompte
+          window.location.href = 'index.html';
+        } else {
+          // Remise à zéro de l'animation en retirant puis réappliquant la classe
+          countdownNumber.textContent = counter;
+          countdownNumber.classList.remove('countdown-number');
+          // Forcer le reflow pour redémarrer l'animation
+          void countdownNumber.offsetWidth;
+          countdownNumber.classList.add('countdown-number');
         }
+      }, 1000);
+    });
 
-        // Mise à jour du bouton de démarrage
-        function updateStartButton(userCount, maxPlayers) {
-            const startButton = document.getElementById('startButton');
-            startButton.textContent = `Lancer la partie (${userCount}/${maxPlayers})`;
-            startButton.disabled = !isOwner || userCount < 2;
-        }
+    // Annuler le décompte si l'utilisateur clique sur "Annuler"
+    cancelCountdown.addEventListener('click', () => {
+      clearInterval(countdownInterval);
+      countdownOverlay.style.display = 'none';
+    });
 
-        // Mise à jour du salon
-        function updateRoom() {
-            fetch(`/api/lobby/${roomCode}`) // Utilisation directe de la variable roomCode
-                .then(response => {
-                    if (!response.ok) {
-                        if (response.status === 404) {
-                            throw new Error('Lobby not found');
-                        }
-                        throw new Error('HTTP error ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    isOwner = data.owner === userId;
-                    currentUsers = data.users;
-                    updatePlayersGrid(data.users);
-                    updateStartButton(Object.keys(data.users).length, data.max_players); // Utilisation de max_players
-                })
-                .catch(err => {
-                    console.error('Erreur lors de la mise à jour du salon:', err);
-                    if (err.message === 'Lobby not found') {
-                        alert('Le salon n\'existe plus !');
-                        window.location.href = '/';
-                    }
-                });
-        }
+    // Initialisation au chargement du DOM
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('roomCode').textContent = roomCode;
+      updateRoom();
+      setInterval(updateRoom, 3000);
+    });
 
-        // Quitter le salon
-        async function leaveLobby() {
-            try {
-                const response = await fetch(`/api/lobby/${roomCode}/leave`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ userId })
-                });
-
-                if (response.ok) {
-                    localStorage.removeItem('roomCode');
-                    localStorage.removeItem('userId');
-                    window.location.href = '/';
-                } else {
-                    throw new Error('Failed to leave lobby');
-                }
-            } catch (err) {
-                console.error('Erreur lors de la sortie du salon:', err);
-                window.location.href = '/';
-            }
-        }
-
-        // Supprimer le salon (propriétaire uniquement)
-        async function deleteLobby() {
-            try {
-                const response = await fetch(`/api/lobby/delete/${roomCode}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('sessionToken')}`
-                    },
-                    body: JSON.stringify({
-                        userId: userId,
-                        confirmation: true
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    localStorage.clear();
-                    window.location.href = '/';
-                } else {
-                    alert('Erreur: ' + data.error);
-                }
-            } catch (err) {
-                console.error('Erreur suppression:', err);
-                window.location.href = '/';
-            }
-        }
-
-        // Gérer le bouton de démarrage
-        document.getElementById('startButton').addEventListener('click', () => {
-            if (isOwner) {
-                // Ajouter ici la logique de démarrage du jeu
-                console.log('Démarrage du jeu...');
-            }
-        });
-
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('roomCode').textContent = roomCode;
-            updateRoom();
-        });
-
-        // Mise à jour automatique du salon
-        setInterval(updateRoom, 3000);
-
-        // Gérer la fermeture de la fenêtre
-        window.addEventListener('beforeunload', async (e) => {
-            if (isOwner) {
-                await fetch(`/api/lobby/delete/${roomCode}`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId })
-                });
-            } else {
-                await fetch(`/api/lobby/${roomCode}/leave`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId })
-                });
-            }
-        });
-    </script>
+    // Gestion de la déconnexion avant de quitter la page
+    window.addEventListener('beforeunload', () => {
+      if (isOwner) deleteLobby();
+      else leaveLobby();
+    });
+  </script>
 </body>
 </html>

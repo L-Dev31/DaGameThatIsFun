@@ -38,3 +38,4 @@ document.querySelector('.nav-button.next').addEventListener('click', (e) => {
 
 // Initialize with first avatar
 updateProfile();
+
