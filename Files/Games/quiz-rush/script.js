@@ -159,7 +159,7 @@ async function initQuiz() {
         setTimeout(() => {
             validateAnswers(quizData.question.correct);
         }, 20000);
-    }, 5000);
+    }, 4000);
 }
 
 // Fonction pour valider les réponses

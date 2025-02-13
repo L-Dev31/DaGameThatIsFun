@@ -3,7 +3,7 @@ import socketserver
 import json
 from typing import Dict
 from System.models import LobbySession
-from System.lobby import active_sessions, create_lobby, join_lobby, leave_lobby, add_chat_message
+from System.lobby import active_sessions, create_lobby, join_lobby, leave_lobby
 from System.qr import get_local_ip, generate_qr_code
 
 PORT = 8000
@@ -65,15 +65,6 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
             elif self.path.startswith('/api/lobby/') and self.path.endswith('/leave'):
                 room_code = self.path.split('/')[-2]
                 response_data = leave_lobby(room_code, post_data.get('userId'))
-                self.send_json_response(response_data)
-                
-            elif self.path.startswith('/api/lobby/') and self.path.endswith('/chat'):
-                room_code = self.path.split('/')[-2]
-                response_data = add_chat_message(
-                    room_code,
-                    post_data.get('userId'),
-                    post_data.get('content')
-                )
                 self.send_json_response(response_data)
                 
             else:
