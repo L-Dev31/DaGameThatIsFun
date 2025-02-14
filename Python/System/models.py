@@ -3,13 +3,6 @@ from dataclasses import dataclass
 from typing import Dict, Optional, List
 
 @dataclass
-class ChatMessage:
-    user_id: str
-    username: str
-    content: str
-    timestamp: float
-
-@dataclass
 class User:
     id: str
     name: str
@@ -26,7 +19,6 @@ class LobbySession:
     users: Dict[str, User]
     created_at: float
     max_players: int
-    chat_messages: List[ChatMessage]
     
     def to_dict(self):
         return {
@@ -42,11 +34,5 @@ class LobbySession:
                 'ip_address': u.ip_address
             } for uid, u in self.users.items()},
             'created_at': self.created_at,
-            'max_players': self.max_players,
-            'chat_messages': [{
-                'user_id': msg.user_id,
-                'username': msg.username,
-                'content': msg.content,
-                'timestamp': msg.timestamp
-            } for msg in self.chat_messages]
+            'max_players': self.max_players
         }

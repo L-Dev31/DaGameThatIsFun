@@ -3,7 +3,7 @@ import random
 import string
 import time
 from typing import Dict, Optional
-from System.models import LobbySession, User, ChatMessage
+from System.models import LobbySession, User
 
 active_sessions: Dict[str, LobbySession] = {}
 
@@ -40,8 +40,7 @@ def create_lobby(player_name: str, password: Optional[str], avatar_index: int, m
         password=password,
         users={user_id: owner},
         created_at=time.time(),
-        max_players=max_players,
-        chat_messages=[]
+        max_players=max_players
     )
     
     active_sessions[room_code] = lobby_session

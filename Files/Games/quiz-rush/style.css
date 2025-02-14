@@ -1,3 +1,10 @@
+@font-face {
+    font-family: 'Typewriter';
+    src: url('/static/fonts/Typewriter.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -31,41 +38,47 @@ a, button, [role="button"], input[type="submit"], input[type="button"], .answer 
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #ECE8E5f9;
+    background-color:#fffffff9;
     background-size: cover;
     background-position: center;
     z-index: 0;
 }
 
 #title-container {
+    font-family: 'Typewriter', 'sans-serif';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(1) rotate(0deg);
     font-size: 5rem;
-    max-width: 1500px;
+    max-width: 1300px;
     font-weight: bold;
     text-align: left;
     opacity: 1;
     transition: all 1s ease;
-    text-align: justify;
+    text-align: center;
     width: 90%;
     color: white;
     font-weight: bolder
 }
 
 #title-container.moved {
-    color: #343434;
-    top: 25px;
-    left: -100px;
-    transform: scale(0.8);
+    color:#161616;
+    top: 95px;
+    left: -18px;
+    transform: scale(0.8) rotate(-3deg);
 }
 
 #category {
-    margin-top: 15px;
     color: #777;
+    margin-top: 10px;
     font-size: 1.5rem;
     opacity: 0.8;
+    transition: color 1s ease;
+}
+
+#title-container.moved #category{
+    color: #3c0707;
 }
 
 #black-overlay {
@@ -81,55 +94,64 @@ a, button, [role="button"], input[type="submit"], input[type="button"], .answer 
 
 #answers-container {
     position: fixed;
-    top: 60%;
-    left: 40px;
-    transform: translateY(-50%);
+    top: 67.5%;
+    left: 135px;
+    transform: translateY(-50%) rotate(-3deg);
     opacity: 0;
     transition: opacity 1s ease;
     text-align: left;
 }
 
 .answer {
-    width: 1150px !important;
+    mix-blend-mode: multiply;
+    font-family: 'Typewriter', 'sans-serif';
+    color: black;
+    width: 965px !important;
     text-align: center;
-    outline: 2px solid white;
-    background: #343434;
+    outline: 2px solid #000000f8;
+    background: transparent;
     margin: 30px 0;
     padding: 25px;
     opacity: 0;
     transform: translateX(-100px);
     transition: all 0.4s ease;
-    font-size: 2.5rem;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    font-size: 2.15rem;
+    box-shadow: none;
     cursor: pointer;
     transform-origin: left;
+    z-index: 1;
 }
 
 .answer:hover {
-    background: white;
-    color: #333;
-    transform: scale(1.1) translateX(0)!important;
-    z-index: 10;
+    background: #ffffffaa;
+    box-shadow: 12px 12px 2px 1px black;
+    transform: scale(1.025) translateX(0) !important;
 }
 
 .answer.selected {
-    background: white;
+    background: #ffffffaa;
     color: #a855f7;
     outline: 2px solid #a855f7;
 }
 
+.answer.selected:hover {
+    box-shadow: 12px 12px 2px 1px #452265;
+}
+
 .answer.correct {
-    background: #bf9b30;
-    color: white;
-    outline: 2px solid white;
-    transform: scale(1.2) translateX(0)!important;
+    outline: 2px solid #3f330f;
+    color: #ffffff;
+    background: linear-gradient(135deg, #bf9b30, #e6c35c, #bf9b30);
+    box-shadow: 12px 12px 2px 1px #3f330f;
+    transform: scale(1.025) translateX(0) !important;
 }
 
 .answer.wrong {
-    background-color: red;
-    color: white;
-    outline: 2px solid white;
     opacity: 0.5!important;
+    pointer-events: none;
+    outline: none;
+    color: #ffffff;
+    background: #2c2c2c;
 }
 
 #timer-container {
