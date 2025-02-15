@@ -26,7 +26,6 @@ body {
     background: linear-gradient(to bottom right, #f43f5e, #a855f7, #3b82f6, #10b981);
     padding: 1.5rem;
     background-attachment: fixed;
-    height: 100%;
     cursor: url('/static/images/pointer.png'), auto !important;
 }
 
@@ -34,7 +33,7 @@ a, button, label, span, [role="button"], input[type="submit"], input[type="butto
     cursor: url('/static/images/pointer.png'), pointer !important;
 }
 
-input[type="text"], textarea, [contenteditable] , input[type="password"]{
+input[type="text"], textarea, [contenteditable], input[type="password"] {
     cursor: url('/static/images/pointer.png'), text !important;
 }
 
@@ -57,10 +56,8 @@ a {
     width: 200%;
     height: 200vh;
     background: transparent url('http://assets.iceable.com/img/noise-transparent.png') repeat 0 0;
-    background-repeat: repeat;
     animation: bg-animation .2s infinite;
     opacity: .8;
-    visibility: visible;
 }
 
 @keyframes bg-animation {
@@ -129,7 +126,7 @@ a {
     right: 1rem;
 }
 
-.share-control{
+.share-control {
     right: 4.5rem;
 }
 
@@ -164,8 +161,7 @@ a {
     background: white;
 }
 
-.game-button:hover,
-.game-button.active {
+.game-button:hover, .game-button.active {
     transform: scale(1.05);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     border-color: #a855f7;
@@ -265,13 +261,6 @@ a {
 
 .show-static {
     animation: showStatic 1s ease-out forwards;
-}
-
-/* Animations de contenu */
-.preview-content.switching,
-.preview-image.switching {
-    opacity: 0;
-    transition: opacity 0.1s;
 }
 
 /* Styles pour la page de création de lobby */
@@ -468,7 +457,6 @@ input:checked + .slider:before {
 }
 
 /* Avatar */
-
 .profile-selector {
     position: relative;
     display: flex;
@@ -551,17 +539,6 @@ input:checked + .slider:before {
 
 .nav-button.next {
     right: 32px;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 /* Styles spécifiques aux crédits */
@@ -665,6 +642,7 @@ input:checked + .slider:before {
 .tech-svg.html { fill: #E34F26; }
 .tech-svg.css { fill: #1572B6; }
 .tech-svg.js { fill: #F7DF1E; }
+.tech-svg.socket {fill: #010101;}
 
 .tech-name {
     font-size: 0.875rem;
@@ -696,17 +674,6 @@ input:checked + .slider:before {
     background: #f9fafb;
     border-radius: 0.5rem;
     animation: fadeUp 0.5s ease-out;
-}
-
-@keyframes fadeUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 @media (max-width: 768px) {
@@ -845,7 +812,7 @@ input:checked + .slider:before {
     overflow-y: auto;
 }
 
-.no-lobbies p{
+.no-lobbies p {
     color: #4b5563;
     text-align: center;
 }
@@ -983,7 +950,7 @@ input:checked + .slider:before {
 }
 
 .modal-content {
-    display:grid;
+    display: grid;
     justify-content: center;
     align-items: center;
     margin-bottom: 2rem;
@@ -1112,45 +1079,115 @@ input:checked + .slider:before {
     align-items: center;
     z-index: 9999;
     flex-direction: column;
-  }
-  /* Style de l'animation du chiffre */
-  @keyframes countdownAnimation {
+}
+
+/* Style de l'animation du chiffre */
+@keyframes countdownAnimation {
     0% {
-      transform: scale(0.5);
-      opacity: 0;
+        transform: scale(0.5);
+        opacity: 0;
     }
     20% {
-      transform: scale(1.5);
-      opacity: 1;
+        transform: scale(1.5);
+        opacity: 1;
     }
     60% {
-      transform: scale(1);
-      opacity: 1;
+        transform: scale(1);
+        opacity: 1;
     }
     100% {
-      transform: scale(0.5);
-      opacity: 0;
+        transform: scale(0.5);
+        opacity: 0;
     }
-  }
-  .countdown-number {
+}
+
+.countdown-number {
     text-align: center;
     color: #a855f7;
     font-size: 5rem;
     font-family: 'Boldean', sans-serif;
     animation: countdownAnimation 1s ease-in-out;
     margin: 0;
-  }
-  /* Style du bouton d'annulation de l'overlay */
-  #cancelCountdown {
+}
+
+/* Style du bouton d'annulation de l'overlay */
+#cancelCountdown {
     margin-top: 20px;
     padding: 10px 20px;
     font-size: 1rem;
-  }
-  button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      }
-  button:disabled:hover {
-      transform: scale(1);
-      box-shadow: none;
-  }
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    transform: scale(1);
+    box-shadow: none;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: black;
+}
+
+#modalPassword {
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+}
+
+.lobby-info-more {
+    color: gray;
+    font-weight: lighter;
+}
+
+/* Overlay du lobby */
+.lobby-overlay {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border-radius: 12px;
+    backdrop-filter: blur(5px);
+    display: none; /* Caché par défaut */
+    z-index: 1000;
+}
+
+.lobby-overlay.active {
+    display: block; /* Afficher quand le lobby est actif */
+}
+
+.lobby-members {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.lobby-member {
+    text-align: center;
+}
+
+.lobby-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.lobby-name {
+    display: block;
+    color: white;
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
