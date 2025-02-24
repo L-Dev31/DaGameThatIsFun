@@ -27,7 +27,7 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
      ![image](https://github.com/user-attachments/assets/5c5bbd84-2d7f-49bc-bf27-7493e5676bc0)
 
 
-![object-tales](https://github.com/user-attachments/assets/7eeb9dd4-7bd1-4155-81bf-343ecbae7c59)
+![image](https://github.com/user-attachments/assets/bc585ffe-61fd-4ab1-84e8-85fa4d79fd0a)
    - **Description** : Devenez le maître du récit ! Inventez l'histoire la plus drôle ou intrigante à propos d'un objet étrange. Parviendrez-vous à captiver le public avec votre imagination débordante ?
    - **Nombre de joueurs** : 4 à 8
    - **Objectif** : Créez l'histoire la plus originale et amusez vos amis avec vos idées farfelues !
