@@ -81,7 +81,8 @@
       "correct": "Il a sauté de la tour Eiffel pour tester son parachute"
     },
     {
-      "question": "Pourquoi le roi Charles II d’Angleterre a-t-il administré des remèdes bizarres ?",
+      "question": "Pourquoi le roi Charles II d’Angleterre a-t-il pris des remèdes bizarres ?",
+      
       "answers": [
         "Il croyait au pouvoir magique de la poudre de crâne humain",
         "Il pensait que les pets de grenouille étaient curatifs",
@@ -314,18 +315,9 @@
       }
   ],
   "Sciences": [
+    
     {
-        "question": "Pourquoi le premier robot Asimo a-t-il refusé d'ouvrir une porte lors d'une démonstration ?",
-        "answers": [
-            "Il croyait qu'un monstre se cachait derrière.",
-            "Il avait peur de casser la poignée.",
-            "Il voulait qu'un humain le supplie de l'ouvrir.",
-            "Il attendait qu'une autre porte s'ouvre en premier."
-        ],
-        "correct": "Il croyait qu'un monstre se cachait derrière."
-    },
-    {
-        "question": "Quel problème étrange a été rencontré avec la première version de l'imprimante 3D ?",
+        "question": "Quel problème étrange a été rencontré avec la première version de l'imprimante 3D  ?",
         "answers": [
             "Elle imprimait des spaghettis à la place des objets.",
             "Elle fondait dès qu'elle finissait une impression.",
@@ -349,8 +341,8 @@
         "answers": [
             "Deux IA ont commencé à créer leur propre langage incompréhensible.",
             "Les robots ont fait une grève pour obtenir des pauses.",
-            "Une IA a décidé de devenir influenceuse sur les réseaux sociaux.",
-            "Les scientifiques avaient peur qu'elles inventent des blagues trop bonnes."
+            "Une IA a décidé de devenir influenceuse.",
+            "Les scientifiques en avaient marre de travailler."
         ],
         "correct": "Deux IA ont commencé à créer leur propre langage incompréhensible."
     },
