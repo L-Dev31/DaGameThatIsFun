@@ -7,16 +7,16 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
 ## 🎲 **Modes de Jeu Disponibles**
 
 ![quiz-rush](https://github.com/user-attachments/assets/0b42fa8c-9759-46b4-8d25-8740845c1ce1)
+![image](https://github.com/user-attachments/assets/5c5bbd84-2d7f-49bc-bf27-7493e5676bc0)
    - **Description** : Pensez vite ! Répondez à des questions originales dans ce quiz effréné. Plus vous répondez vite, plus vous marquez de points – mais méfiez-vous des questions pièges !
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Soyez le plus rapide et le plus malin pour remporter la victoire !
-     ![image](https://github.com/user-attachments/assets/5c5bbd84-2d7f-49bc-bf27-7493e5676bc0)
 
 ![image](https://github.com/user-attachments/assets/97617ad2-47d1-4123-bdd1-84cbd345462e)
+![image](https://github.com/user-attachments/assets/d91cc9ef-1d3b-41bd-b4b6-ebe940e2e8e5)
    - **Description** : Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence !
    - **Nombre de joueurs** : 4 à 8
    - **Objectif** : Dessinez ce qui vous est demandé et votez pour le meilleur (ou le pire) dessin !
-     ![image](https://github.com/user-attachments/assets/d91cc9ef-1d3b-41bd-b4b6-ebe940e2e8e5)
 
 
 ![image](https://github.com/user-attachments/assets/bc585ffe-61fd-4ab1-84e8-85fa4d79fd0a)
@@ -25,10 +25,10 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
    - **Objectif** : Créez l'histoire la plus originale et amusez vos amis avec vos idées farfelues !
 
 ![image](https://github.com/user-attachments/assets/5ef85ce5-9047-4554-9872-a70cb5c52103)
+![image](https://github.com/user-attachments/assets/dbf98800-3f49-4231-935c-26a006f583f8)
    - **Description** : Montrez vos talents artistiques ! Un joueur dessine pendant que les autres se dépêchent de deviner le mot. Votre chef-d'œuvre sera-t-il compris ou hilaramment mal interprété ?
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Devinez le mot le plus vite possible ou soyez celui qui fait rire tout le monde avec vos dessins !
-     ![image](https://github.com/user-attachments/assets/dbf98800-3f49-4231-935c-26a006f583f8)
 
 ---
 
