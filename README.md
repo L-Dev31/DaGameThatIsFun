@@ -10,6 +10,8 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
    - **Description** : Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence !
    - **Nombre de joueurs** : 4 à 8
    - **Objectif** : Dessinez ce qui vous est demandé et votez pour le meilleur (ou le pire) dessin !
+     ![image](https://github.com/user-attachments/assets/d91cc9ef-1d3b-41bd-b4b6-ebe940e2e8e5)
+
 
 ![image](https://github.com/user-attachments/assets/5ef85ce5-9047-4554-9872-a70cb5c52103)
    - **Description** : Montrez vos talents artistiques ! Un joueur dessine pendant que les autres se dépêchent de deviner le mot. Votre chef-d'œuvre sera-t-il compris ou hilaramment mal interprété ?
