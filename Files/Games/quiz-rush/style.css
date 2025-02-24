@@ -321,15 +321,5 @@
     color: #262626 !important;
     font-weight: bold;
     font-family: 'Typewriter', 'sans-serif';
-    animation: fadeIn 0.5s ease-out;
     font-size: 7.5vh;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
 }

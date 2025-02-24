@@ -2,29 +2,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const startButton = document.getElementById('start-button');
     const backgroundMusic = document.getElementById('background-music');
     const playersContainer = document.getElementById('players-container');
-
-    let playersClicked = 0; // Compteur pour suivre le nombre de joueurs ayant cliqué
-
+    let playersClicked = 0;
     startButton.addEventListener('click', () => {
-        // Désactiver et rendre le bouton opaque
         startButton.disabled = true;
-        startButton.style.opacity = '0.8';
-
-        // Ajouter le joueur 1 au conteneur des joueurs
         addPlayerToContainer(0);
         playersClicked++;
-
-        // Simuler l'appui sur le bouton pour les autres joueurs
         for (let i = 1; i < players.length; i++) {
             setTimeout(() => {
                 addPlayerToContainer(i);
                 playersClicked++;
-
-                // Démarrer le jeu une fois que tous les joueurs ont cliqué
                 if (playersClicked === players.length) {
                     startButton.style.display = 'none';
-
-                    // Afficher un message ou un compte à rebours (optionnel)
                     const countdownDiv = document.createElement('div');
                     countdownDiv.id = 'countdown';
                     countdownDiv.style.position = 'fixed';
@@ -35,19 +23,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     countdownDiv.style.color = 'white';
                     countdownDiv.style.zIndex = '1000';
                     document.body.appendChild(countdownDiv);
-
                     let countdown = 5;
                     countdownDiv.textContent = `La partie commence dans ${countdown} secondes...`;
-
                     const countdownInterval = setInterval(() => {
                         countdown--;
                         countdownDiv.textContent = `La partie commence dans ${countdown} secondes...`;
-
                         if (countdown <= 0) {
                             clearInterval(countdownInterval);
                             countdownDiv.remove();
-
-                            // Démarrer la partie après 5 secondes
                             backgroundMusic.play().catch(error => {
                                 console.error("Erreur lors de la lecture de la musique :", error);
                             });
@@ -57,15 +40,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     }, 1000);
                 }
-            }, (i * (Math.random() * 1000 + 1000))); // Délai aléatoire entre 1 et 2 secondes
+            }, (i * (Math.random() * 1000 + 1000)));
         }
     });
 });
-
 function addPlayerToContainer(playerIndex) {
     const playersContainer = document.getElementById('players-container');
     const player = players[playerIndex];
-
     const playerDiv = document.createElement('div');
     playerDiv.className = 'player';
     playerDiv.innerHTML = `
@@ -78,7 +59,6 @@ function addPlayerToContainer(playerIndex) {
     playersContainer.appendChild(playerDiv);
     playSelectSound();
 }
-
 const players = [
     { name: "Jean-Jaquelino", score: 0, avatar: '/static/images/avatar/1.png' },
     { name: "George-Paulin", score: 0, avatar: '/static/images/avatar/2.png' },
@@ -89,13 +69,12 @@ const players = [
     { name: "Eve",           score: 0, avatar: '/static/images/avatar/7.png' },
     { name: "Frank",         score: 0, avatar: '/static/images/avatar/8.png' }
 ];
-
 let selectedAnswer = null;
 let usedQuestions = [];
 let currentQuestionIndex = 0;
 let quizData = null;
 let fakePlayersPicked = {};
-
+let questionStartTime = null;
 function renderPlayers() {
     const container = document.getElementById('players-container');
     container.innerHTML = '';
@@ -112,7 +91,6 @@ function renderPlayers() {
         container.appendChild(playerDiv);
     });
 }
-
 function updateScores() {
     const playerContainers = document.querySelectorAll('#players-container .player');
     playerContainers.forEach((container, index) => {
@@ -120,14 +98,12 @@ function updateScores() {
         scoreElement.textContent = players[index].score;
     });
 }
-
 function updateMarkerPositions(answerElement) {
     const markers = answerElement.querySelectorAll('.player-marker');
     markers.forEach((marker, index) => {
         marker.style.right = (5 + index * 45) + 'px';
     });
 }
-
 function addPlayerMarker(answerElement, playerIndex) {
     let existing = answerElement.querySelector(`.player-marker[data-player-index="${playerIndex}"]`);
     if (!existing) {
@@ -135,12 +111,12 @@ function addPlayerMarker(answerElement, playerIndex) {
         marker.src = players[playerIndex].avatar;
         marker.className = 'player-marker';
         marker.dataset.playerIndex = playerIndex;
+        marker.dataset.responseTime = ((Date.now() - questionStartTime) / 1000).toString();
         answerElement.appendChild(marker);
         playSelectSound();
     }
     updateMarkerPositions(answerElement);
 }
-
 function userSelectAnswer(answerElement) {
     if (selectedAnswer && selectedAnswer !== answerElement) {
         selectedAnswer.classList.remove('selected');
@@ -151,14 +127,12 @@ function userSelectAnswer(answerElement) {
     answerElement.classList.add('selected');
     addPlayerMarker(answerElement, 0);
 }
-
 function playSelectSound() {
     const selectSound = new Audio('/static/music/select.mp3');
     selectSound.play().catch(error => {
         console.error("Erreur lors de la lecture du son :", error);
     });
 }
-
 function createAnswerElement(answerText) {
     const answerDiv = document.createElement('div');
     answerDiv.className = 'answer';
@@ -168,7 +142,6 @@ function createAnswerElement(answerText) {
     });
     return answerDiv;
 }
-
 async function loadQuiz() {
     const response = await fetch('quiz-list.json');
     const data = await response.json();
@@ -183,7 +156,6 @@ async function loadQuiz() {
     const question = questions[randomIndex];
     return { question, category: randomCategory };
 }
-
 function preloadImage(url) {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -192,7 +164,6 @@ function preloadImage(url) {
         img.src = url;
     });
 }
-
 async function initQuiz() {
     if (currentQuestionIndex >= 10) {
         alert("Quiz terminé !");
@@ -227,6 +198,7 @@ async function initQuiz() {
     timerBar.style.transform = 'scaleX(0)';
     timerBar.style.transition = 'none';
     setTimeout(() => {
+        questionStartTime = Date.now();
         titleContainer.classList.add('moved');
         blackOverlay.style.opacity = '0';
         answersContainer.style.opacity = '1';
@@ -243,7 +215,6 @@ async function initQuiz() {
         }, 20000);
     }, 4000);
 }
-
 function simulateFakePlayers() {
     fakePlayersPicked = {};
     const answers = document.querySelectorAll('.answer');
@@ -257,16 +228,29 @@ function simulateFakePlayers() {
         }, delay);
     }
 }
-
 function validateAnswers(correctAnswer) {
     document.querySelectorAll('.answer').forEach(answer => {
         if (answer.textContent.trim() === correctAnswer.trim()) {
             answer.classList.add('correct');
             const markers = answer.querySelectorAll('.player-marker');
             markers.forEach((marker, index) => {
-                let playerIndex = marker.dataset.playerIndex;
+                let playerIndex = parseInt(marker.dataset.playerIndex, 10);
+                let responseTime = parseFloat(marker.dataset.responseTime);
+                if (isNaN(responseTime)) {
+                    responseTime = (Date.now() - questionStartTime) / 1000;
+                }
+                let points = 0;
+                if (responseTime < 2) {
+                    points = 10;
+                } else if (responseTime < 5) {
+                    points = 5;
+                } else if (responseTime < 10) {
+                    points = 2;
+                } else {
+                    points = 1;
+                }
+                players[playerIndex].score += points;
                 setTimeout(() => {
-                    players[playerIndex].score++;
                     showPlusOne(playerIndex);
                 }, index * 300);
             });
@@ -282,7 +266,6 @@ function validateAnswers(correctAnswer) {
         initQuiz();
     }, 5000);
 }
-
 function showPlusOne(playerIndex) {
     const playerContainers = document.querySelectorAll('#players-container .player');
     const container = playerContainers[playerIndex];
