@@ -19,7 +19,7 @@
                 <span class="drawer-name">John dessine...</span>
                 
                 <div class="game-info">
-                    <div class="word-display" id="wordDisplay">Mot à dessiner: <span>Inde</span></div>
+                    <div id="wordDisplay"><span></span></div>
                     <div class="timer" id="timer">30</div>
                 </div>
             </div>
@@ -69,14 +69,20 @@
             </div>
         </section>
 
-        <section class="chat-section">
-            <div class="chat-messages" id="chatMessages">
-                <div class="message">DEVINEZ VITE</div>
-            </div>
-            <div class="chat-input">
-                <input type="text" placeholder="Une idée ? Écris-la vite !" id="chatInput">
-            </div>
-        </section>
+        <div class="side-section">
+            <section class="chat-section">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message">DEVINEZ VITE</div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" placeholder="Une idée ? Écris-la vite !" id="chatInput">
+                </div>
+            </section>
+
+            <section class="players-section">
+                <div id="players-container"></div>
+            </section>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
