@@ -25,7 +25,7 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
    - **Objectif** : Créez l'histoire la plus originale et amusez vos amis avec vos idées farfelues !
 
 # **Gribouilles & Embrouilles**
-![image](https://github.com/user-attachments/assets/64051261-4024-4515-a2c3-6ed33c5c2bec)
+![image](https://github.com/user-attachments/assets/f1ac38e3-7126-402a-9d25-6c80e47cf91a)
    - **Description** : Montrez vos talents artistiques ! Un joueur dessine pendant que les autres se dépêchent de deviner le mot. Votre chef-d'œuvre sera-t-il compris ou hilaramment mal interprété ?
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Devinez le mot le plus vite possible ou soyez celui qui fait rire tout le monde avec vos dessins !
