@@ -6,7 +6,7 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
 
 ## 🎲 **Modes de Jeu Disponibles**
 
-![draw-contest](https://github.com/user-attachments/assets/c41e81ed-81a5-47da-9bc4-3599c3a0e863)
+![image](https://github.com/user-attachments/assets/97617ad2-47d1-4123-bdd1-84cbd345462e)
    - **Description** : Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence !
    - **Nombre de joueurs** : 4 à 8
    - **Objectif** : Dessinez ce qui vous est demandé et votez pour le meilleur (ou le pire) dessin !
