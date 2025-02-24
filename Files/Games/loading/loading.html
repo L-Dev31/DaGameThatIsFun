@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chargement...</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="loading-screen">
+        <img id="loading-image" src="" alt="Loading...">
+    </div>
+
+    <div id="video-popup-overlay" class="modal-overlay">
+        <div class="modal-container">
+            <h2 class="modal-title">Vidéo de présentation</h2>
+            <div class="modal-content">
+                <p>Voulez-vous voir la vidéo de présentation du jeu ?</p>
+            </div>
+            <div class="modal-buttons">
+                <button id="yes-button" class="modal-button modal-button-primary">Oui</button>
+                <button id="no-button" class="modal-button modal-button-secondary">Non</button>
+            </div>
+        </div>
+    </div>
+
+    <video id="intro-video" controls autoplay muted style="display: none;">
+        <source id="video-source" src="" type="video/mp4">
+        Votre navigateur ne supporte pas la vidéo.
+    </video>
+
+    <script src="script.js"></script>
+</body>
+</html>

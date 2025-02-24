@@ -8,41 +8,13 @@
     <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
 </head>
 <body>
-    <!-- Vidéo d'arrière-plan -->
     <video id="video-bg" autoplay muted loop>
-        <source src="images/PatternBG.mp4" type="video/mp4">
+        <source src="images/BG.mp4" type="video/mp4">
         Votre navigateur ne supporte pas la vidéo.
     </video>
 
-    <!-- Image de catégorie superposée -->
     <div id="category-overlay"></div>
 
-    <!-- Écran de chargement -->
-    <div id="loading-screen">
-        <img src="images/loadImage.gif" alt="Loading...">
-    </div>
-
-    <!-- Popup pour demander si l'utilisateur veut voir la vidéo -->
-    <div id="video-popup-overlay" class="modal-overlay">
-        <div class="modal-container">
-            <h2 class="modal-title">Vidéo de présentation</h2>
-            <div class="modal-content">
-                <p>Voulez-vous voir la vidéo de présentation du jeu ?</p>
-            </div>
-            <div class="modal-buttons">
-                <button id="yes-button" class="modal-button modal-button-primary">Oui</button>
-                <button id="no-button" class="modal-button modal-button-secondary">Non</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Lecteur vidéo -->
-    <video id="intro-video" controls autoplay muted style="display: none;">
-        <source src="images/intro.mp4" type="video/mp4">
-        Votre navigateur ne supporte pas la vidéo.
-    </video>
-
-    <!-- Contenu du quiz (masqué au départ) -->
     <div id="quiz-content" style="display: none;">
         <div class="overlay-gradient"></div>
         <div id="black-overlay"></div>
@@ -56,7 +28,15 @@
         </div>
     </div>
 
-    
+    <div id="players-container"></div>
+
+    <audio id="background-music" loop>
+        <source src="/static/music/quiz-rush.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'élément audio.
+    </audio>
+
+    <button id="start-button">Commencer !</button>
+
     <script src="script.js"></script>
 </body>
 </html>
