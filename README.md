@@ -15,11 +15,15 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
    - **Description** : Montrez vos talents artistiques ! Un joueur dessine pendant que les autres se dépêchent de deviner le mot. Votre chef-d'œuvre sera-t-il compris ou hilaramment mal interprété ?
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Devinez le mot le plus vite possible ou soyez celui qui fait rire tout le monde avec vos dessins !
+     ![image](https://github.com/user-attachments/assets/dbf98800-3f49-4231-935c-26a006f583f8)
+
 
 ![quiz-rush](https://github.com/user-attachments/assets/0b42fa8c-9759-46b4-8d25-8740845c1ce1)
    - **Description** : Pensez vite ! Répondez à des questions originales dans ce quiz effréné. Plus vous répondez vite, plus vous marquez de points – mais méfiez-vous des questions pièges !
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Soyez le plus rapide et le plus malin pour remporter la victoire !
+     ![image](https://github.com/user-attachments/assets/5c5bbd84-2d7f-49bc-bf27-7493e5676bc0)
+
 
 ![object-tales](https://github.com/user-attachments/assets/7eeb9dd4-7bd1-4155-81bf-343ecbae7c59)
    - **Description** : Devenez le maître du récit ! Inventez l'histoire la plus drôle ou intrigante à propos d'un objet étrange. Parviendrez-vous à captiver le public avec votre imagination débordante ?
