@@ -24,8 +24,8 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
    - **Nombre de joueurs** : 4 à 8
    - **Objectif** : Créez l'histoire la plus originale et amusez vos amis avec vos idées farfelues !
 
-![image](https://github.com/user-attachments/assets/5ef85ce5-9047-4554-9872-a70cb5c52103)
-![image](https://github.com/user-attachments/assets/dbf98800-3f49-4231-935c-26a006f583f8)
+# **Gribouilles & Embrouilles**
+![image](https://github.com/user-attachments/assets/64051261-4024-4515-a2c3-6ed33c5c2bec)
    - **Description** : Montrez vos talents artistiques ! Un joueur dessine pendant que les autres se dépêchent de deviner le mot. Votre chef-d'œuvre sera-t-il compris ou hilaramment mal interprété ?
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Devinez le mot le plus vite possible ou soyez celui qui fait rire tout le monde avec vos dessins !
