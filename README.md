@@ -6,8 +6,7 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
 
 ## 🎲 **Modes de Jeu Disponibles**
 
-![quiz-rush](https://github.com/user-attachments/assets/0b42fa8c-9759-46b4-8d25-8740845c1ce1)
-![image](https://github.com/user-attachments/assets/5c5bbd84-2d7f-49bc-bf27-7493e5676bc0)
+![image](https://github.com/user-attachments/assets/caecaf7c-abb0-44a2-a37d-6bde8081d5b7)
    - **Description** : Pensez vite ! Répondez à des questions originales dans ce quiz effréné. Plus vous répondez vite, plus vous marquez de points – mais méfiez-vous des questions pièges !
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Soyez le plus rapide et le plus malin pour remporter la victoire !
