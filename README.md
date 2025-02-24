@@ -11,7 +11,7 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
    - **Nombre de joueurs** : 4 à 8
    - **Objectif** : Dessinez ce qui vous est demandé et votez pour le meilleur (ou le pire) dessin !
 
-![pictionary](https://github.com/user-attachments/assets/9b916380-0aa5-437a-b36a-fde3ca097894)
+![image](https://github.com/user-attachments/assets/5ef85ce5-9047-4554-9872-a70cb5c52103)
    - **Description** : Montrez vos talents artistiques ! Un joueur dessine pendant que les autres se dépêchent de deviner le mot. Votre chef-d'œuvre sera-t-il compris ou hilaramment mal interprété ?
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Devinez le mot le plus vite possible ou soyez celui qui fait rire tout le monde avec vos dessins !
