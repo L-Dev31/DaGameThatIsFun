@@ -6,12 +6,13 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
 
 ## 🎲 **Modes de Jeu Disponibles**
 
-**Quiz Rush**
+# **Quiz Rush**
 ![image](https://github.com/user-attachments/assets/caecaf7c-abb0-44a2-a37d-6bde8081d5b7)
    - **Description** : Pensez vite ! Répondez à des questions originales dans ce quiz effréné. Plus vous répondez vite, plus vous marquez de points – mais méfiez-vous des questions pièges !
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Soyez le plus rapide et le plus malin pour remporter la victoire !
 
+# **Dessine moi un Désastre**
 ![image](https://github.com/user-attachments/assets/97617ad2-47d1-4123-bdd1-84cbd345462e)
 ![image](https://github.com/user-attachments/assets/d91cc9ef-1d3b-41bd-b4b6-ebe940e2e8e5)
    - **Description** : Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence !
