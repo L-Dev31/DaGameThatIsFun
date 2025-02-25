@@ -57,7 +57,7 @@ function addPlayerToContainer(playerIndex) {
         </div>
     `;
     playersContainer.appendChild(playerDiv);
-    playSelectSound();
+    playPopSound();
 }
 const players = [
     { name: "Jean-Jaquelino", score: 0, avatar: '/static/images/avatar/1.png' },
@@ -113,7 +113,7 @@ function addPlayerMarker(answerElement, playerIndex) {
         marker.dataset.playerIndex = playerIndex;
         marker.dataset.responseTime = ((Date.now() - questionStartTime) / 1000).toString();
         answerElement.appendChild(marker);
-        playSelectSound();
+        playPopSound();
     }
     updateMarkerPositions(answerElement);
 }
@@ -127,8 +127,8 @@ function userSelectAnswer(answerElement) {
     answerElement.classList.add('selected');
     addPlayerMarker(answerElement, 0);
 }
-function playSelectSound() {
-    const selectSound = new Audio('/static/music/select.mp3');
+function playPopSound() {
+    const selectSound = new Audio('/static/music/pop.mp3');
     selectSound.play().catch(error => {
         console.error("Erreur lors de la lecture du son :", error);
     });
