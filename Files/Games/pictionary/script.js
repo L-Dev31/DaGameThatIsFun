@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let redoStack = [];
     let lastX, lastY;
     let canvasRect;
+    let backgroundMusic; // Variable pour la musique de fond
 
     const players = [
         { name: "Jean-Jaquelino", score: 0, avatar: '/static/images/avatar/1.png' },
@@ -178,6 +179,11 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => {
             startButton.style.display = 'none';
             addPlayersWithDelay();
+
+            // Démarrer la musique après l'interaction utilisateur
+            if (backgroundMusic) {
+                backgroundMusic.play().catch(error => console.error("Erreur lors de la lecture de la musique :", error));
+            }
         }, 500);
     });
 
@@ -230,14 +236,12 @@ document.addEventListener("DOMContentLoaded", () => {
             if (countdown <= 0) {
                 clearInterval(countdownInterval);
                 countdownDiv.remove();
-                // Faire apparaître les sections de dessin et de chat
                 mainContainer.style.display = 'flex';
                 setTimeout(() => {
                     mainContainer.style.opacity = 1;
                     drawingSection.style.opacity = 1;
                     chatSection.style.opacity = 1;
 
-                    // Désactiver les animations pour les joueurs
                     document.querySelectorAll('.player').forEach(player => {
                         player.style.animation = 'none';
                     });
@@ -248,10 +252,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function startGame() {
+        // Arrêter la musique si elle est déjà en cours
+        stopBackgroundMusic();
+
         initCanvas();
         setupDrawingTools();
         setupChat();
         fetchWords().then(() => startNewRound());
+
+        // Lancer la musique en boucle
+        backgroundMusic = new Audio('music/BG.mp3');
+        backgroundMusic.loop = true;
+        backgroundMusic.play().catch(error => console.error("Erreur lors de la lecture de la musique :", error));
+    }
+
+    function stopBackgroundMusic() {
+        if (backgroundMusic) {
+            backgroundMusic.pause();
+            backgroundMusic.currentTime = 0; // Remettre la musique au début
+        }
     }
 
     function startNewRound() {
@@ -265,8 +284,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         updateDrawerDisplay();
         updateGameState();
+        showDrawerPopup();
 
-        startTimer(30);
+        startTimer(35);
 
         players.forEach((player, index) => {
             if (index !== currentDrawerIndex) {
@@ -310,7 +330,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function checkGuess(guess, player = players[0]) {
         if (guess.toLowerCase() === currentWord.toLowerCase()) {
             player.score++;
-            showPopup(`${player.name} a gagné !`, true);
             currentDrawerIndex = players.indexOf(player);
             startNewRound();
         }
@@ -327,7 +346,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (timeLeft <= 0) {
                 clearInterval(currentTimerInterval);
                 players[currentDrawerIndex].score = Math.max(0, players[currentDrawerIndex].score - 1);
-                showPopup('Temps écoulé !', false);
                 nextDrawer();
             }
         }, 1000);
@@ -338,12 +356,35 @@ document.addEventListener("DOMContentLoaded", () => {
         startNewRound();
     }
 
-    function showPopup(message, isWin) {
+    function showDrawerPopup() {
+        const drawer = players[currentDrawerIndex];
+        
+        const overlay = document.createElement('div');
+        overlay.className = 'popup-overlay';
+        
         const popup = document.createElement('div');
-        popup.className = `popup ${isWin ? 'win' : 'lose'}`;
-        popup.textContent = message;
+        popup.className = 'drawer-popup';
+        popup.innerHTML = `
+            <img src="${drawer.avatar}" alt="${drawer.name}">
+            <div class="username">${drawer.name}</div>
+            <div class="status">dessine...</div>
+        `;
+
+        document.body.appendChild(overlay);
         document.body.appendChild(popup);
-        setTimeout(() => popup.remove(), 3000);
+
+        new Audio('/static/music/swoosh-1.mp3').play().catch(() => {});
+
+        setTimeout(() => {
+            new Audio('/static/music/swoosh-2.mp3').play().catch(() => {});
+            popup.classList.add('slide-out');
+            overlay.style.opacity = '0';
+            
+            setTimeout(() => {
+                popup.remove();
+                overlay.remove();
+            }, 500);
+        }, 3000);
     }
 
     function playPopSound() {

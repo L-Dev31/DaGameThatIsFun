@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const backgroundMusic = document.getElementById('background-music');
     const playersContainer = document.getElementById('players-container');
     let playersClicked = 0;
+    
     startButton.addEventListener('click', () => {
         startButton.disabled = true;
         addPlayerToContainer(0);
@@ -31,9 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (countdown <= 0) {
                             clearInterval(countdownInterval);
                             countdownDiv.remove();
-                            backgroundMusic.play().catch(error => {
-                                console.error("Erreur lors de la lecture de la musique :", error);
-                            });
+                            
                             document.getElementById('quiz-content').style.display = 'block';
                             renderPlayers();
                             initQuiz();
@@ -44,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
 function addPlayerToContainer(playerIndex) {
     const playersContainer = document.getElementById('players-container');
     const player = players[playerIndex];
@@ -59,22 +59,25 @@ function addPlayerToContainer(playerIndex) {
     playersContainer.appendChild(playerDiv);
     playPopSound();
 }
+
 const players = [
     { name: "Jean-Jaquelino", score: 0, avatar: '/static/images/avatar/1.png' },
-    { name: "George-Paulin", score: 0, avatar: '/static/images/avatar/2.png' },
-    { name: "Alice",         score: 0, avatar: '/static/images/avatar/3.png' },
-    { name: "Bob",           score: 0, avatar: '/static/images/avatar/4.png' },
-    { name: "Charlie",       score: 0, avatar: '/static/images/avatar/5.png' },
-    { name: "Diana",         score: 0, avatar: '/static/images/avatar/6.png' },
-    { name: "Eve",           score: 0, avatar: '/static/images/avatar/7.png' },
-    { name: "Frank",         score: 0, avatar: '/static/images/avatar/8.png' }
+    { name: "Lucette-Albert", score: 0, avatar: '/static/images/avatar/2.png' },
+    { name: "George-Paulin", score: 0, avatar: '/static/images/avatar/3.png' },
+    { name: "Bob XVII", score: 0, avatar: '/static/images/avatar/4.png' },
+    { name: "L'Enclume", score: 0, avatar: '/static/images/avatar/5.png' },
+    { name: "Jean-Paulon", score: 0, avatar: '/static/images/avatar/6.png' },
+    { name: "⎍⋔ ⎍ ⏃⋔⟒", score: 0, avatar: '/static/images/avatar/7.png' },
+    { name: "Bob", score: 0, avatar: '/static/images/avatar/8.png' }
 ];
+
 let selectedAnswer = null;
 let usedQuestions = [];
 let currentQuestionIndex = 0;
 let quizData = null;
 let fakePlayersPicked = {};
 let questionStartTime = null;
+
 function renderPlayers() {
     const container = document.getElementById('players-container');
     container.innerHTML = '';
@@ -91,6 +94,7 @@ function renderPlayers() {
         container.appendChild(playerDiv);
     });
 }
+
 function updateScores() {
     const playerContainers = document.querySelectorAll('#players-container .player');
     playerContainers.forEach((container, index) => {
@@ -98,12 +102,14 @@ function updateScores() {
         scoreElement.textContent = players[index].score;
     });
 }
+
 function updateMarkerPositions(answerElement) {
     const markers = answerElement.querySelectorAll('.player-marker');
     markers.forEach((marker, index) => {
         marker.style.right = (5 + index * 45) + 'px';
     });
 }
+
 function addPlayerMarker(answerElement, playerIndex) {
     let existing = answerElement.querySelector(`.player-marker[data-player-index="${playerIndex}"]`);
     if (!existing) {
@@ -117,6 +123,7 @@ function addPlayerMarker(answerElement, playerIndex) {
     }
     updateMarkerPositions(answerElement);
 }
+
 function userSelectAnswer(answerElement) {
     if (selectedAnswer && selectedAnswer !== answerElement) {
         selectedAnswer.classList.remove('selected');
@@ -127,12 +134,14 @@ function userSelectAnswer(answerElement) {
     answerElement.classList.add('selected');
     addPlayerMarker(answerElement, 0);
 }
+
 function playPopSound() {
     const selectSound = new Audio('/static/music/pop.mp3');
     selectSound.play().catch(error => {
         console.error("Erreur lors de la lecture du son :", error);
     });
 }
+
 function createAnswerElement(answerText) {
     const answerDiv = document.createElement('div');
     answerDiv.className = 'answer';
@@ -142,6 +151,7 @@ function createAnswerElement(answerText) {
     });
     return answerDiv;
 }
+
 async function loadQuiz() {
     const response = await fetch('quiz-list.json');
     const data = await response.json();
@@ -156,6 +166,7 @@ async function loadQuiz() {
     const question = questions[randomIndex];
     return { question, category: randomCategory };
 }
+
 function preloadImage(url) {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -164,6 +175,7 @@ function preloadImage(url) {
         img.src = url;
     });
 }
+
 async function initQuiz() {
     if (currentQuestionIndex >= 10) {
         alert("Quiz terminé !");
@@ -197,7 +209,15 @@ async function initQuiz() {
     const timerBar = document.getElementById('timer-bar');
     timerBar.style.transform = 'scaleX(0)';
     timerBar.style.transition = 'none';
+    
+    // Après un délai, le timer démarre et la musique BG est jouée
     setTimeout(() => {
+        const backgroundMusic = document.getElementById('background-music');
+        backgroundMusic.currentTime = 0;
+        backgroundMusic.play().catch(error => {
+            console.error("Erreur lors de la lecture de la musique :", error);
+        });
+        
         questionStartTime = Date.now();
         titleContainer.classList.add('moved');
         blackOverlay.style.opacity = '0';
@@ -215,6 +235,7 @@ async function initQuiz() {
         }, 20000);
     }, 4000);
 }
+
 function simulateFakePlayers() {
     fakePlayersPicked = {};
     const answers = document.querySelectorAll('.answer');
@@ -228,6 +249,7 @@ function simulateFakePlayers() {
         }, delay);
     }
 }
+
 function validateAnswers(correctAnswer) {
     document.querySelectorAll('.answer').forEach(answer => {
         if (answer.textContent.trim() === correctAnswer.trim()) {
@@ -266,6 +288,7 @@ function validateAnswers(correctAnswer) {
         initQuiz();
     }, 5000);
 }
+
 function showPlusOne(playerIndex) {
     const playerContainers = document.querySelectorAll('#players-container .player');
     const container = playerContainers[playerIndex];
