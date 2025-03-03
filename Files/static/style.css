@@ -161,7 +161,15 @@ a {
     background: white;
 }
 
-.game-button:hover, .game-button.active {
+.game-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none; 
+    transform: scale(1);
+    border-color: #e5e7eb;
+}
+
+.game-button:not(:disabled):hover, .game-button:not(:disabled):hover.active {
     transform: scale(1.05);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     border-color: #a855f7;
@@ -174,7 +182,7 @@ a {
     transition: transform 0.3s;
 }
 
-.game-button:hover .game-logo {
+.game-button:not(:disabled):hover .game-logo {
     transform: scale(1.1);
 }
 

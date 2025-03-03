@@ -180,7 +180,7 @@ function preloadImage(url) {
 }
 
 async function initQuiz() {
-    if (currentQuestionIndex >= 1) {
+    if (currentQuestionIndex >= 5) {
         preloadCurtains();
         showEndGameCurtains(players);
         return;

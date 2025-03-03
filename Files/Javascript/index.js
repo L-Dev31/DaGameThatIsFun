@@ -40,7 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
             description: 'Devenez le maître du récit ! Inventez l\'histoire la plus drôle ou intrigante à propos d\'un objet étrange. Parviendrez-vous à captiver le public avec votre imagination débordante ?',
             preview: '/static/images/preview/object-tales.png',
             music: '/static/music/object-tales.mp3',
-            playerNumber: "4-8"
+            playerNumber: "4-8",
+            disabled: true
         }
     };
 
@@ -110,6 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     gameButtons.forEach(button => {
         button.addEventListener('click', () => {
+            if (button.disabled) return;
+
             const gameId = button.dataset.game;
             changeGamePreview(gameId);
 
