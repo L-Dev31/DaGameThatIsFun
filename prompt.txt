@@ -1,0 +1,995 @@
+Analyse en très profonde précision comment le jeux DaGameThatIsFun Fonctionne:
+
+app.py:
+
+#Créé par Léo TOSKU | 2024-2025
+import os
+import time
+import threading
+import webbrowser
+from colorama import Fore, Style, init
+from System.server import run_server
+from System.utils import cleanup_inactive_lobbies
+from System.lobby import active_sessions
+
+init(autoreset=True)
+
+DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Files"))
+
+if __name__ == "__main__":
+    print(Fore.GREEN + "✅ Dossier des fichiers statiques prêt.")
+
+    cleanup_thread = threading.Thread(target=cleanup_inactive_lobbies, args=(active_sessions,), daemon=True)
+    cleanup_thread.start()  # Nettoie les lobbys inactifs
+    print(Fore.GREEN + "✅ Nettoyage des lobbys démarré.")
+
+    server_thread = threading.Thread(target=run_server, daemon=True)
+    server_thread.start()  # Démarre le serveur local sur le port du PC
+    print(Fore.GREEN + "✅ Serveur HTTP lancé sur le port 8000.")
+
+    webbrowser.open(f"http://localhost:8000")  # Ouvre le navigateur
+    print(Fore.GREEN + "\n✅ Navigateur ouvert.")
+
+    print(Fore.CYAN + "\n======================================")
+    print(Fore.CYAN + "Bienvenue sur DA GAME THAT IS FUN !")
+    print(Fore.CYAN + "Appuyez sur " + Fore.YELLOW + "Ctrl+C" + Fore.CYAN + " pour arrêter.")
+    print(Fore.CYAN + "======================================")
+
+    try:
+        while True:  # Boucle pour garder le serveur en vie (ce serait con autrement ptdr)
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print(Fore.RED + "\n⛔ Arrêt du serveur...")
+
+
+lobby.py:
+
+# Codes relatifs au lobbys (serveurs)
+import random
+import string
+import time
+from typing import Dict, Optional
+from System.models import LobbySession, User
+
+active_sessions: Dict[str, LobbySession] = {}
+
+# Codes de Lobby
+def generate_code() -> str:
+    while True:
+        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+        if code not in active_sessions:
+            return code
+
+# Création du lobby
+def create_lobby(player_name: str, password: Optional[str], avatar_index: int, max_players: int, client_ip: str) -> dict:
+    if not player_name:
+        raise ValueError("Le nom du joueur est requis")
+    
+    if max_players not in range(2, 9):
+        raise ValueError("Le nombre de joueurs doit être entre 2 et 8")
+    
+    room_code = generate_code()
+    user_id = str(random.randint(10000, 99999))
+    
+    owner = User(
+        id=user_id,
+        name=player_name,
+        avatar_index=avatar_index,
+        join_time=time.time(),
+        ip_address=client_ip
+    )
+    
+    lobby_session = LobbySession(
+        code=room_code,
+        name=f"Salon de {player_name}",
+        owner=user_id,
+        password=password,
+        users={user_id: owner},
+        created_at=time.time(),
+        max_players=max_players
+    )
+    
+    active_sessions[room_code] = lobby_session
+    
+    return {
+        'success': True,
+        'roomCode': room_code,
+        'userId': user_id,
+        'sessionData': lobby_session.to_dict()
+    }
+
+# Rejoindre le lobby
+def join_lobby(room_code: str, player_name: str, password: Optional[str], avatar_index: int, client_ip: str) -> dict:
+    if not room_code or not player_name:
+        raise ValueError("Le code du salon et le nom du joueur sont requis")
+        
+    if room_code not in active_sessions:
+        raise ValueError("Le salon n'existe pas")
+        
+    lobby = active_sessions[room_code]
+    
+    if lobby.password and lobby.password != password:
+        raise ValueError("Mot de passe incorrect")
+        
+    if len(lobby.users) >= lobby.max_players:
+        raise ValueError("Le salon est plein")
+        
+    user_id = str(random.randint(10000, 99999))
+    new_user = User(
+        id=user_id,
+        name=player_name,
+        avatar_index=avatar_index,
+        join_time=time.time(),
+        ip_address=client_ip
+    )
+    
+    lobby.users[user_id] = new_user
+    
+    return {
+        'success': True,
+        'userId': user_id,
+        'sessionData': lobby.to_dict()
+    }
+
+# Quitter le lobby
+def leave_lobby(room_code: str, user_id: str) -> dict:
+    if not room_code or not user_id:
+        raise ValueError("Le code du salon et l'ID utilisateur sont requis")
+        
+    if room_code not in active_sessions:
+        raise ValueError("Le salon n'existe pas")
+        
+    lobby = active_sessions[room_code]
+    
+    if user_id not in lobby.users:
+        raise ValueError("Utilisateur non trouvé dans le salon")
+        
+    # Si c'est l'host qui part, supprimer le salon
+    if user_id == lobby.owner:
+        del active_sessions[room_code]
+    else:
+        del lobby.users[user_id]
+        
+    return {'success': True}
+
+models.py:
+
+# Classes de "modèles" utilisés par les appels API
+from dataclasses import dataclass
+from typing import Dict, Optional, List
+
+@dataclass
+class User:
+    id: str
+    name: str
+    avatar_index: int
+    join_time: float
+    ip_address: str
+
+@dataclass
+class LobbySession:
+    code: str
+    name: str
+    owner: str
+    password: Optional[str]
+    users: Dict[str, User]
+    created_at: float
+    max_players: int
+    
+    def to_dict(self):
+        return {
+            'code': self.code,
+            'name': self.name,
+            'owner': self.owner,
+            'hasPassword': bool(self.password),
+            'users': {uid: {
+                'id': u.id,
+                'name': u.name,
+                'avatar_index': u.avatar_index,
+                'join_time': u.join_time,
+                'ip_address': u.ip_address
+            } for uid, u in self.users.items()},
+            'created_at': self.created_at,
+            'max_players': self.max_players
+        }
+
+server.py:
+
+import http.server
+import socketserver
+import json
+from typing import Dict
+from System.models import LobbySession
+from System.lobby import active_sessions, create_lobby, join_lobby, leave_lobby
+from System.qr import get_local_ip, generate_qr_code
+
+PORT = 8000
+DIRECTORY = "Files"
+
+class LobbyHandler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=DIRECTORY, **kwargs)
+
+    def send_json_response(self, data, status=200):
+        self.send_response(status)
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+        self.wfile.write(json.dumps(data).encode())
+
+    def send_error_response(self, message, status=400):
+        self.send_json_response({'error': message, 'success': False}, status)
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+
+    def do_POST(self):
+        content_length = int(self.headers.get('Content-Length', 0))
+        if content_length > 0:
+            post_data = json.loads(self.rfile.read(content_length).decode('utf-8'))
+        else:
+            post_data = {}
+            
+        client_ip = self.client_address[0]
+
+        try:
+            if self.path == '/api/lobby/create':
+                response_data = create_lobby(
+                    post_data.get('playerName'),
+                    post_data.get('password'),
+                    post_data.get('avatarIndex', 0),
+                    post_data.get('maxPlayers', 8),
+                    client_ip
+                )
+                self.send_json_response(response_data)
+                
+            elif self.path == '/api/lobby/join':
+                response_data = join_lobby(
+                    post_data.get('roomCode'),
+                    post_data.get('playerName'),
+                    post_data.get('password'),
+                    post_data.get('avatarIndex', 0),
+                    client_ip
+                )
+                self.send_json_response(response_data)
+                
+            elif self.path.startswith('/api/lobby/') and self.path.endswith('/leave'):
+                room_code = self.path.split('/')[-2]
+                response_data = leave_lobby(room_code, post_data.get('userId'))
+                self.send_json_response(response_data)
+                
+            else:
+                self.send_error_response("Endpoint non trouvé", 404)
+                
+        except Exception as e:
+            self.send_error_response(str(e))
+
+    def do_GET(self):
+            try:
+                if self.path == '/get_ip':
+                    # Générer le QR code et le lien
+                    ip = get_local_ip()
+                    port = 8000
+                    qr_code = generate_qr_code(ip, port)  # Retourne l'image en base64
+                    url = f"http://{ip}:{port}"
+
+                    # Renvoyer le lien et le QR code en base64 dans un objet JSON
+                    response_data = {
+                        "url": url,
+                        "qr_code": qr_code  # Déjà en base64
+                    }
+                    self.send_json_response(response_data)
+                elif self.path == '/api/lobbies':
+                    response_data = {
+                        'lobbies': [session.to_dict() for session in active_sessions.values()]
+                    }
+                    self.send_json_response(response_data)
+                elif self.path.startswith('/api/lobby/') and len(self.path.split('/')) == 4:
+                    room_code = self.path.split('/')[-1]
+                    if room_code in active_sessions:
+                        self.send_json_response(active_sessions[room_code].to_dict())
+                    else:
+                        self.send_error_response("Salon non trouvé", 404)
+                else:
+                    super().do_GET()
+            except Exception as e:
+                self.send_error_response(str(e))
+
+    def do_DELETE(self):
+        if self.path.startswith('/api/lobby/delete/'):
+            room_code = self.path.split('/')[-1]
+            
+            if room_code in active_sessions:
+                del active_sessions[room_code]
+                self.send_json_response({'success': True})
+            else:
+                self.send_error_response("Le salon n'existe pas", 404)
+        else:
+            self.send_error_response("Endpoint non trouvé", 404)
+
+def run_server():
+    with socketserver.TCPServer(("", PORT), LobbyHandler) as httpd:
+        print(f"Serveur lancé sur le port {PORT}")
+        print(f"Accédez à http://localhost:{PORT}")
+        httpd.serve_forever()
+
+utils.py:
+
+import time
+from typing import Dict
+from System.models import LobbySession
+
+# Supprime les lobbys inactifs
+def cleanup_inactive_lobbies(active_sessions: Dict[str, LobbySession]):
+    while True:
+        current_time = time.time()
+        to_remove = []
+        
+        for code, lobby in active_sessions.items():
+            if current_time - lobby.created_at > 7200:  # 2 heures en secondes
+                to_remove.append(code)
+                
+        for code in to_remove:
+            del active_sessions[code]
+            
+        time.sleep(300)  
+
+
+waiting_room.html:
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salon d'attente</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/mobile_style.css">
+  <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
+  <style>
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="logo-container">
+    <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
+  </div>
+
+  <div class="container">
+    <div class="waiting-room">
+      <div class="room-info">
+        <h2 class="title">Salon d'attente</h2>
+        <div class="room-code">
+          CODE: <span id="roomCode"></span>
+        </div>
+      </div>
+
+      <div class="players-grid" id="playersGrid">
+        <!-- Les joueurs seront ajoutés ici dynamiquement -->
+      </div>
+
+      <div class="button-container">
+        <button type="button" class="button button-secondary" id="leaveButton">Quitter le salon</button>
+        <button type="button" class="button button-primary" id="startButton" disabled>
+          Lancer la partie (1/8)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmation (pour quitter le salon) -->
+  <div class="modal-overlay" id="confirmationModal">
+    <div class="modal-container">
+      <h2 class="modal-title">Quitter le Salon ?</h2>
+      <div class="modal-content">
+        <p id="modalMessage">Êtes-vous sûr de vouloir quitter le salon ?</p>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-button modal-button-secondary" id="cancelButton">Annuler</button>
+        <button class="modal-button modal-button-primary" id="confirmButton">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay de décompte -->
+  <div class="countdown-overlay" id="countdownOverlay">
+    <div class="countdown-content">
+      <div id="countdownNumber" class="countdown-number">3</div>
+      <button type="button" id="cancelCountdown" class="button button-secondary">Annuler</button>
+    </div>
+  </div>
+
+  <!-- Javascript -->
+  <script src="Javascript/waiting_room.js"></script>
+</body>
+</html>
+
+
+waiting_room.js:
+
+// Variables globales
+let isOwner = false;
+let currentUsers = {};
+const userId = localStorage.getItem('userId');
+const roomCode = localStorage.getItem('roomCode');
+
+if (!roomCode || !userId) {
+    window.location.href = document.referrer || '/';
+}
+
+// Gestion du modal de confirmation pour quitter le salon
+const modal = document.getElementById('confirmationModal');
+const leaveButton = document.getElementById('leaveButton');
+const cancelButton = document.getElementById('cancelButton');
+const confirmButton = document.getElementById('confirmButton');
+const modalMessage = document.getElementById('modalMessage');
+
+function showModal(message, isOwnerLeaving = false) {
+    modalMessage.textContent = message;
+    modal.classList.add('active');
+
+    confirmButton.onclick = () => {
+    if (isOwnerLeaving) {
+        deleteLobby();
+    } else {
+        leaveLobby();
+    }
+    };
+}
+
+function hideModal() {
+    modal.classList.remove('active');
+}
+
+leaveButton.addEventListener('click', () => {
+    const message = isOwner 
+    ? "Attention ! Si vous quittez cette page, le salon sera supprimé. Êtes-vous sûr de vouloir continuer ?"
+    : "Êtes-vous sûr de vouloir quitter le salon ?";
+    showModal(message, isOwner);
+});
+
+cancelButton.addEventListener('click', hideModal);
+modal.addEventListener('click', (e) => {
+    if (e.target === modal) hideModal();
+});
+
+// Mise à jour de l'affichage des joueurs
+function updatePlayersGrid(users, ownerId) {
+    const playersGrid = document.getElementById('playersGrid');
+    playersGrid.innerHTML = '';
+
+    // Trier les utilisateurs : owner en premier, puis par join_time
+    const sortedUsers = Object.values(users).sort((a, b) => {
+    if (a.id === ownerId) return -1;
+    if (b.id === ownerId) return 1;
+    return a.join_time - b.join_time;
+    });
+
+    // Afficher les utilisateurs triés dans la grille
+    for (let i = 0; i < 8; i++) {
+    const playerSlot = document.createElement('div');
+    playerSlot.classList.add('player-slot');
+
+    if (i < sortedUsers.length) {
+        const user = sortedUsers[i];
+        playerSlot.innerHTML = `
+        <div class="player-avatar${user.id === userId ? ' current-player' : ''}">
+            <img src="/static/images/avatar/${user.avatar_index + 1}.png" alt="${user.name}">
+        </div>
+        <span class="waiting-text">
+            <strong>${user.name}</strong>
+            ${user.id === ownerId ? ' 👑' : ''} 
+            ${user.id === userId ? ' (Vous)' : ''}
+        </span>
+        `;
+    } else {
+        playerSlot.innerHTML = `
+        <div class="player-avatar empty">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </div>
+        <span class="waiting-text">En attente...</span>
+        `;
+    }
+    playersGrid.appendChild(playerSlot);
+    }
+}
+
+// Mise à jour du bouton de démarrage
+function updateStartButton(userCount, maxPlayers) {
+    const startButton = document.getElementById('startButton');
+    startButton.textContent = `Lancer la partie (${userCount}/${maxPlayers})`;
+    // Seul le propriétaire avec au moins 2 joueurs peut cliquer sur le bouton
+    startButton.disabled = !isOwner || userCount < 2;
+}
+
+// Mise à jour du salon via l'API
+function updateRoom() {
+    fetch(`/api/lobby/${roomCode}`)
+    .then(response => {
+        if (!response.ok) throw new Error('Lobby not found');
+        return response.json();
+    })
+    .then(data => {
+        isOwner = data.owner === userId;
+        currentUsers = data.users;
+        updatePlayersGrid(data.users, data.owner);
+        updateStartButton(Object.keys(data.users).length, 8);
+    })
+    .catch(err => {
+        console.error('Erreur:', err);
+        if (err.message === 'Lobby not found') {
+        alert('Le salon n\'existe plus !');
+        window.location.href = '/';
+        }
+    });
+}
+
+// Fonctions de gestion du lobby
+async function leaveLobby() {
+    try {
+    await fetch(`/api/lobby/${roomCode}/leave`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+    });
+    localStorage.clear();
+    window.location.href = '/';
+    } catch (err) {
+    console.error('Erreur:', err);
+    window.location.href = '/';
+    }
+}
+
+async function deleteLobby() {
+    try {
+    await fetch(`/api/lobby/delete/${roomCode}`, { method: 'DELETE' });
+    localStorage.clear();
+    window.location.href = '/';
+    } catch (err) {
+    console.error('Erreur:', err);
+    window.location.href = '/';
+    }
+}
+
+// Gestion du décompte avec animation
+const startButton = document.getElementById('startButton');
+const countdownOverlay = document.getElementById('countdownOverlay');
+const countdownNumber = document.getElementById('countdownNumber');
+const cancelCountdown = document.getElementById('cancelCountdown');
+let countdownInterval;
+
+startButton.addEventListener('click', () => {
+    // Ne rien faire si le bouton est désactivé (ce qui sera le cas pour les non-propriétaires)
+    if (startButton.disabled) return;
+
+    // Afficher l'overlay
+    countdownOverlay.style.display = 'flex';
+    let counter = 5;
+    countdownNumber.textContent = counter;
+
+    // Pour chaque chiffre, on recréera l'animation en réaffectant la classe
+    countdownInterval = setInterval(() => {
+    counter--;
+    if (counter < 0) {
+        clearInterval(countdownInterval);
+        // Rediriger TOUS les joueurs vers index.html?lobby=CODE
+        fetch(`/api/lobby/${roomCode}/start`, { method: 'POST' });
+        window.location.href = `index.html?lobby=${roomCode}`;
+    } else {
+        // Remise à zéro de l'animation en retirant puis réappliquant la classe
+        countdownNumber.textContent = counter;
+        countdownNumber.classList.remove('countdown-number');
+        // Forcer le reflow pour redémarrer l'animation
+        void countdownNumber.offsetWidth;
+        countdownNumber.classList.add('countdown-number');
+    }
+    }, 1000);
+});
+
+// Annuler le décompte si l'utilisateur clique sur "Annuler"
+cancelCountdown.addEventListener('click', () => {
+    clearInterval(countdownInterval);
+    countdownOverlay.style.display = 'none';
+});
+
+// Initialisation au chargement du DOM
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('roomCode').textContent = roomCode;
+    updateRoom();
+    setInterval(updateRoom, 3000);
+});
+
+// Gestion de la déconnexion avant de quitter la page
+window.addEventListener('beforeunload', () => {
+    if (isOwner) deleteLobby();
+    else leaveLobby();
+});
+
+
+Games/quiz-rush/quiz-rush.html:
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Rush</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="credits.css">
+    <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
+</head>
+<body>
+    <video id="video-bg" autoplay muted loop>
+        <source src="images/BG.mp4" type="video/mp4">
+        Votre navigateur ne supporte pas la vidéo.
+    </video>
+
+    <div class="overlay-gradient"></div>
+
+    <div class="main-container">
+        <div id="category-overlay"></div>
+        <div id="quiz-content" style="display: none;">
+            <div id="black-overlay"></div>
+            <div id="title-container">
+                <div id="question"></div>
+                <div id="category"></div>
+            </div>
+            <div id="answers-container"></div>
+            <div id="timer-container">
+                <div id="timer-bar"></div>
+            </div>
+        </div>
+
+        <div id="players-container"></div>
+    </div>
+
+    <audio id="background-music">
+        <source src="music/BG.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'élément audio.
+    </audio>
+
+    <button id="start-button">Commencer !</button>
+
+    <script type="module" src="script.js"></script>
+    <script type="module" src="/Games/credits/credits.js"></script>
+</body>
+</html>
+
+quiz-rush-script.js:
+
+import { preloadCurtains } from '/Games/credits/credits.js';
+import { showEndGameCurtains } from '/Games/credits/credits.js';
+ 
+document.addEventListener("DOMContentLoaded", () => {
+    const startButton = document.getElementById('start-button');
+    const backgroundMusic = document.getElementById('background-music');
+    const playersContainer = document.getElementById('players-container');
+    let playersClicked = 0;
+    
+    startButton.addEventListener('click', () => {
+        startButton.disabled = true;
+        addPlayerToContainer(0);
+        playersClicked++;
+        for (let i = 1; i < players.length; i++) {
+            setTimeout(() => {
+                addPlayerToContainer(i);
+                playersClicked++;
+                if (playersClicked === players.length) {
+                    startButton.style.display = 'none';
+                    const countdownDiv = document.createElement('div');
+                    countdownDiv.id = 'countdown';
+                    countdownDiv.style.position = 'fixed';
+                    countdownDiv.style.top = '50%';
+                    countdownDiv.style.left = '50%';
+                    countdownDiv.style.transform = 'translate(-50%, -50%)';
+                    countdownDiv.style.fontSize = '2em';
+                    countdownDiv.style.color = 'white';
+                    countdownDiv.style.zIndex = '1000';
+                    document.body.appendChild(countdownDiv);
+                    let countdown = 5;
+                    countdownDiv.textContent = `La partie commence dans ${countdown} secondes...`;
+                    const countdownInterval = setInterval(() => {
+                        countdown--;
+                        countdownDiv.textContent = `La partie commence dans ${countdown} secondes...`;
+                        if (countdown <= 0) {
+                            clearInterval(countdownInterval);
+                            countdownDiv.remove();
+                            
+                            document.getElementById('quiz-content').style.display = 'block';
+                            renderPlayers();
+                            initQuiz();
+                        }
+                    }, 1000);
+                }
+            }, (i * (Math.random() * 1000 + 1000)));
+        }
+    });
+});
+
+function addPlayerToContainer(playerIndex) {
+    const playersContainer = document.getElementById('players-container');
+    const player = players[playerIndex];
+    const playerDiv = document.createElement('div');
+    playerDiv.className = 'player';
+    playerDiv.innerHTML = `
+        <img src="${player.avatar}" alt="${player.name}">
+        <div class="player-info">
+            <span class="player-name">${player.name}</span>
+            <span class="player-score">${player.score}</span>
+        </div>
+    `;
+    playersContainer.appendChild(playerDiv);
+    playPopSound();
+}
+
+const players = [
+    { name: "Jean-Jaquelino", score: 0, avatar: '/static/images/avatar/1.png' },
+    { name: "Lucette-Albert", score: 0, avatar: '/static/images/avatar/2.png' },
+    { name: "George-Paulin", score: 0, avatar: '/static/images/avatar/3.png' },
+    { name: "Bob XVII", score: 0, avatar: '/static/images/avatar/4.png' },
+    { name: "L'Enclume", score: 0, avatar: '/static/images/avatar/5.png' },
+    { name: "Jean-Paulon", score: 0, avatar: '/static/images/avatar/6.png' },
+    { name: "⎍⋔ ⎍ ⏃⋔⟒", score: 0, avatar: '/static/images/avatar/7.png' },
+    { name: "Bob", score: 0, avatar: '/static/images/avatar/8.png' }
+];
+
+let selectedAnswer = null;
+let usedQuestions = [];
+let currentQuestionIndex = 0;
+let quizData = null;
+let fakePlayersPicked = {};
+let questionStartTime = null;
+
+function renderPlayers() {
+    const container = document.getElementById('players-container');
+    container.innerHTML = '';
+    players.forEach((player) => {
+        const playerDiv = document.createElement('div');
+        playerDiv.className = 'player';
+        playerDiv.innerHTML = `
+            <img src="${player.avatar}" alt="${player.name}">
+            <div class="player-info">
+                <span class="player-name">${player.name}</span>
+                <span class="player-score">${player.score}</span>
+            </div>
+        `;
+        container.appendChild(playerDiv);
+    });
+}
+
+function updateScores() {
+    const playerContainers = document.querySelectorAll('#players-container .player');
+    playerContainers.forEach((container, index) => {
+        const scoreElement = container.querySelector('.player-score');
+        scoreElement.textContent = players[index].score;
+    });
+}
+
+function updateMarkerPositions(answerElement) {
+    const markers = answerElement.querySelectorAll('.player-marker');
+    markers.forEach((marker, index) => {
+        marker.style.right = (5 + index * 45) + 'px';
+    });
+}
+
+function addPlayerMarker(answerElement, playerIndex) {
+    let existing = answerElement.querySelector(`.player-marker[data-player-index="${playerIndex}"]`);
+    if (!existing) {
+        let marker = document.createElement('img');
+        marker.src = players[playerIndex].avatar;
+        marker.className = 'player-marker';
+        marker.dataset.playerIndex = playerIndex;
+        marker.dataset.responseTime = ((Date.now() - questionStartTime) / 1000).toString();
+        answerElement.appendChild(marker);
+        playPopSound();
+    }
+    updateMarkerPositions(answerElement);
+}
+
+function userSelectAnswer(answerElement) {
+    if (selectedAnswer && selectedAnswer !== answerElement) {
+        selectedAnswer.classList.remove('selected');
+        let existingMarker = selectedAnswer.querySelector(`.player-marker[data-player-index="0"]`);
+        if (existingMarker) existingMarker.remove();
+    }
+    selectedAnswer = answerElement;
+    answerElement.classList.add('selected');
+    addPlayerMarker(answerElement, 0);
+}
+
+function playPopSound() {
+    const selectSound = new Audio('/static/music/pop.mp3');
+    selectSound.play().catch(error => {
+        console.error("Erreur lors de la lecture du son :", error);
+    });
+}
+
+function createAnswerElement(answerText) {
+    const answerDiv = document.createElement('div');
+    answerDiv.className = 'answer';
+    answerDiv.textContent = answerText;
+    answerDiv.addEventListener('click', () => {
+        userSelectAnswer(answerDiv);
+    });
+    return answerDiv;
+}
+
+async function loadQuiz() {
+    const response = await fetch('quiz-list.json');
+    const data = await response.json();
+    const categories = Object.keys(data);
+    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+    const questions = data[randomCategory];
+    let randomIndex;
+    do {
+        randomIndex = Math.floor(Math.random() * questions.length);
+    } while (usedQuestions.includes(randomIndex));
+    usedQuestions.push(randomIndex);
+    const question = questions[randomIndex];
+    return { question, category: randomCategory };
+}
+
+function preloadImage(url) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(url);
+        img.onerror = () => reject(url);
+        img.src = url;
+    });
+}
+
+async function initQuiz() {
+    if (currentQuestionIndex >= 5) {
+        preloadCurtains();
+        showEndGameCurtains(players);
+        return;
+    }
+    quizData = await loadQuiz();
+    const titleContainer = document.getElementById('title-container');
+    const blackOverlay = document.getElementById('black-overlay');
+    const answersContainer = document.getElementById('answers-container');
+    titleContainer.classList.remove('moved');
+    blackOverlay.style.opacity = '1';
+    answersContainer.style.opacity = '0';
+    const categoryImageUrl = `images/${quizData.category}BG.png`;
+    const fallbackImageUrl = 'images/ErrorBG.png';
+    const overlay = document.getElementById('category-overlay');
+    preloadImage(categoryImageUrl)
+        .then(() => {
+            overlay.style.backgroundImage = `url('${categoryImageUrl}')`;
+        })
+        .catch(() => {
+            overlay.style.backgroundImage = `url('${fallbackImageUrl}')`;
+        });
+    document.getElementById('question').textContent = quizData.question.question;
+    document.getElementById('category').textContent = `Catégorie : ${quizData.category}`;
+    answersContainer.innerHTML = '';
+    quizData.question.answers.forEach(answerText => {
+        const answerDiv = createAnswerElement(answerText);
+        answersContainer.appendChild(answerDiv);
+    });
+    simulateFakePlayers();
+    const timerBar = document.getElementById('timer-bar');
+    timerBar.style.transform = 'scaleX(0)';
+    timerBar.style.transition = 'none';
+    
+    // Après un délai, le timer démarre et la musique BG est jouée
+    setTimeout(() => {
+        const backgroundMusic = document.getElementById('background-music');
+        backgroundMusic.currentTime = 0;
+        backgroundMusic.play().catch(error => {
+            console.error("Erreur lors de la lecture de la musique :", error);
+        });
+        
+        questionStartTime = Date.now();
+        titleContainer.classList.add('moved');
+        blackOverlay.style.opacity = '0';
+        answersContainer.style.opacity = '1';
+        document.querySelectorAll('.answer').forEach((answer, index) => {
+            setTimeout(() => {
+                answer.style.opacity = '1';
+                answer.style.transform = 'translateX(0)';
+            }, 200 * index);
+        });
+        timerBar.style.transition = 'transform 20s linear';
+        timerBar.style.transform = 'scaleX(1)';
+        setTimeout(() => {
+            validateAnswers(quizData.question.correct);
+        }, 20000);
+    }, 4000);
+}
+
+function simulateFakePlayers() {
+    fakePlayersPicked = {};
+    const answers = document.querySelectorAll('.answer');
+    for (let i = 1; i < players.length; i++) {
+        let delay = Math.random() * (28000 - 5000) + 5000;
+        setTimeout(() => {
+            if (fakePlayersPicked[i]) return;
+            let randomAnswer = answers[Math.floor(Math.random() * answers.length)];
+            addPlayerMarker(randomAnswer, i);
+            fakePlayersPicked[i] = true;
+        }, delay);
+    }
+}
+
+function validateAnswers(correctAnswer) {
+    document.querySelectorAll('.answer').forEach(answer => {
+        if (answer.textContent.trim() === correctAnswer.trim()) {
+            answer.classList.add('correct');
+            const markers = answer.querySelectorAll('.player-marker');
+            markers.forEach((marker, index) => {
+                let playerIndex = parseInt(marker.dataset.playerIndex, 10);
+                let responseTime = parseFloat(marker.dataset.responseTime);
+                if (isNaN(responseTime)) {
+                    responseTime = (Date.now() - questionStartTime) / 1000;
+                }
+                let points = 0;
+                if (responseTime < 2) {
+                    points = 10;
+                } else if (responseTime < 5) {
+                    points = 5;
+                } else if (responseTime < 10) {
+                    points = 2;
+                } else {
+                    points = 1;
+                }
+                players[playerIndex].score += points;
+                setTimeout(() => {
+                    showPlusOne(playerIndex);
+                }, index * 300);
+            });
+            setTimeout(() => {
+                updateScores();
+            }, markers.length * 300);
+        } else {
+            answer.classList.add('wrong');
+        }
+    });
+    setTimeout(() => {
+        currentQuestionIndex++;
+        initQuiz();
+    }, 5000);
+}
+
+function showPlusOne(playerIndex) {
+    const playerContainers = document.querySelectorAll('#players-container .player');
+    const container = playerContainers[playerIndex];
+    if (container) {
+        const scoreElement = container.querySelector('.player-score');
+        scoreElement.classList.add('score-updated');
+        setTimeout(() => {
+            scoreElement.classList.remove('score-updated');
+        }, 1500);
+    }
+}
+
+export { players };
+
+
+
+
+
+
+Voici les consignes que tu devras suivre a l'exactitude:
+
+- fait un lobby_manager.js qui centralise la gestion des lobby et joueurs du lobby (les pages et scripts pourront l'utiliser pour par exemple display la liste des joueurs)
+
+- fait une fonction qui permet a l'owner d'un lobby d'envoyer des requête aux autres joueurs (exemple se faire rediriger sur une page précise, afficher le timer etc...)
+
+- dans le waiting_room tu utilisera donc lobby_manager.js pour le fetch des joueurs nottament, quand l'owner appuiera sur le timer, le timer apparaitra pour tout le monde mais le boutton annuler n'apparaitra que pour l'owner, puis a la fin de ce timer tout les joueurs et l'owner seront envoyer dans index.html d'ou index.html avec lobby_manager.js fera display dans le bord bas gauche la liste des joueurs avec son propre fichier css séparé "lobby_style.css" ...
+
+- dans quiz rush tu utilisera donc lobby_manager.js, quand il n'y as pas de lobby actif il utilisera donc les faux joueurs
+
+- En somme fait en sorte qu'avec un simple import on puisse effectuer dans chaques pages ce dont on a besoin et qu'on puisse envoyer des requêtes aux autres joueurs du lobby quand on est l'owner pour que tout le monde soit impacter en même temps
+
+- TU ne doit NI supprimer Ni modifier ce dont je ne t'ai pas parler, et le timer n'est présent que dans waiting_room
