@@ -1,14 +1,17 @@
+// waiting_room.js
+import LobbyManager from './lobby_manager.js';
+
 // Variables globales
 let isOwner = false;
-let currentUsers = {};
 const userId = localStorage.getItem('userId');
 const roomCode = localStorage.getItem('roomCode');
 
+// Vérification des credentials
 if (!roomCode || !userId) {
     window.location.href = document.referrer || '/';
 }
 
-// Gestion du modal de confirmation pour quitter le salon
+// Gestion du modal de confirmation
 const modal = document.getElementById('confirmationModal');
 const leaveButton = document.getElementById('leaveButton');
 const cancelButton = document.getElementById('cancelButton');
@@ -19,12 +22,15 @@ function showModal(message, isOwnerLeaving = false) {
     modalMessage.textContent = message;
     modal.classList.add('active');
 
-    confirmButton.onclick = () => {
-    if (isOwnerLeaving) {
-        deleteLobby();
-    } else {
-        leaveLobby();
-    }
+    confirmButton.onclick = async () => {
+        if (isOwnerLeaving) {
+            await LobbyManager.sendCommandToPlayers('lobby-deleted');
+            await LobbyManager.leaveLobby();
+            window.location.href = '/';
+        } else {
+            await LobbyManager.leaveLobby();
+            window.location.href = '/';
+        }
     };
 }
 
@@ -32,10 +38,11 @@ function hideModal() {
     modal.classList.remove('active');
 }
 
+// Évènements du modal
 leaveButton.addEventListener('click', () => {
     const message = isOwner 
-    ? "Attention ! Si vous quittez cette page, le salon sera supprimé. Êtes-vous sûr de vouloir continuer ?"
-    : "Êtes-vous sûr de vouloir quitter le salon ?";
+        ? "Attention ! Si vous quittez cette page, le salon sera supprimé. Êtes-vous sûr de vouloir continuer ?"
+        : "Êtes-vous sûr de vouloir quitter le salon ?";
     showModal(message, isOwner);
 });
 
@@ -49,152 +56,201 @@ function updatePlayersGrid(users, ownerId) {
     const playersGrid = document.getElementById('playersGrid');
     playersGrid.innerHTML = '';
 
-    // Trier les utilisateurs : owner en premier, puis par join_time
     const sortedUsers = Object.values(users).sort((a, b) => {
-    if (a.id === ownerId) return -1;
-    if (b.id === ownerId) return 1;
-    return a.join_time - b.join_time;
+        if (a.id === ownerId) return -1;
+        if (b.id === ownerId) return 1;
+        return a.join_time - b.join_time;
     });
 
-    // Afficher les utilisateurs triés dans la grille
     for (let i = 0; i < 8; i++) {
-    const playerSlot = document.createElement('div');
-    playerSlot.classList.add('player-slot');
+        const playerSlot = document.createElement('div');
+        playerSlot.classList.add('player-slot');
 
-    if (i < sortedUsers.length) {
-        const user = sortedUsers[i];
-        playerSlot.innerHTML = `
-        <div class="player-avatar${user.id === userId ? ' current-player' : ''}">
-            <img src="/static/images/avatar/${user.avatar_index + 1}.png" alt="${user.name}">
-        </div>
-        <span class="waiting-text">
-            <strong>${user.name}</strong>
-            ${user.id === ownerId ? ' 👑' : ''} 
-            ${user.id === userId ? ' (Vous)' : ''}
-        </span>
-        `;
-    } else {
-        playerSlot.innerHTML = `
-        <div class="player-avatar empty">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-        </div>
-        <span class="waiting-text">En attente...</span>
-        `;
-    }
-    playersGrid.appendChild(playerSlot);
+        if (i < sortedUsers.length) {
+            const user = sortedUsers[i];
+            playerSlot.innerHTML = `
+                <div class="player-avatar${user.id === userId ? ' current-player' : ''}">
+                    <img src="/static/images/avatar/${user.avatar_index + 1}.png" alt="${user.name}">
+                </div>
+                <span class="waiting-text">
+                    <strong>${user.name}</strong>
+                    ${user.id === ownerId ? ' 👑' : ''} 
+                    ${user.id === userId ? ' (Vous)' : ''}
+                </span>
+            `;
+        } else {
+            playerSlot.innerHTML = `
+                <div class="player-avatar empty">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <span class="waiting-text">En attente...</span>
+            `;
+        }
+        playersGrid.appendChild(playerSlot);
     }
 }
 
 // Mise à jour du bouton de démarrage
 function updateStartButton(userCount, maxPlayers) {
     const startButton = document.getElementById('startButton');
+    const shouldDisable = !isOwner || userCount < 2;
+    
+    console.log('Bouton démarrage:', {
+        estOwner: isOwner,
+        joueurs: userCount,
+        maxJoueurs: maxPlayers,
+        desactive: shouldDisable
+    });
+    
     startButton.textContent = `Lancer la partie (${userCount}/${maxPlayers})`;
-    // Seul le propriétaire avec au moins 2 joueurs peut cliquer sur le bouton
-    startButton.disabled = !isOwner || userCount < 2;
+    startButton.disabled = shouldDisable;
 }
 
-// Mise à jour du salon via l'API
-function updateRoom() {
-    fetch(`/api/lobby/${roomCode}`)
-    .then(response => {
-        if (!response.ok) throw new Error('Lobby not found');
-        return response.json();
-    })
-    .then(data => {
-        isOwner = data.owner === userId;
-        currentUsers = data.users;
-        updatePlayersGrid(data.users, data.owner);
-        updateStartButton(Object.keys(data.users).length, 8);
-    })
-    .catch(err => {
-        console.error('Erreur:', err);
-        if (err.message === 'Lobby not found') {
-        alert('Le salon n\'existe plus !');
-        window.location.href = '/';
-        }
-    });
-}
-
-// Fonctions de gestion du lobby
-async function leaveLobby() {
-    try {
-    await fetch(`/api/lobby/${roomCode}/leave`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-    });
-    localStorage.clear();
-    window.location.href = '/';
-    } catch (err) {
-    console.error('Erreur:', err);
-    window.location.href = '/';
-    }
-}
-
-async function deleteLobby() {
-    try {
-    await fetch(`/api/lobby/delete/${roomCode}`, { method: 'DELETE' });
-    localStorage.clear();
-    window.location.href = '/';
-    } catch (err) {
-    console.error('Erreur:', err);
-    window.location.href = '/';
-    }
-}
-
-// Gestion du décompte avec animation
-const startButton = document.getElementById('startButton');
-const countdownOverlay = document.getElementById('countdownOverlay');
-const countdownNumber = document.getElementById('countdownNumber');
-const cancelCountdown = document.getElementById('cancelCountdown');
+// Gestion du décompte
 let countdownInterval;
 
-startButton.addEventListener('click', () => {
-    // Ne rien faire si le bouton est désactivé (ce qui sera le cas pour les non-propriétaires)
-    if (startButton.disabled) return;
+async function handleCountdown() {
+    const countdownOverlay = document.getElementById('countdownOverlay');
+    const countdownNumber = document.getElementById('countdownNumber');
+    const cancelCountdown = document.getElementById('cancelCountdown');
 
-    // Afficher l'overlay
+    // Envoyer la commande aux autres joueurs
+    await LobbyManager.sendCommandToPlayers('start-countdown', { duration: 5 });
+    
     countdownOverlay.style.display = 'flex';
     let counter = 5;
-    countdownNumber.textContent = counter;
-
-    // Pour chaque chiffre, on recréera l'animation en réaffectant la classe
-    countdownInterval = setInterval(() => {
-    counter--;
-    if (counter < 0) {
-        clearInterval(countdownInterval);
-        // Rediriger TOUS les joueurs vers index.html?lobby=CODE
-        fetch(`/api/lobby/${roomCode}/start`, { method: 'POST' });
-        window.location.href = `index.html?lobby=${roomCode}`;
-    } else {
-        // Remise à zéro de l'animation en retirant puis réappliquant la classe
+    
+    const updateCountdown = () => {
         countdownNumber.textContent = counter;
-        countdownNumber.classList.remove('countdown-number');
-        // Forcer le reflow pour redémarrer l'animation
-        void countdownNumber.offsetWidth;
-        countdownNumber.classList.add('countdown-number');
-    }
+        counter--;
+
+        if (counter < 0) {
+            clearInterval(countdownInterval);
+            LobbyManager.sendCommandToPlayers('redirect', { url: `index.html?lobby=${roomCode}` });
+            window.location.href = `index.html?lobby=${roomCode}`;
+        }
+    };
+
+    // Seul l'owner peut annuler
+    cancelCountdown.style.display = isOwner ? 'block' : 'none';
+    
+    updateCountdown();
+    countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+// Écoute des commandes
+function setupCommandListener() {
+    let lastCommandTime = 0;
+    
+    setInterval(async () => {
+        const lobby = await LobbyManager.getCurrentLobby();
+        const command = lobby?.latestCommand;
+
+        if (command && command.timestamp > lastCommandTime) {
+            lastCommandTime = command.timestamp;
+            
+            switch (command.command) {
+                case 'start-countdown':
+                    startGlobalCountdown(command.payload.duration);
+                    break;
+                    
+                case 'cancel-countdown':
+                    cancelGlobalCountdown();
+                    break;
+                    
+                case 'redirect':
+                    window.location.href = command.payload.url;
+                    break;
+                    
+                case 'lobby-deleted':
+                    alert('Le salon a été supprimé par l\'hôte !');
+                    window.location.href = '/';
+                    break;
+            }
+        }
     }, 1000);
-});
+}
 
-// Annuler le décompte si l'utilisateur clique sur "Annuler"
-cancelCountdown.addEventListener('click', () => {
+// Gestion du décompte global
+function startGlobalCountdown(duration) {
+    const countdownOverlay = document.getElementById('countdownOverlay');
+    const countdownNumber = document.getElementById('countdownNumber');
+    const cancelCountdown = document.getElementById('cancelCountdown');
+
+    countdownOverlay.style.display = 'flex';
+    let counter = duration;
+    
+    countdownInterval = setInterval(() => {
+        countdownNumber.textContent = counter;
+        counter--;
+        
+        if (counter < 0) {
+            clearInterval(countdownInterval);
+            window.location.href = `index.html?lobby=${roomCode}`;
+        }
+    }, 1000);
+
+    // Seul l'owner peut voir le bouton d'annulation
+    cancelCountdown.style.display = isOwner ? 'block' : 'none';
+}
+
+function cancelGlobalCountdown() {
     clearInterval(countdownInterval);
-    countdownOverlay.style.display = 'none';
+    document.getElementById('countdownOverlay').style.display = 'none';
+}
+
+// Annulation du décompte
+document.getElementById('cancelCountdown').addEventListener('click', async () => {
+    if (isOwner) {
+        await LobbyManager.sendCommandToPlayers('cancel-countdown');
+        cancelGlobalCountdown();
+    }
 });
 
-// Initialisation au chargement du DOM
-document.addEventListener('DOMContentLoaded', () => {
+// Vérification du statut owner
+async function checkOwnerStatus() {
+    const lobby = await LobbyManager.getCurrentLobby();
+    
+    if (!lobby) {
+        window.location.href = '/';
+        return;
+    }
+    
+    isOwner = lobby.isOwner;
+    console.log('Owner status:', isOwner, 'Players:', Object.keys(lobby.users).length);
+    
+    updatePlayersGrid(lobby.users, lobby.owner);
+    updateStartButton(
+        Object.keys(lobby.users).length, 
+        lobby.max_players || 8 // Fallback sécurisé
+    );
+}
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', async () => {
+    // Affichage initial
     document.getElementById('roomCode').textContent = roomCode;
-    updateRoom();
-    setInterval(updateRoom, 3000);
+    
+    // Vérification immédiate
+    await checkOwnerStatus();
+    
+    // Configuration des listeners
+    setupCommandListener();
+    
+    // Rafraîchissement périodique (réduit à 1s)
+    setInterval(checkOwnerStatus, 1000);
+
+    // Gestion du démarrage
+    document.getElementById('startButton').addEventListener('click', handleCountdown);
 });
 
-// Gestion de la déconnexion avant de quitter la page
-window.addEventListener('beforeunload', () => {
-    if (isOwner) deleteLobby();
-    else leaveLobby();
+// Nettoyage avant déconnexion
+window.addEventListener('beforeunload', async () => {
+    if (isOwner) {
+        await LobbyManager.sendCommandToPlayers('lobby-deleted');
+    }
+    await LobbyManager.leaveLobby();
 });

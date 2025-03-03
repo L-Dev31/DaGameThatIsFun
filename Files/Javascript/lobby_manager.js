@@ -1,148 +1,89 @@
-// static/js/lobby_manager.js
+// lobby_manager.js
+
 class LobbyManager {
-    static currentLobby = null;
-    static currentUser = null;
-    static pendingActions = new Set();
-
-    static init() {
-        this.currentUser = {
-            id: localStorage.getItem('userId'),
-            name: localStorage.getItem('playerName'),
-            avatarIndex: parseInt(localStorage.getItem('avatarIndex')) || 0,
-            isOwner: localStorage.getItem('isOwner') === 'true'
-        };
+    static async getCurrentLobby() {
+        const roomCode = localStorage.getItem('roomCode');
+        const userId = localStorage.getItem('userId');
         
-        this.currentLobby = {
-            code: localStorage.getItem('roomCode'),
-            players: []
-        };
-
-        this.injectStyles();
-        this.startPolling();
-        this.renderPlayerList();
-    }
-
-    static injectStyles() {
-        const style = document.createElement('style');
-        style.textContent = `
-            .lobby-players-container {
-                position: fixed;
-                bottom: 20px;
-                left: 20px;
-                background: rgba(0,0,0,0.7);
-                padding: 15px;
-                border-radius: 10px;
-                backdrop-filter: blur(5px);
-                z-index: 1000;
-            }
-            .lobby-player {
-                display: flex;
-                align-items: center;
-                margin: 10px 0;
-                color: white;
-            }
-            .lobby-player img {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                margin-right: 10px;
-                border: 2px solid transparent;
-            }
-            .lobby-player.current img {
-                border-color: #00ff00;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    static async fetchLobby() {
-        if (!this.currentLobby.code) return;
+        if (!roomCode || !userId) return null;
         
         try {
-            const response = await fetch(`/api/lobby/${this.currentLobby.code}`);
+            const response = await fetch(`/api/lobby/${roomCode}`);
+            if (!response.ok) throw new Error('Lobby not found');
             const data = await response.json();
-            this.currentLobby.players = Object.values(data.users);
-            this.currentUser.isOwner = data.owner === this.currentUser.id;
-            this.renderPlayerList();
+            
+            return {
+                ...data,
+                isOwner: data.owner === userId,
+                currentUser: data.users[userId]
+            };
         } catch (error) {
-            this.clearSession();
+            console.error('Lobby fetch error:', error);
+            return null;
         }
     }
 
-    static async sendAction(action, payload) {
-        if (!this.currentUser.isOwner) return;
-
-        await fetch(`/api/lobby/${this.currentLobby.code}/action`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action, payload, timestamp: Date.now() })
-        });
-    }
-
-    static startPolling() {
-        setInterval(async () => {
-            if (!this.currentLobby.code) return;
-            
+    static async leaveLobby() {
+        const roomCode = localStorage.getItem('roomCode');
+        const userId = localStorage.getItem('userId');
+        
+        if (roomCode && userId) {
             try {
-                const response = await fetch(`/api/lobby/${this.currentLobby.code}/actions`);
-                const actions = await response.json();
-                
-                actions.forEach(({ action, payload, timestamp }) => {
-                    if (!this.pendingActions.has(timestamp)) {
-                        this.handleAction(action, payload);
-                        this.pendingActions.add(timestamp);
-                    }
+                await fetch(`/api/lobby/${roomCode}/leave`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId })
                 });
             } catch (error) {
-                console.error('Polling error:', error);
+                console.error('Leave lobby error:', error);
             }
-            
-            this.fetchLobby();
-        }, 1000);
-    }
-
-    static handleAction(action, payload) {
-        switch (action) {
-            case 'start_timer':
-                this.showTimer(payload.duration);
-                break;
-            case 'redirect':
-                window.location.href = payload.url;
-                break;
-        }
-    }
-
-    static showTimer(duration) {
-        const event = new CustomEvent('lobby-timer', { 
-            detail: { duration, isOwner: this.currentUser.isOwner } 
-        });
-        document.dispatchEvent(event);
-    }
-
-    static renderPlayerList() {
-        let container = document.querySelector('.lobby-players-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.className = 'lobby-players-container';
-            document.body.appendChild(container);
         }
         
-        container.innerHTML = this.currentLobby.players.map(player => `
-            <div class="lobby-player ${player.id === this.currentUser.id ? 'current' : ''}">
-                <img src="/static/images/avatar/${player.avatar_index + 1}.png" alt="${player.name}">
-                <span>${player.name}${player.id === this.currentLobby.owner ? ' 👑' : ''}</span>
-            </div>
-        `).join('');
+        localStorage.removeItem('roomCode');
+        localStorage.removeItem('userId');
     }
 
-    static clearSession() {
-        localStorage.removeItem('userId');
-        localStorage.removeItem('roomCode');
-        localStorage.removeItem('isOwner');
-        window.location.href = '/';
+    static async sendCommandToPlayers(command, payload = {}) {
+        const roomCode = localStorage.getItem('roomCode');
+        const lobby = await this.getCurrentLobby();
+        
+        if (lobby?.isOwner) {
+            try {
+                await fetch(`/api/lobby/${roomCode}/command`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        command,
+                        payload,
+                        timestamp: Date.now()
+                    })
+                });
+            } catch (error) {
+                console.error('Command send error:', error);
+            }
+        }
+    }
+
+    static async getActivePlayers() {
+        const lobby = await this.getCurrentLobby();
+        
+        if (lobby) {
+            return Object.values(lobby.users).map(user => ({
+                id: user.id,
+                name: user.name,
+                avatar: `/static/images/avatar/${user.avatar_index + 1}.png`,
+                isOwner: user.id === lobby.owner
+            }));
+        }
+        
+        // Fallback to fake players if no lobby
+        return Array.from({ length: 8 }, (_, i) => ({
+            id: `bot_${i}`,
+            name: `Joueur ${i + 1}`,
+            avatar: `/static/images/avatar/${(i % 8) + 1}.png`,
+            isBot: true
+        }));
     }
 }
 
-// Initialisation automatique
-document.addEventListener('DOMContentLoaded', () => LobbyManager.init());
 export default LobbyManager;
