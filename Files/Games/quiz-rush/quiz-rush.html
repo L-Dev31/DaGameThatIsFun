@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Rush</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="credits.css">
     <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
 </head>
 <body>
@@ -13,22 +14,24 @@
         Votre navigateur ne supporte pas la vidéo.
     </video>
 
-    <div id="category-overlay"></div>
+    <div class="overlay-gradient"></div>
 
-    <div id="quiz-content" style="display: none;">
-        <div class="overlay-gradient"></div>
-        <div id="black-overlay"></div>
-        <div id="title-container">
-            <div id="question"></div>
-            <div id="category"></div>
+    <div class="main-container">
+        <div id="category-overlay"></div>
+        <div id="quiz-content" style="display: none;">
+            <div id="black-overlay"></div>
+            <div id="title-container">
+                <div id="question"></div>
+                <div id="category"></div>
+            </div>
+            <div id="answers-container"></div>
+            <div id="timer-container">
+                <div id="timer-bar"></div>
+            </div>
         </div>
-        <div id="answers-container"></div>
-        <div id="timer-container">
-            <div id="timer-bar"></div>
-        </div>
+
+        <div id="players-container"></div>
     </div>
-
-    <div id="players-container"></div>
 
     <audio id="background-music">
         <source src="music/BG.mp3" type="audio/mpeg">
@@ -37,6 +40,7 @@
 
     <button id="start-button">Commencer !</button>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
+    <script type="module" src="/Games/credits/credits.js"></script>
 </body>
 </html>

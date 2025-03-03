@@ -1,3 +1,6 @@
+import { preloadCurtains } from '/Games/credits/credits.js';
+import { showEndGameCurtains } from '/Games/credits/credits.js';
+ 
 document.addEventListener("DOMContentLoaded", () => {
     const startButton = document.getElementById('start-button');
     const backgroundMusic = document.getElementById('background-music');
@@ -177,8 +180,9 @@ function preloadImage(url) {
 }
 
 async function initQuiz() {
-    if (currentQuestionIndex >= 10) {
-        alert("Quiz terminé !");
+    if (currentQuestionIndex >= 1) {
+        preloadCurtains();
+        showEndGameCurtains(players);
         return;
     }
     quizData = await loadQuiz();
@@ -300,3 +304,5 @@ function showPlusOne(playerIndex) {
         }, 1500);
     }
 }
+
+export { players };

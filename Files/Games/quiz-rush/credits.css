@@ -1,0 +1,141 @@
+#credits-container h2{
+    font-size: 3vh;
+    margin-top: 0.5vh;
+    margin-bottom: 1vh;
+}
+
+#credits-container p{
+    font-size: 1.5vh;
+    color: white;
+}
+
+#left-curtain, #right-curtain {
+    position: fixed;
+    top: 0;
+    width: 55%;
+    height: 100vh;
+    background-size: cover;
+    transition: all 1s ease-in-out;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+#left-curtain { 
+    left: -50%;
+    background-image: url('images/curtain_left.png');
+    background-position: right;
+}
+
+#right-curtain {
+    right: -50%;
+    background-image: url('images/curtain_right.png');
+    background-position: left;
+}
+
+/* Conteneur des crédits */
+#credits-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 65%;
+    height: 80%;
+    color: #a855f7;
+    font-family: 'Typewriter', sans-serif;
+    z-index: 1002;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    animation: fadeIn 1s ease-in-out;
+    z-index: 1;
+}
+
+/* Logo du jeu */
+.credits-logo {
+    width: 400px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+/* Classement des joueurs */
+.players-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    width: 100%;
+}
+
+.leaderboard-player {
+    color: white;
+    max-width: 250px;
+    max-height: auto;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    border: 3px solid gray;
+    backdrop-filter: blur(10px);
+    background: #ffffff30;
+    overflow: hidden;
+}
+
+.leaderboard-player span, p{
+    margin: 2.5px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1.2em;
+    font-weight: bolder;
+}
+
+.leaderboard-player img {
+    width: 5vh;
+    height: 5vh;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    object-fit: cover;
+}
+
+.rank-1 { border: 3px solid gold; animation: goldShimmer 2s infinite; color: gold!important; }
+.rank-2 { border: 3px solid silver; animation: silverShimmer 2s infinite; color: silver!important;}
+.rank-3 { border: 3px solid #cd7f32; animation: bronzeShimmer 2s infinite; color: #cd7f32!important;}
+
+@keyframes goldShimmer {
+    0%, 100% { box-shadow: 0 0 15px gold; }
+    50% { box-shadow: 0 0 25px gold; }
+}
+
+@keyframes silverShimmer {
+    0%, 100% { box-shadow: 0 0 12px silver; }
+    50% { box-shadow: 0 0 20px silver; }
+}
+
+@keyframes bronzeShimmer {
+    0%, 100% { box-shadow: 0 0 10px #cd7f32; }
+    50% { box-shadow: 0 0 15px #cd7f32; }
+}
+
+/* Indication de sortie */
+.exit-hint {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    z-index: 1003;
+    transition: all 0.2s ease-in-out;
+}
+
+.exit-hint:hover {
+    transform: scale(1.05);
+}
+
+.exit-hint img {
+    width: auto;
+    height: 30px;
+    margin-right: 10px;
+}
+
+.overlay-gradient.credit {
+    background-color: #141414f9
+}
