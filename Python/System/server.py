@@ -2,46 +2,38 @@ import http.server
 import socketserver
 import ujson as json
 import threading
-from typing import Dict
 from System.models import LobbySession
 from System.lobby import active_sessions, create_lobby, join_lobby, leave_lobby
 from System.qr import get_local_ip, generate_qr_code
+import time
 
-# Verrou pour synchroniser l'accès aux sessions actives
 active_sessions_lock = threading.Lock()
-
 PORT = 8080
 DIRECTORY = "Files"
 
 class LobbyHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=DIRECTORY, **kwargs)
-    
     def end_headers(self):
-        # Pour les endpoints API, désactivation du cache
         if self.path.startswith('/api'):
             self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
         else:
             self.send_header('Cache-Control', 'max-age=3600')
         super().end_headers()
-    
     def send_json_response(self, data, status=200):
         self.send_response(status)
         self.send_header('Content-type', 'application/json')
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
         self.wfile.write(json.dumps(data).encode())
-
     def send_error_response(self, message, status=400):
         self.send_json_response({'error': message, 'success': False}, status)
-
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
-
     def do_POST(self):
         content_length = int(self.headers.get('Content-Length', 0))
         post_data = {}
@@ -58,6 +50,8 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                     client_ip
                 )
                 self.send_json_response(response)
+
+
             elif self.path == '/api/lobby/join':
                 response = join_lobby(
                     post_data.get('roomCode'),
@@ -67,32 +61,53 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                     client_ip
                 )
                 self.send_json_response(response)
+
+                
             elif self.path.startswith('/api/lobby/') and self.path.endswith('/leave'):
                 room_code = self.path.split('/')[-2]
-                response = leave_lobby(room_code, post_data.get('userId'))
+                response = leave_lobby(post_data.get('userId'), room_code)  # Arguments inversés
                 self.send_json_response(response)
+
+
             elif self.path.startswith('/api/lobby/') and self.path.endswith('/command'):
                 room_code = self.path.split('/')[-2]
                 with active_sessions_lock:
                     if room_code not in active_sessions:
                         raise ValueError("Salon introuvable")
-                    
                     lobby = active_sessions[room_code]
+                    post_data = json.loads(self.rfile.read(content_length).decode('utf-8'))
+                    
+                    # Validation du propriétaire
+                    if post_data.get('initiator') != lobby.owner:
+                        self.send_error_response("Action non autorisée", 403)
+                        return
+
                     command = post_data.get('command')
-                    lobby.latest_command = {
-                        'command': command,
-                        'payload': post_data.get('payload'),
-                        'timestamp': post_data.get('timestamp')
-                    }
-                    if command == 'start-countdown':
-                        # Passage de l'état du lobby à "in_game" lors du lancement de la partie
-                        lobby.state = "in_game"
+                    if command == 'start-game':
+                        lobby.latest_command = {
+                            'command': 'redirect',
+                            'payload': {
+                                'url': post_data.get('payload').get('gameUrl'),
+                                'force': True
+                            },
+                            'timestamp': time.time(),
+                            'initiator': lobby.owner
+                        }
+                    else:
+                        lobby.latest_command = {
+                            'command': command,
+                            'payload': post_data.get('payload'),
+                            'timestamp': time.time(),
+                            'initiator': lobby.owner
+                        }
+                    
                 self.send_json_response({'success': True})
+
+
             else:
                 self.send_error_response("Endpoint non trouvé", 404)
         except Exception as e:
             self.send_error_response(str(e))
-
     def do_GET(self):
         try:
             base_path = self.path.split('?')[0]
@@ -125,7 +140,6 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                 super().do_GET()
         except Exception as e:
             self.send_error_response(str(e))
-
     def do_DELETE(self):
         if self.path.startswith('/api/lobby/delete/'):
             room_code = self.path.split('/')[-1]
@@ -137,12 +151,8 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                     self.send_error_response("Le salon n'existe pas", 404)
         else:
             self.send_error_response("Endpoint non trouvé", 404)
-
 def run_server():
     with socketserver.ThreadingTCPServer(("", PORT), LobbyHandler) as httpd:
-        print(f"Serveur lancé sur le port {PORT}")
-        print(f"Accédez à http://localhost:{PORT}")
         httpd.serve_forever()
-
 if __name__ == "__main__":
     run_server()

@@ -1,345 +1,634 @@
-Analyse en très profonde précision comment le jeux DaGameThatIsFun Fonctionne:
+Analyse entierement les fichiers html js et py (que je donnerais après) suivant qui constitue l'entiereté de mon projet:
 
-app.py:
+index.html:
 
-#Créé par Léo TOSKU | 2024-2025
-import os
-import time
-import threading
-import webbrowser
-from colorama import Fore, Style, init
-from System.server import run_server
-from System.utils import cleanup_inactive_lobbies
-from System.lobby import active_sessions
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Party Game Lobby</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/mobile_style.css">
+  <link rel="stylesheet" href="/static/lobby_style.css">
+  <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
+</head>
+<body>
+  <button class="share-control" id="shareToggle">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="24px" fill="white" height="24px">
+      <path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"/>
+    </svg>
+  </button>
+  <button class="sound-control" id="soundToggle">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+    </svg>
+  </button>
+  <div id="qrCodeModal" class="modal-overlay">
+    <div class="modal-container">
+      <h2 class="modal-title">Partager le lien</h2>
+      <div class="modal-content">
+        <p id="qrCodeUrl" style="word-break: break-all; margin-bottom: 1rem;"></p>
+        <img id="qrCodeImage" alt="QR Code" style="width: 200px; height: 200px; margin: 0 auto;">
+        <div style="margin-top: 1rem; text-align: center;">
+          <button onclick="copyLink()" class="modal-button modal-button-secondary">Copier le lien</button>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-button modal-button-primary" onclick="hideModal('qrCodeModal')">Fermer</button>
+      </div>
+    </div>
+  </div>
+  <div class="bg"></div>
+  <div id="introScreen" class="intro-screen">
+    <div class="intro-content">
+      <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="intro-logo">
+      <p class="intro-text">Avertissement !</p>
+    </div>
+    <div class="security-text">
+      Veuillez noter que ce jeu peut contenir du contenu grossier ou inapproprié pour certains publics.<br><br>
+      Ce n’est en aucun cas notre intention de blesser quiconque, il s’agit simplement d’un jeu conçu pour s’amuser et rire ensemble :)
+    </div>
+  </div>
+  <div class="logo-container">
+    <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
+  </div>
+  <div class="container">
+    <div class="grid">
+      <div>
+        <div class="game-buttons">
+          <button class="game-button active" data-game="draw-contest">
+            <img src="/static/images/logo/draw-contest.png" alt="Draw Contest" class="game-logo">
+          </button>
+          <button class="game-button" data-game="pictionary">
+            <img src="/static/images/logo/pictionary.png" alt="Pictionary" class="game-logo">
+          </button>
+          <button class="game-button" data-game="quiz-rush">
+            <img src="/static/images/logo/quiz-rush.png" alt="Quiz Rush" class="game-logo">
+          </button>
+          <button class="game-button" data-game="object-tales" disabled>
+            <img src="/static/images/logo/object-tales-disabled.png" alt="Object Tales" class="game-logo">
+          </button>
+        </div>
+      </div>
+      <div class="preview-card">
+        <div class="tv-static"></div>
+        <img src="/static/images/preview/draw-contest.png" alt="Game Preview" class="preview-image" id="previewImage">
+        <div class="preview-content">
+          <h3 class="preview-title" id="previewTitle">Dessine moi un Désastre</h3>
+          <p class="preview-description" id="previewDescription">
+            Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence !
+          </p>
+          <p class="preview-player-number" id="previewPlayerNumber">4-8 Joueurs</p>
+          <button class="preview-button">Lancer le jeu !</button>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-actions">
+      <a href="create_lobby.html" id="createLobbyLink">
+        <button class="action-button create-lobby">
+          <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"></path>
+          </svg>
+          <span class="button-text">Créer Lobby</span>
+        </button>
+      </a>
+      <a href="join_lobby.html" id="joinLobbyLink">
+        <button class="action-button join-lobby">
+          <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span class="button-text">Rejoindre</span>
+        </button>
+      </a>
+      <a href="credits.html" id="creditsLink">
+        <button class="action-button credits">
+          <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="7"></circle>
+            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+          </svg>
+          <span class="button-text">Credits</span>
+        </button>
+      </a>
+    </div>
+  </div>
+  <div id="playersContainer" class="players-container" style="display:none;"></div>
+  <audio id="staticSound" src="/static/music/tv-static.mp3"></audio>
+  <script type="module" src="javascript/index.js"></script>
+</body>
+</html>
 
-init(autoreset=True)
 
-DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Files"))
+index.js:
+import LobbyManager from './lobby_manager.js';
+import { navigateLobby } from './lobby_redirection.js';
 
-if __name__ == "__main__":
-    print(Fore.GREEN + "✅ Dossier des fichiers statiques prêt.")
+document.addEventListener("DOMContentLoaded", async () => {
+  const playersContainer = document.getElementById("playersContainer");
 
-    cleanup_thread = threading.Thread(target=cleanup_inactive_lobbies, args=(active_sessions,), daemon=True)
-    cleanup_thread.start()  # Nettoie les lobbys inactifs
-    print(Fore.GREEN + "✅ Nettoyage des lobbys démarré.")
+  async function updatePlayers() {
+    const players = await LobbyManager.getActivePlayers();
+    playersContainer.innerHTML = "";
+    players.forEach(player => {
+      const playerDiv = document.createElement("div");
+      playerDiv.classList.add("player");
+      playerDiv.innerHTML = `
+        <img src="${player.avatar}" alt="${player.name}" class="player-avatar">
+        <span class="player-name">${player.name}${player.isCurrentUser ? ' (Vous)' : ''}${player.isOwner ? ' 👑' : ''}</span>
+      `;
+      playersContainer.appendChild(playerDiv);
+    });
+  }
+  await updatePlayers();
+  setInterval(updatePlayers, 5000);
 
-    server_thread = threading.Thread(target=run_server, daemon=True)
-    server_thread.start()  # Démarre le serveur local sur le port du PC
-    print(Fore.GREEN + "✅ Serveur HTTP lancé sur le port 8000.")
+  const introScreen = document.getElementById("introScreen");
+  setTimeout(() => {
+    introScreen.classList.add("hidden");
+    setTimeout(() => {
+      introScreen.style.display = "none";
+    }, 1000);
+  }, 8000);
 
-    webbrowser.open(f"http://localhost:8000")  # Ouvre le navigateur
-    print(Fore.GREEN + "\n✅ Navigateur ouvert.")
+  const staticSound = document.getElementById("staticSound");
+  const staticEffect = document.querySelector(".tv-static");
+  const soundToggle = document.getElementById("soundToggle");
+  let isMuted = true;
+  const audio = new Audio("/static/music/draw-contest.mp3");
+  audio.loop = true;
 
-    print(Fore.CYAN + "\n======================================")
-    print(Fore.CYAN + "Bienvenue sur DA GAME THAT IS FUN !")
-    print(Fore.CYAN + "Appuyez sur " + Fore.YELLOW + "Ctrl+C" + Fore.CYAN + " pour arrêter.")
-    print(Fore.CYAN + "======================================")
-
-    try:
-        while True:  # Boucle pour garder le serveur en vie (ce serait con autrement ptdr)
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print(Fore.RED + "\n⛔ Arrêt du serveur...")
-
-
-lobby.py:
-
-# Codes relatifs au lobbys (serveurs)
-import random
-import string
-import time
-from typing import Dict, Optional
-from System.models import LobbySession, User
-
-active_sessions: Dict[str, LobbySession] = {}
-
-# Codes de Lobby
-def generate_code() -> str:
-    while True:
-        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
-        if code not in active_sessions:
-            return code
-
-# Création du lobby
-def create_lobby(player_name: str, password: Optional[str], avatar_index: int, max_players: int, client_ip: str) -> dict:
-    if not player_name:
-        raise ValueError("Le nom du joueur est requis")
-    
-    if max_players not in range(2, 9):
-        raise ValueError("Le nombre de joueurs doit être entre 2 et 8")
-    
-    room_code = generate_code()
-    user_id = str(random.randint(10000, 99999))
-    
-    owner = User(
-        id=user_id,
-        name=player_name,
-        avatar_index=avatar_index,
-        join_time=time.time(),
-        ip_address=client_ip
-    )
-    
-    lobby_session = LobbySession(
-        code=room_code,
-        name=f"Salon de {player_name}",
-        owner=user_id,
-        password=password,
-        users={user_id: owner},
-        created_at=time.time(),
-        max_players=max_players
-    )
-    
-    active_sessions[room_code] = lobby_session
-    
-    return {
-        'success': True,
-        'roomCode': room_code,
-        'userId': user_id,
-        'sessionData': lobby_session.to_dict()
+  function updateSoundIcon() {
+    if (isMuted) {
+      soundToggle.innerHTML = `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <line x1="23" y1="9" x2="17" y2="15"></line>
+          <line x1="17" y1="9" x2="23" y2="15"></line>
+        </svg>`;
+    } else {
+      soundToggle.innerHTML = `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>`;
     }
-
-# Rejoindre le lobby
-def join_lobby(room_code: str, player_name: str, password: Optional[str], avatar_index: int, client_ip: str) -> dict:
-    if not room_code or not player_name:
-        raise ValueError("Le code du salon et le nom du joueur sont requis")
-        
-    if room_code not in active_sessions:
-        raise ValueError("Le salon n'existe pas")
-        
-    lobby = active_sessions[room_code]
-    
-    if lobby.password and lobby.password != password:
-        raise ValueError("Mot de passe incorrect")
-        
-    if len(lobby.users) >= lobby.max_players:
-        raise ValueError("Le salon est plein")
-        
-    user_id = str(random.randint(10000, 99999))
-    new_user = User(
-        id=user_id,
-        name=player_name,
-        avatar_index=avatar_index,
-        join_time=time.time(),
-        ip_address=client_ip
-    )
-    
-    lobby.users[user_id] = new_user
-    
-    return {
-        'success': True,
-        'userId': user_id,
-        'sessionData': lobby.to_dict()
+  }
+  soundToggle.addEventListener("click", () => {
+    isMuted = !isMuted;
+    if (isMuted) {
+      audio.pause();
+    } else {
+      audio.play().catch(console.error);
     }
+    updateSoundIcon();
+  });
+  updateSoundIcon();
 
-# Quitter le lobby
-def leave_lobby(room_code: str, user_id: str) -> dict:
-    if not room_code or not user_id:
-        raise ValueError("Le code du salon et l'ID utilisateur sont requis")
-        
-    if room_code not in active_sessions:
-        raise ValueError("Le salon n'existe pas")
-        
-    lobby = active_sessions[room_code]
-    
-    if user_id not in lobby.users:
-        raise ValueError("Utilisateur non trouvé dans le salon")
-        
-    # Si c'est l'host qui part, supprimer le salon
-    if user_id == lobby.owner:
-        del active_sessions[room_code]
-    else:
-        del lobby.users[user_id]
-        
-    return {'success': True}
+  const games = {
+    "draw-contest": {
+      title: "Dessine moi un Désastre",
+      description: "Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence ! \n 4 à 8 Joueurs",
+      preview: "/static/images/preview/draw-contest.png",
+      music: "/static/music/draw-contest.mp3",
+      playerNumber: "4-8"
+    },
+    "pictionary": {
+      title: "Gribouilles & Embrouilles",
+      description: "Montrez vos talents artistiques ! Un joueur dessine pendant que les autres se dépêchent de deviner le mot.",
+      preview: "/static/images/preview/banner.png",
+      music: "/static/music/pictionary.mp3",
+      playerNumber: "2-8"
+    },
+    "quiz-rush": {
+      title: "Quiz Rush",
+      description: "Pensez vite ! Répondez à des questions originales dans ce quiz effréné.",
+      preview: "/static/images/preview/quiz-rush.png",
+      music: "/static/music/quiz-rush.mp3",
+      playerNumber: "2-8"
+    },
+    "object-tales": {
+      title: "La Quête Légendaire",
+      description: "Devenez le maître du récit ! Inventez l'histoire la plus drôle ou intrigante à propos d'un objet étrange.",
+      preview: "/static/images/preview/object-tales.png",
+      music: "/static/music/object-tales.mp3",
+      playerNumber: "4-8",
+      disabled: true
+    }
+  };
 
-models.py:
-
-# Classes de "modèles" utilisés par les appels API
-from dataclasses import dataclass
-from typing import Dict, Optional, List
-
-@dataclass
-class User:
-    id: str
-    name: str
-    avatar_index: int
-    join_time: float
-    ip_address: str
-
-@dataclass
-class LobbySession:
-    code: str
-    name: str
-    owner: str
-    password: Optional[str]
-    users: Dict[str, User]
-    created_at: float
-    max_players: int
-    
-    def to_dict(self):
-        return {
-            'code': self.code,
-            'name': self.name,
-            'owner': self.owner,
-            'hasPassword': bool(self.password),
-            'users': {uid: {
-                'id': u.id,
-                'name': u.name,
-                'avatar_index': u.avatar_index,
-                'join_time': u.join_time,
-                'ip_address': u.ip_address
-            } for uid, u in self.users.items()},
-            'created_at': self.created_at,
-            'max_players': self.max_players
+  function changeGamePreview(gameId) {
+    const game = games[gameId];
+    if (!game) return;
+    staticEffect.classList.add("show-static");
+    staticSound.currentTime = 0;
+    staticSound.play();
+    setTimeout(() => {
+      document.getElementById("previewImage").src = game.preview;
+      document.getElementById("previewTitle").textContent = game.title;
+      document.getElementById("previewDescription").textContent = game.description;
+      document.getElementById("previewPlayerNumber").textContent = game.playerNumber + " Joueurs";
+      if (audio.src !== game.music) {
+        audio.src = game.music;
+        audio.load();
+        if (!isMuted) {
+          audio.play().catch(console.error);
         }
+      }
+      staticEffect.classList.remove("show-static");
+    }, 200);
+  }
 
-server.py:
+  document.querySelectorAll(".game-button").forEach(button => {
+    button.addEventListener("click", () => {
+      if (button.disabled) return;
+      changeGamePreview(button.dataset.game);
+      document.querySelectorAll(".game-button").forEach(btn => btn.classList.remove("active"));
+      button.classList.add("active");
+    });
+  });
 
-import http.server
-import socketserver
-import json
-from typing import Dict
-from System.models import LobbySession
-from System.lobby import active_sessions, create_lobby, join_lobby, leave_lobby
-from System.qr import get_local_ip, generate_qr_code
+  const roomCode = localStorage.getItem("roomCode");
+  if (roomCode) {
+    document.getElementById("playersContainer").style.display = "block";
+    const createLobbyLink = document.getElementById("createLobbyLink");
+    const joinLobbyLink = document.getElementById("joinLobbyLink");
+    const creditsLink = document.getElementById("creditsLink");
 
-PORT = 8000
-DIRECTORY = "Files"
+    const isOwner = await LobbyManager.isCurrentUserOwner();
 
-class LobbyHandler(http.server.SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=DIRECTORY, **kwargs)
+    createLobbyLink.innerHTML = `
+      <button class="action-button ${isOwner ? 'quit-lobby' : ''}" ${!isOwner ? 'disabled' : ''}>
+        <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18"></path>
+          <path d="M6 6l12 12"></path>
+        </svg>
+        <span class="button-text">Quitter</span>
+      </button>
+    `;
 
-    def send_json_response(self, data, status=200):
-        self.send_response(status)
-        self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
-        self.wfile.write(json.dumps(data).encode())
+    joinLobbyLink.innerHTML = `
+      <button class="action-button add-players" ${!isOwner ? 'disabled' : ''}>
+        <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14"></path>
+          <path d="M5 12h14"></path>
+        </svg>
+        <span class="button-text">Aj. Joueurs</span>
+      </button>
+    `;
 
-    def send_error_response(self, message, status=400):
-        self.send_json_response({'error': message, 'success': False}, status)
+    creditsLink.removeAttribute("href");
 
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
+    if (isOwner) {
+      createLobbyLink.querySelector(".quit-lobby").addEventListener("click", async () => {
+        if (confirm("Êtes-vous sûr de vouloir quitter le lobby ?")) {
+          await LobbyManager.leaveLobby();
+          window.location.reload();
+        }
+      });
 
-    def do_POST(self):
-        content_length = int(self.headers.get('Content-Length', 0))
-        if content_length > 0:
-            post_data = json.loads(self.rfile.read(content_length).decode('utf-8'))
-        else:
-            post_data = {}
-            
-        client_ip = self.client_address[0]
+      joinLobbyLink.querySelector(".add-players").addEventListener("click", () => {
+        navigateLobby(`waiting_room.html?roomCode=${roomCode}`);
+      });
+    }
+  }
+});
 
-        try:
-            if self.path == '/api/lobby/create':
-                response_data = create_lobby(
-                    post_data.get('playerName'),
-                    post_data.get('password'),
-                    post_data.get('avatarIndex', 0),
-                    post_data.get('maxPlayers', 8),
-                    client_ip
-                )
-                self.send_json_response(response_data)
-                
-            elif self.path == '/api/lobby/join':
-                response_data = join_lobby(
-                    post_data.get('roomCode'),
-                    post_data.get('playerName'),
-                    post_data.get('password'),
-                    post_data.get('avatarIndex', 0),
-                    client_ip
-                )
-                self.send_json_response(response_data)
-                
-            elif self.path.startswith('/api/lobby/') and self.path.endswith('/leave'):
-                room_code = self.path.split('/')[-2]
-                response_data = leave_lobby(room_code, post_data.get('userId'))
-                self.send_json_response(response_data)
-                
-            else:
-                self.send_error_response("Endpoint non trouvé", 404)
-                
-        except Exception as e:
-            self.send_error_response(str(e))
 
-    def do_GET(self):
-            try:
-                if self.path == '/get_ip':
-                    # Générer le QR code et le lien
-                    ip = get_local_ip()
-                    port = 8000
-                    qr_code = generate_qr_code(ip, port)  # Retourne l'image en base64
-                    url = f"http://{ip}:{port}"
+lobby_manager.js:
+class LobbyManager {
+    static POLL_INTERVAL = 5000; 
+    static MAX_POLL_INTERVAL = 30000; 
+    static POLL_BACKOFF_FACTOR = 1.5; 
 
-                    # Renvoyer le lien et le QR code en base64 dans un objet JSON
-                    response_data = {
-                        "url": url,
-                        "qr_code": qr_code  # Déjà en base64
-                    }
-                    self.send_json_response(response_data)
-                elif self.path == '/api/lobbies':
-                    response_data = {
-                        'lobbies': [session.to_dict() for session in active_sessions.values()]
-                    }
-                    self.send_json_response(response_data)
-                elif self.path.startswith('/api/lobby/') and len(self.path.split('/')) == 4:
-                    room_code = self.path.split('/')[-1]
-                    if room_code in active_sessions:
-                        self.send_json_response(active_sessions[room_code].to_dict())
-                    else:
-                        self.send_error_response("Salon non trouvé", 404)
-                else:
-                    super().do_GET()
-            except Exception as e:
-                self.send_error_response(str(e))
+    static _currentPollInterval = this.POLL_INTERVAL;
+    static _pollTimeout = null;
+    static _listeners = new Set();
 
-    def do_DELETE(self):
-        if self.path.startswith('/api/lobby/delete/'):
-            room_code = self.path.split('/')[-1]
-            
-            if room_code in active_sessions:
-                del active_sessions[room_code]
-                self.send_json_response({'success': True})
-            else:
-                self.send_error_response("Le salon n'existe pas", 404)
-        else:
-            self.send_error_response("Endpoint non trouvé", 404)
+    static startPolling() {
+        this._pollLobby();
+    }
 
-def run_server():
-    with socketserver.TCPServer(("", PORT), LobbyHandler) as httpd:
-        print(f"Serveur lancé sur le port {PORT}")
-        print(f"Accédez à http://localhost:{PORT}")
-        httpd.serve_forever()
+    static stopPolling() {
+        if (this._pollTimeout) {
+            clearTimeout(this._pollTimeout);
+            this._pollTimeout = null;
+        }
+    }
 
-utils.py:
+    static addListener(callback) {
+        this._listeners.add(callback);
+        return () => this._listeners.delete(callback);
+    }
 
-import time
-from typing import Dict
-from System.models import LobbySession
+    static async _pollLobby() {
+        try {
+            const lobby = await this.getCurrentLobby();
+            if (lobby) {
+                this._currentPollInterval = this.POLL_INTERVAL;
+                this._notifyListeners(lobby);
+            } else {
+                console.error("Lobby not found, stopping polling.");
+                this.stopPolling();
+                return;
+            }
+        } catch (error) {
+            console.error('Polling error:', error);
+            this._currentPollInterval = this.MAX_POLL_INTERVAL;
+        } finally {
+            if (this._pollTimeout !== null) {
+                this._pollTimeout = setTimeout(() => this._pollLobby(), this._currentPollInterval);
+            }
+        }
+    }
 
-# Supprime les lobbys inactifs
-def cleanup_inactive_lobbies(active_sessions: Dict[str, LobbySession]):
-    while True:
-        current_time = time.time()
-        to_remove = []
-        
-        for code, lobby in active_sessions.items():
-            if current_time - lobby.created_at > 7200:  # 2 heures en secondes
-                to_remove.append(code)
-                
-        for code in to_remove:
-            del active_sessions[code]
-            
-        time.sleep(300)  
+    static _notifyListeners(lobby) {
+        for (const listener of this._listeners) {
+            listener(lobby);
+        }
+    }
 
+    static async getCurrentLobby() {
+        const roomCode = localStorage.getItem('roomCode');
+        const userId = localStorage.getItem('userId');
+        if (!roomCode || !userId) return null;
+        try {
+            const response = await fetch(`/api/lobby/${roomCode}`);
+            if (!response.ok) {
+                console.error('Lobby not found');
+                return null;
+            }
+            const data = await response.json();
+            return {
+                ...data,
+                isOwner: data.owner === userId,
+                currentUser: data.users[userId],
+            };
+        } catch (error) {
+            console.error('Lobby fetch error:', error);
+            return null;
+        }
+    }
+
+    static async isCurrentUserOwner() {
+        const lobby = await this.getCurrentLobby();
+        return lobby?.isOwner || false;
+    }
+
+    static async leaveLobby() {
+        const roomCode = localStorage.getItem('roomCode');
+        const userId = localStorage.getItem('userId');
+        if (roomCode && userId) {
+            try {
+                await fetch(`/api/lobby/${roomCode}/leave`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId }),
+                });
+            } catch (error) {
+                console.error('Leave lobby error:', error);
+            }
+        }
+        localStorage.removeItem('roomCode');
+        localStorage.removeItem('userId');
+        this.stopPolling();
+    }
+
+    static async sendCommandToPlayers(command, payload = {}) {
+        const roomCode = localStorage.getItem('roomCode');
+        const lobby = await this.getCurrentLobby();
+        if (lobby?.isOwner) {
+            try {
+                await fetch(`/api/lobby/${roomCode}/command`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        command,
+                        payload,
+                        timestamp: Date.now(),
+                    }),
+                });
+            } catch (error) {
+                console.error('Command send error:', error);
+            }
+        }
+    }
+
+    static async getActivePlayers() {
+        const userId = localStorage.getItem('userId');
+        const lobby = await this.getCurrentLobby();
+        if (lobby) {
+            const sortedUsers = Object.values(lobby.users)
+                .sort((a, b) => a.join_time - b.join_time)
+                .map((user) => ({
+                    id: user.id,
+                    name: user.name,
+                    avatar: `/static/images/avatar/${user.avatar_index + 1}.png`,
+                    isOwner: user.id === lobby.owner,
+                    isCurrentUser: user.id === userId
+                }));
+            return sortedUsers;
+        }
+        return [];
+    }
+}
+
+export default LobbyManager;
+
+lobby_redirection.js:
+
+import LobbyManager from './lobby_manager.js';
+
+export async function navigateLobby(url) {
+  if (url.includes("waiting_room.html")) {
+    await LobbyManager.sendCommandToPlayers('return-to-waiting', {});
+  } else {
+    await LobbyManager.sendCommandToPlayers('redirect', { url });
+  }
+  window.location.href = url;
+}
+
+waiting_room.js:
+import LobbyManager from './lobby_manager.js';
+
+let isOwner = false;
+const userId = localStorage.getItem('userId');
+const roomCode = localStorage.getItem('roomCode');
+
+if (!roomCode || !userId) {
+  window.location.href = document.referrer || '/';
+}
+
+const modal = document.getElementById('confirmationModal');
+const leaveButton = document.getElementById('leaveButton');
+const cancelButton = document.getElementById('cancelButton');
+const confirmButton = document.getElementById('confirmButton');
+const modalMessage = document.getElementById('modalMessage');
+
+function showModal(message, ownerLeaving = false) {
+  modalMessage.textContent = message;
+  modal.classList.add('active');
+  confirmButton.onclick = async () => {
+    if (ownerLeaving) {
+      await LobbyManager.sendCommandToPlayers('lobby-deleted');
+      await LobbyManager.leaveLobby();
+      window.location.href = '/';
+    } else {
+      await LobbyManager.leaveLobby();
+      window.location.href = '/';
+    }
+  };
+}
+
+function hideModal() {
+  modal.classList.remove('active');
+}
+
+leaveButton.addEventListener('click', () => {
+  const message = isOwner 
+    ? "Attention ! Si vous quittez, le salon sera supprimé. Continuer ?" 
+    : "Quitter le salon ?";
+  showModal(message, isOwner);
+});
+cancelButton.addEventListener('click', hideModal);
+modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
+
+function updatePlayersGrid(users, ownerId) {
+  const playersGrid = document.getElementById('playersGrid');
+  playersGrid.innerHTML = '';
+  const currentUserId = localStorage.getItem('userId');
+  const sortedUsers = Object.values(users).sort((a, b) => {
+    if (a.id === ownerId) return -1;
+    if (b.id === ownerId) return 1;
+    return a.join_time - b.join_time;
+  });
+  for (let i = 0; i < 8; i++) {
+    const playerSlot = document.createElement('div');
+    playerSlot.classList.add('player-slot');
+    if (i < sortedUsers.length) {
+      const user = sortedUsers[i];
+      playerSlot.innerHTML = `
+        <div class="player-avatar${user.id === currentUserId ? ' current-player' : ''}">
+          <img src="/static/images/avatar/${user.avatar_index + 1}.png" alt="${user.name}">
+        </div>
+        <span class="waiting-text">
+          <strong>${user.name}</strong>
+          ${user.id === ownerId ? ' 👑' : ''}
+          ${user.id === currentUserId ? ' (Vous)' : ''}
+        </span>`;
+    } else {
+      playerSlot.innerHTML = `
+        <div class="player-avatar empty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <span class="waiting-text">En attente...</span>`;
+    }
+    playersGrid.appendChild(playerSlot);
+  }
+}
+
+function updateStartButton(userCount, maxPlayers) {
+  const startButton = document.getElementById('startButton');
+  startButton.textContent = `Lancer la partie (${userCount}/${maxPlayers})`;
+  startButton.disabled = !isOwner || userCount < 2;
+}
+
+let countdownInterval;
+function startCountdown(duration) {
+  const countdownOverlay = document.getElementById('countdownOverlay');
+  const countdownNumber = document.getElementById('countdownNumber');
+  const cancelCountdown = document.getElementById('cancelCountdown');
+  countdownOverlay.style.display = 'flex';
+  let counter = duration;
+  cancelCountdown.style.display = isOwner ? 'block' : 'none';
+  countdownNumber.textContent = counter;
+  countdownInterval = setInterval(() => {
+    counter--;
+    if (counter < 0) counter = 0;
+    countdownNumber.textContent = counter;
+    if (counter <= 0) {
+      clearInterval(countdownInterval);
+      LobbyManager.sendCommandToPlayers('redirect', { url: `index.html?roomCode=${roomCode}` });
+      window.location.href = `index.html?roomCode=${roomCode}`;
+    }
+  }, 1000);
+}
+
+function cancelCountdownGlobal() {
+  clearInterval(countdownInterval);
+  document.getElementById('countdownOverlay').style.display = 'none';
+}
+
+function setupCommandListener() {
+  let lastCommandTime = 0;
+  setInterval(async () => {
+    const lobby = await LobbyManager.getCurrentLobby();
+    const command = lobby?.latest_command;
+    if (command && command.timestamp > lastCommandTime) {
+      lastCommandTime = command.timestamp;
+      switch (command.command) {
+        case 'start-countdown':
+          if (!isOwner) startCountdown(command.payload.duration);
+          break;
+        case 'cancel-countdown':
+          cancelCountdownGlobal();
+          break;
+        case 'redirect':
+          window.location.href = command.payload.url;
+          break;
+        case 'lobby-deleted':
+          alert('Le salon a été supprimé par l\'hôte !');
+          window.location.href = '/';
+          break;
+        case 'return-to-waiting':
+          window.location.href = `waiting_room.html?roomCode=${roomCode}`;
+          break;
+      }
+    }
+  }, 1000);
+}
+
+async function checkOwnerStatus() {
+  const lobby = await LobbyManager.getCurrentLobby();
+  if (!lobby) {
+    window.location.href = '/';
+    return;
+  }
+  isOwner = lobby.isOwner;
+  updatePlayersGrid(lobby.users, lobby.owner);
+  updateStartButton(Object.keys(lobby.users).length, lobby.max_players || 8);
+}
+
+async function handleCountdown() {
+  if (!isOwner) return;
+  await LobbyManager.sendCommandToPlayers('start-countdown', { duration: 5 });
+  startCountdown(5);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('roomCode').textContent = roomCode;
+  await checkOwnerStatus();
+  setupCommandListener();
+  setInterval(checkOwnerStatus, 1000);
+  document.getElementById('startButton').addEventListener('click', () => {
+    if (isOwner) handleCountdown();
+  });
+});
+
+window.addEventListener('beforeunload', async () => {
+  if (isOwner) {
+    const redirectData = JSON.stringify({ command: 'redirect', payload: { url: `index.html?roomCode=${roomCode}` } });
+    navigator.sendBeacon('/api/send-command', redirectData);
+  }
+});
 
 waiting_room.html:
 
@@ -406,590 +695,6 @@ waiting_room.html:
   </div>
 
   <!-- Javascript -->
-  <script src="Javascript/waiting_room.js"></script>
+  <script type="module" src="Javascript/waiting_room.js"></script>
 </body>
 </html>
-
-
-waiting_room.js:
-
-// Variables globales
-let isOwner = false;
-let currentUsers = {};
-const userId = localStorage.getItem('userId');
-const roomCode = localStorage.getItem('roomCode');
-
-if (!roomCode || !userId) {
-    window.location.href = document.referrer || '/';
-}
-
-// Gestion du modal de confirmation pour quitter le salon
-const modal = document.getElementById('confirmationModal');
-const leaveButton = document.getElementById('leaveButton');
-const cancelButton = document.getElementById('cancelButton');
-const confirmButton = document.getElementById('confirmButton');
-const modalMessage = document.getElementById('modalMessage');
-
-function showModal(message, isOwnerLeaving = false) {
-    modalMessage.textContent = message;
-    modal.classList.add('active');
-
-    confirmButton.onclick = () => {
-    if (isOwnerLeaving) {
-        deleteLobby();
-    } else {
-        leaveLobby();
-    }
-    };
-}
-
-function hideModal() {
-    modal.classList.remove('active');
-}
-
-leaveButton.addEventListener('click', () => {
-    const message = isOwner 
-    ? "Attention ! Si vous quittez cette page, le salon sera supprimé. Êtes-vous sûr de vouloir continuer ?"
-    : "Êtes-vous sûr de vouloir quitter le salon ?";
-    showModal(message, isOwner);
-});
-
-cancelButton.addEventListener('click', hideModal);
-modal.addEventListener('click', (e) => {
-    if (e.target === modal) hideModal();
-});
-
-// Mise à jour de l'affichage des joueurs
-function updatePlayersGrid(users, ownerId) {
-    const playersGrid = document.getElementById('playersGrid');
-    playersGrid.innerHTML = '';
-
-    // Trier les utilisateurs : owner en premier, puis par join_time
-    const sortedUsers = Object.values(users).sort((a, b) => {
-    if (a.id === ownerId) return -1;
-    if (b.id === ownerId) return 1;
-    return a.join_time - b.join_time;
-    });
-
-    // Afficher les utilisateurs triés dans la grille
-    for (let i = 0; i < 8; i++) {
-    const playerSlot = document.createElement('div');
-    playerSlot.classList.add('player-slot');
-
-    if (i < sortedUsers.length) {
-        const user = sortedUsers[i];
-        playerSlot.innerHTML = `
-        <div class="player-avatar${user.id === userId ? ' current-player' : ''}">
-            <img src="/static/images/avatar/${user.avatar_index + 1}.png" alt="${user.name}">
-        </div>
-        <span class="waiting-text">
-            <strong>${user.name}</strong>
-            ${user.id === ownerId ? ' 👑' : ''} 
-            ${user.id === userId ? ' (Vous)' : ''}
-        </span>
-        `;
-    } else {
-        playerSlot.innerHTML = `
-        <div class="player-avatar empty">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-        </div>
-        <span class="waiting-text">En attente...</span>
-        `;
-    }
-    playersGrid.appendChild(playerSlot);
-    }
-}
-
-// Mise à jour du bouton de démarrage
-function updateStartButton(userCount, maxPlayers) {
-    const startButton = document.getElementById('startButton');
-    startButton.textContent = `Lancer la partie (${userCount}/${maxPlayers})`;
-    // Seul le propriétaire avec au moins 2 joueurs peut cliquer sur le bouton
-    startButton.disabled = !isOwner || userCount < 2;
-}
-
-// Mise à jour du salon via l'API
-function updateRoom() {
-    fetch(`/api/lobby/${roomCode}`)
-    .then(response => {
-        if (!response.ok) throw new Error('Lobby not found');
-        return response.json();
-    })
-    .then(data => {
-        isOwner = data.owner === userId;
-        currentUsers = data.users;
-        updatePlayersGrid(data.users, data.owner);
-        updateStartButton(Object.keys(data.users).length, 8);
-    })
-    .catch(err => {
-        console.error('Erreur:', err);
-        if (err.message === 'Lobby not found') {
-        alert('Le salon n\'existe plus !');
-        window.location.href = '/';
-        }
-    });
-}
-
-// Fonctions de gestion du lobby
-async function leaveLobby() {
-    try {
-    await fetch(`/api/lobby/${roomCode}/leave`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-    });
-    localStorage.clear();
-    window.location.href = '/';
-    } catch (err) {
-    console.error('Erreur:', err);
-    window.location.href = '/';
-    }
-}
-
-async function deleteLobby() {
-    try {
-    await fetch(`/api/lobby/delete/${roomCode}`, { method: 'DELETE' });
-    localStorage.clear();
-    window.location.href = '/';
-    } catch (err) {
-    console.error('Erreur:', err);
-    window.location.href = '/';
-    }
-}
-
-// Gestion du décompte avec animation
-const startButton = document.getElementById('startButton');
-const countdownOverlay = document.getElementById('countdownOverlay');
-const countdownNumber = document.getElementById('countdownNumber');
-const cancelCountdown = document.getElementById('cancelCountdown');
-let countdownInterval;
-
-startButton.addEventListener('click', () => {
-    // Ne rien faire si le bouton est désactivé (ce qui sera le cas pour les non-propriétaires)
-    if (startButton.disabled) return;
-
-    // Afficher l'overlay
-    countdownOverlay.style.display = 'flex';
-    let counter = 5;
-    countdownNumber.textContent = counter;
-
-    // Pour chaque chiffre, on recréera l'animation en réaffectant la classe
-    countdownInterval = setInterval(() => {
-    counter--;
-    if (counter < 0) {
-        clearInterval(countdownInterval);
-        // Rediriger TOUS les joueurs vers index.html?lobby=CODE
-        fetch(`/api/lobby/${roomCode}/start`, { method: 'POST' });
-        window.location.href = `index.html?lobby=${roomCode}`;
-    } else {
-        // Remise à zéro de l'animation en retirant puis réappliquant la classe
-        countdownNumber.textContent = counter;
-        countdownNumber.classList.remove('countdown-number');
-        // Forcer le reflow pour redémarrer l'animation
-        void countdownNumber.offsetWidth;
-        countdownNumber.classList.add('countdown-number');
-    }
-    }, 1000);
-});
-
-// Annuler le décompte si l'utilisateur clique sur "Annuler"
-cancelCountdown.addEventListener('click', () => {
-    clearInterval(countdownInterval);
-    countdownOverlay.style.display = 'none';
-});
-
-// Initialisation au chargement du DOM
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('roomCode').textContent = roomCode;
-    updateRoom();
-    setInterval(updateRoom, 3000);
-});
-
-// Gestion de la déconnexion avant de quitter la page
-window.addEventListener('beforeunload', () => {
-    if (isOwner) deleteLobby();
-    else leaveLobby();
-});
-
-
-Games/quiz-rush/quiz-rush.html:
-
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Rush</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="credits.css">
-    <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
-</head>
-<body>
-    <video id="video-bg" autoplay muted loop>
-        <source src="images/BG.mp4" type="video/mp4">
-        Votre navigateur ne supporte pas la vidéo.
-    </video>
-
-    <div class="overlay-gradient"></div>
-
-    <div class="main-container">
-        <div id="category-overlay"></div>
-        <div id="quiz-content" style="display: none;">
-            <div id="black-overlay"></div>
-            <div id="title-container">
-                <div id="question"></div>
-                <div id="category"></div>
-            </div>
-            <div id="answers-container"></div>
-            <div id="timer-container">
-                <div id="timer-bar"></div>
-            </div>
-        </div>
-
-        <div id="players-container"></div>
-    </div>
-
-    <audio id="background-music">
-        <source src="music/BG.mp3" type="audio/mpeg">
-        Votre navigateur ne supporte pas l'élément audio.
-    </audio>
-
-    <button id="start-button">Commencer !</button>
-
-    <script type="module" src="script.js"></script>
-    <script type="module" src="/Games/credits/credits.js"></script>
-</body>
-</html>
-
-quiz-rush-script.js:
-
-import { preloadCurtains } from '/Games/credits/credits.js';
-import { showEndGameCurtains } from '/Games/credits/credits.js';
- 
-document.addEventListener("DOMContentLoaded", () => {
-    const startButton = document.getElementById('start-button');
-    const backgroundMusic = document.getElementById('background-music');
-    const playersContainer = document.getElementById('players-container');
-    let playersClicked = 0;
-    
-    startButton.addEventListener('click', () => {
-        startButton.disabled = true;
-        addPlayerToContainer(0);
-        playersClicked++;
-        for (let i = 1; i < players.length; i++) {
-            setTimeout(() => {
-                addPlayerToContainer(i);
-                playersClicked++;
-                if (playersClicked === players.length) {
-                    startButton.style.display = 'none';
-                    const countdownDiv = document.createElement('div');
-                    countdownDiv.id = 'countdown';
-                    countdownDiv.style.position = 'fixed';
-                    countdownDiv.style.top = '50%';
-                    countdownDiv.style.left = '50%';
-                    countdownDiv.style.transform = 'translate(-50%, -50%)';
-                    countdownDiv.style.fontSize = '2em';
-                    countdownDiv.style.color = 'white';
-                    countdownDiv.style.zIndex = '1000';
-                    document.body.appendChild(countdownDiv);
-                    let countdown = 5;
-                    countdownDiv.textContent = `La partie commence dans ${countdown} secondes...`;
-                    const countdownInterval = setInterval(() => {
-                        countdown--;
-                        countdownDiv.textContent = `La partie commence dans ${countdown} secondes...`;
-                        if (countdown <= 0) {
-                            clearInterval(countdownInterval);
-                            countdownDiv.remove();
-                            
-                            document.getElementById('quiz-content').style.display = 'block';
-                            renderPlayers();
-                            initQuiz();
-                        }
-                    }, 1000);
-                }
-            }, (i * (Math.random() * 1000 + 1000)));
-        }
-    });
-});
-
-function addPlayerToContainer(playerIndex) {
-    const playersContainer = document.getElementById('players-container');
-    const player = players[playerIndex];
-    const playerDiv = document.createElement('div');
-    playerDiv.className = 'player';
-    playerDiv.innerHTML = `
-        <img src="${player.avatar}" alt="${player.name}">
-        <div class="player-info">
-            <span class="player-name">${player.name}</span>
-            <span class="player-score">${player.score}</span>
-        </div>
-    `;
-    playersContainer.appendChild(playerDiv);
-    playPopSound();
-}
-
-const players = [
-    { name: "Jean-Jaquelino", score: 0, avatar: '/static/images/avatar/1.png' },
-    { name: "Lucette-Albert", score: 0, avatar: '/static/images/avatar/2.png' },
-    { name: "George-Paulin", score: 0, avatar: '/static/images/avatar/3.png' },
-    { name: "Bob XVII", score: 0, avatar: '/static/images/avatar/4.png' },
-    { name: "L'Enclume", score: 0, avatar: '/static/images/avatar/5.png' },
-    { name: "Jean-Paulon", score: 0, avatar: '/static/images/avatar/6.png' },
-    { name: "⎍⋔ ⎍ ⏃⋔⟒", score: 0, avatar: '/static/images/avatar/7.png' },
-    { name: "Bob", score: 0, avatar: '/static/images/avatar/8.png' }
-];
-
-let selectedAnswer = null;
-let usedQuestions = [];
-let currentQuestionIndex = 0;
-let quizData = null;
-let fakePlayersPicked = {};
-let questionStartTime = null;
-
-function renderPlayers() {
-    const container = document.getElementById('players-container');
-    container.innerHTML = '';
-    players.forEach((player) => {
-        const playerDiv = document.createElement('div');
-        playerDiv.className = 'player';
-        playerDiv.innerHTML = `
-            <img src="${player.avatar}" alt="${player.name}">
-            <div class="player-info">
-                <span class="player-name">${player.name}</span>
-                <span class="player-score">${player.score}</span>
-            </div>
-        `;
-        container.appendChild(playerDiv);
-    });
-}
-
-function updateScores() {
-    const playerContainers = document.querySelectorAll('#players-container .player');
-    playerContainers.forEach((container, index) => {
-        const scoreElement = container.querySelector('.player-score');
-        scoreElement.textContent = players[index].score;
-    });
-}
-
-function updateMarkerPositions(answerElement) {
-    const markers = answerElement.querySelectorAll('.player-marker');
-    markers.forEach((marker, index) => {
-        marker.style.right = (5 + index * 45) + 'px';
-    });
-}
-
-function addPlayerMarker(answerElement, playerIndex) {
-    let existing = answerElement.querySelector(`.player-marker[data-player-index="${playerIndex}"]`);
-    if (!existing) {
-        let marker = document.createElement('img');
-        marker.src = players[playerIndex].avatar;
-        marker.className = 'player-marker';
-        marker.dataset.playerIndex = playerIndex;
-        marker.dataset.responseTime = ((Date.now() - questionStartTime) / 1000).toString();
-        answerElement.appendChild(marker);
-        playPopSound();
-    }
-    updateMarkerPositions(answerElement);
-}
-
-function userSelectAnswer(answerElement) {
-    if (selectedAnswer && selectedAnswer !== answerElement) {
-        selectedAnswer.classList.remove('selected');
-        let existingMarker = selectedAnswer.querySelector(`.player-marker[data-player-index="0"]`);
-        if (existingMarker) existingMarker.remove();
-    }
-    selectedAnswer = answerElement;
-    answerElement.classList.add('selected');
-    addPlayerMarker(answerElement, 0);
-}
-
-function playPopSound() {
-    const selectSound = new Audio('/static/music/pop.mp3');
-    selectSound.play().catch(error => {
-        console.error("Erreur lors de la lecture du son :", error);
-    });
-}
-
-function createAnswerElement(answerText) {
-    const answerDiv = document.createElement('div');
-    answerDiv.className = 'answer';
-    answerDiv.textContent = answerText;
-    answerDiv.addEventListener('click', () => {
-        userSelectAnswer(answerDiv);
-    });
-    return answerDiv;
-}
-
-async function loadQuiz() {
-    const response = await fetch('quiz-list.json');
-    const data = await response.json();
-    const categories = Object.keys(data);
-    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-    const questions = data[randomCategory];
-    let randomIndex;
-    do {
-        randomIndex = Math.floor(Math.random() * questions.length);
-    } while (usedQuestions.includes(randomIndex));
-    usedQuestions.push(randomIndex);
-    const question = questions[randomIndex];
-    return { question, category: randomCategory };
-}
-
-function preloadImage(url) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(url);
-        img.onerror = () => reject(url);
-        img.src = url;
-    });
-}
-
-async function initQuiz() {
-    if (currentQuestionIndex >= 5) {
-        preloadCurtains();
-        showEndGameCurtains(players);
-        return;
-    }
-    quizData = await loadQuiz();
-    const titleContainer = document.getElementById('title-container');
-    const blackOverlay = document.getElementById('black-overlay');
-    const answersContainer = document.getElementById('answers-container');
-    titleContainer.classList.remove('moved');
-    blackOverlay.style.opacity = '1';
-    answersContainer.style.opacity = '0';
-    const categoryImageUrl = `images/${quizData.category}BG.png`;
-    const fallbackImageUrl = 'images/ErrorBG.png';
-    const overlay = document.getElementById('category-overlay');
-    preloadImage(categoryImageUrl)
-        .then(() => {
-            overlay.style.backgroundImage = `url('${categoryImageUrl}')`;
-        })
-        .catch(() => {
-            overlay.style.backgroundImage = `url('${fallbackImageUrl}')`;
-        });
-    document.getElementById('question').textContent = quizData.question.question;
-    document.getElementById('category').textContent = `Catégorie : ${quizData.category}`;
-    answersContainer.innerHTML = '';
-    quizData.question.answers.forEach(answerText => {
-        const answerDiv = createAnswerElement(answerText);
-        answersContainer.appendChild(answerDiv);
-    });
-    simulateFakePlayers();
-    const timerBar = document.getElementById('timer-bar');
-    timerBar.style.transform = 'scaleX(0)';
-    timerBar.style.transition = 'none';
-    
-    // Après un délai, le timer démarre et la musique BG est jouée
-    setTimeout(() => {
-        const backgroundMusic = document.getElementById('background-music');
-        backgroundMusic.currentTime = 0;
-        backgroundMusic.play().catch(error => {
-            console.error("Erreur lors de la lecture de la musique :", error);
-        });
-        
-        questionStartTime = Date.now();
-        titleContainer.classList.add('moved');
-        blackOverlay.style.opacity = '0';
-        answersContainer.style.opacity = '1';
-        document.querySelectorAll('.answer').forEach((answer, index) => {
-            setTimeout(() => {
-                answer.style.opacity = '1';
-                answer.style.transform = 'translateX(0)';
-            }, 200 * index);
-        });
-        timerBar.style.transition = 'transform 20s linear';
-        timerBar.style.transform = 'scaleX(1)';
-        setTimeout(() => {
-            validateAnswers(quizData.question.correct);
-        }, 20000);
-    }, 4000);
-}
-
-function simulateFakePlayers() {
-    fakePlayersPicked = {};
-    const answers = document.querySelectorAll('.answer');
-    for (let i = 1; i < players.length; i++) {
-        let delay = Math.random() * (28000 - 5000) + 5000;
-        setTimeout(() => {
-            if (fakePlayersPicked[i]) return;
-            let randomAnswer = answers[Math.floor(Math.random() * answers.length)];
-            addPlayerMarker(randomAnswer, i);
-            fakePlayersPicked[i] = true;
-        }, delay);
-    }
-}
-
-function validateAnswers(correctAnswer) {
-    document.querySelectorAll('.answer').forEach(answer => {
-        if (answer.textContent.trim() === correctAnswer.trim()) {
-            answer.classList.add('correct');
-            const markers = answer.querySelectorAll('.player-marker');
-            markers.forEach((marker, index) => {
-                let playerIndex = parseInt(marker.dataset.playerIndex, 10);
-                let responseTime = parseFloat(marker.dataset.responseTime);
-                if (isNaN(responseTime)) {
-                    responseTime = (Date.now() - questionStartTime) / 1000;
-                }
-                let points = 0;
-                if (responseTime < 2) {
-                    points = 10;
-                } else if (responseTime < 5) {
-                    points = 5;
-                } else if (responseTime < 10) {
-                    points = 2;
-                } else {
-                    points = 1;
-                }
-                players[playerIndex].score += points;
-                setTimeout(() => {
-                    showPlusOne(playerIndex);
-                }, index * 300);
-            });
-            setTimeout(() => {
-                updateScores();
-            }, markers.length * 300);
-        } else {
-            answer.classList.add('wrong');
-        }
-    });
-    setTimeout(() => {
-        currentQuestionIndex++;
-        initQuiz();
-    }, 5000);
-}
-
-function showPlusOne(playerIndex) {
-    const playerContainers = document.querySelectorAll('#players-container .player');
-    const container = playerContainers[playerIndex];
-    if (container) {
-        const scoreElement = container.querySelector('.player-score');
-        scoreElement.classList.add('score-updated');
-        setTimeout(() => {
-            scoreElement.classList.remove('score-updated');
-        }, 1500);
-    }
-}
-
-export { players };
-
-
-
-
-
-
-Voici les consignes que tu devras suivre a l'exactitude:
-
-- fait un lobby_manager.js qui centralise la gestion des lobby et joueurs du lobby (les pages et scripts pourront l'utiliser pour par exemple display la liste des joueurs)
-
-- fait une fonction qui permet a l'owner d'un lobby d'envoyer des requête aux autres joueurs (exemple se faire rediriger sur une page précise, afficher le timer etc...)
-
-- dans le waiting_room tu utilisera donc lobby_manager.js pour le fetch des joueurs nottament, quand l'owner appuiera sur le timer, le timer apparaitra pour tout le monde mais le boutton annuler n'apparaitra que pour l'owner, puis a la fin de ce timer tout les joueurs et l'owner seront envoyer dans index.html d'ou index.html avec lobby_manager.js fera display dans le bord bas gauche la liste des joueurs avec son propre fichier css séparé "lobby_style.css" ...
-
-- dans quiz rush tu utilisera donc lobby_manager.js, quand il n'y as pas de lobby actif il utilisera donc les faux joueurs
-
-- En somme fait en sorte qu'avec un simple import on puisse effectuer dans chaques pages ce dont on a besoin et qu'on puisse envoyer des requêtes aux autres joueurs du lobby quand on est l'owner pour que tout le monde soit impacter en même temps
-
-- TU ne doit NI supprimer Ni modifier ce dont je ne t'ai pas parler, et le timer n'est présent que dans waiting_room

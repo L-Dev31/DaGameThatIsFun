@@ -9,53 +9,8 @@
   <link rel="stylesheet" href="/static/lobby_style.css">
   <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
 </head>
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const hasVisited = localStorage.getItem("hasVisited");
-    if (hasVisited) {
-      document.getElementById("introScreen").style.display = "none";
-    } else {
-      localStorage.setItem("hasVisited", "true");
-    }
-  });
-  function showModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.classList.add("active");
-  }
-  function hideModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.classList.remove("active");
-  }
-  document.addEventListener("click", (event) => {
-    document.querySelectorAll(".modal-overlay.active").forEach((modal) => {
-      if (event.target === modal) hideModal(modal.id);
-    });
-  });
-  async function showQrCodePopup() {
-    try {
-      const response = await fetch("/get_ip");
-      if (!response.ok) throw new Error(Erreur HTTP : ${response.status});
-      const data = await response.json();
-      document.getElementById("qrCodeImage").src = data:image/png;base64,${data.qr_code};
-      document.getElementById("qrCodeUrl").textContent = data.url;
-      showModal("qrCodeModal");
-    } catch (error) {
-      console.error("Erreur lors de la récupération du QR code :", error);
-      alert("Impossible de charger le QR code. Veuillez réessayer.");
-    }
-  }
-  function copyLink() {
-    const link = document.getElementById("qrCodeUrl").textContent;
-    navigator.clipboard.writeText(link).then(() => {
-      alert("Lien copié !");
-    }).catch((error) => {
-      console.error("Erreur lors de la copie du lien :", error);
-      alert("Impossible de copier le lien. Veuillez réessayer.");
-    });
-  }
-</script>
 <body>
-  <button class="share-control" id="shareToggle" onclick="showQrCodePopup()">
+  <button class="share-control" id="shareToggle">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="24px" fill="white" height="24px">
       <path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"/>
     </svg>
@@ -160,88 +115,10 @@
   </div>
   <div id="playersContainer" class="players-container" style="display:none;"></div>
   <audio id="staticSound" src="/static/music/tv-static.mp3"></audio>
-  <script type="module" src="Javascript/lobby_manager.js"></script>
-  <script type="module" src="Javascript/index.js"></script>
+  <script type="module" src="javascript/index.js"></script>
   <script type="module">
-    import LobbyManager from './Javascript/lobby_manager.js';
-    document.addEventListener('DOMContentLoaded', async () => {
-      const roomCode = localStorage.getItem('roomCode');
-      if (roomCode) {
-        document.getElementById('playersContainer').style.display = 'block';
-        const lobby = await LobbyManager.getCurrentLobby();
-        const userId = localStorage.getItem('userId');
-        const isOwner = (lobby.owner === userId);
-        if (isOwner) {
-          const createLink = document.getElementById('createLobbyLink');
-          const createBtn = createLink.querySelector('.action-button.create-lobby');
-          createBtn.querySelector('.button-text').textContent = "Quitter le lobby";
-          createLink.removeAttribute('href');
-          createBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            if (confirm("Vous êtes l'owner. Quitter le lobby supprimera le salon. Confirmez-vous ?")) {
-              await LobbyManager.sendCommandToPlayers('lobby-deleted');
-              await LobbyManager.leaveLobby();
-              localStorage.removeItem('roomCode');
-              localStorage.removeItem('userId');
-              window.location.reload();
-            }
-          });
-          const creditsLink = document.getElementById('creditsLink');
-          creditsLink.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const targetUrl = "credits.html";
-            await LobbyManager.sendCommandToPlayers('redirect', { url: targetUrl });
-            window.location.href = targetUrl;
-          });
-          const joinLink = document.getElementById('joinLobbyLink');
-          const joinBtn = joinLink.querySelector('.action-button.join-lobby');
-          joinBtn.querySelector('.button-text').textContent = "Salle d'attente";
-          joinLink.removeAttribute('href');
-          joinBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await LobbyManager.sendCommandToPlayers('return-to-waiting');
-            window.location.replace(waiting_room.html?roomCode=${roomCode});
-          });
-        } else {
-          const creditsLink = document.getElementById('creditsLink');
-          creditsLink.removeAttribute('href');
-          creditsLink.querySelector('.action-button.credits').setAttribute('disabled', 'true');
-          creditsLink.querySelector('.action-button.credits').style.opacity = 0.5;
-          const joinLink = document.getElementById('joinLobbyLink');
-          joinLink.removeAttribute('href');
-          joinLink.querySelector('.action-button.join-lobby').setAttribute('disabled', 'true');
-          joinLink.querySelector('.action-button.join-lobby').style.opacity = 0.5;
-          const createLink = document.getElementById('createLobbyLink');
-          createLink.querySelector('.action-button.create-lobby').addEventListener('click', async (e) => {
-            if (confirm("Êtes-vous sûr de vouloir quitter le lobby ?")) {
-              await LobbyManager.leaveLobby();
-              localStorage.removeItem('roomCode');
-              localStorage.removeItem('userId');
-              window.location.reload();
-            }
-          });
-        }
-      }
-      async function pollLobbyCommands() {
-        const roomCode = localStorage.getItem('roomCode');
-        if (!roomCode) return;
-        const lobby = await LobbyManager.getCurrentLobby();
-        if (lobby.latest_command) {
-          const command = lobby.latest_command.command;
-          if (command === 'redirect' && lobby.latest_command.payload.url) {
-            window.location.replace(lobby.latest_command.payload.url);
-          } else if (command === 'return-to-waiting') {
-            window.location.replace(waiting_room.html?roomCode=${roomCode});
-          } else if (command === 'lobby-deleted') {
-            alert('Le lobby a été supprimé.');
-            localStorage.removeItem('roomCode');
-            localStorage.removeItem('userId');
-            window.location.reload();
-          }
-        }
-      }
-      setInterval(pollLobbyCommands, 2000);
-    });
-  </script>
+    import LobbyManager from './javascript/lobby_manager.js';
+    LobbyManager.init();
+    </script>
 </body>
 </html>
