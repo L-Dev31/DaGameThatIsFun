@@ -1,3 +1,30 @@
+
+import LobbyManager from './lobby_manager.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const playersContainer = document.getElementById('playersContainer');
+
+    async function updatePlayers() {
+        const players = await LobbyManager.getActivePlayers();
+        playersContainer.innerHTML = '';
+        players.forEach(player => {
+            const playerDiv = document.createElement('div');
+            playerDiv.classList.add('player');
+            playerDiv.innerHTML = `
+                <img src="${player.avatar}" alt="${player.name}" class="player-avatar">
+                <span class="player-name">${player.name}</span>
+            `;
+            playersContainer.appendChild(playerDiv);
+        });
+    }
+
+    // Mise à jour initiale
+    await updatePlayers();
+    // Actualisation périodique toutes les 5 secondes
+    setInterval(updatePlayers, 5000);
+});
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const introScreen = document.getElementById('introScreen');
     const previewImage = document.getElementById('previewImage');

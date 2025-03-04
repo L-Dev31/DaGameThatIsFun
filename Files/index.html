@@ -1,188 +1,251 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Party Game Lobby</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="/static/mobile_style.css">
-    <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Party Game Lobby</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/mobile_style.css">
+  <!-- Style spécifique pour l'affichage du lobby (liste des joueurs en bas à droite) -->
+  <link rel="stylesheet" href="/static/lobby_style.css">
+  <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
 </head>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const hasVisited = localStorage.getItem("hasVisited");
-        if (hasVisited) {
-            document.getElementById("introScreen").style.display = "none";
-        } else {
-            localStorage.setItem("hasVisited", "true");
-        }
-    });
+  document.addEventListener("DOMContentLoaded", function() {
+      const hasVisited = localStorage.getItem("hasVisited");
+      if (hasVisited) {
+          document.getElementById("introScreen").style.display = "none";
+      } else {
+          localStorage.setItem("hasVisited", "true");
+      }
+  });
 
-    function showModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) modal.classList.add("active");
-    }
+  function showModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) modal.classList.add("active");
+  }
 
-    function hideModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) modal.classList.remove("active");
-    }
+  function hideModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) modal.classList.remove("active");
+  }
 
-    document.addEventListener("click", (event) => {
-        document.querySelectorAll(".modal-overlay.active").forEach((modal) => {
-            if (event.target === modal) hideModal(modal.id);
-        });
-    });
+  document.addEventListener("click", (event) => {
+      document.querySelectorAll(".modal-overlay.active").forEach((modal) => {
+          if (event.target === modal) hideModal(modal.id);
+      });
+  });
 
-    async function showQrCodePopup() {
-        try {
-            const response = await fetch("/get_ip");
-            if (!response.ok) throw new Error(`Erreur HTTP : ${response.status}`);
-            const data = await response.json();
-            document.getElementById("qrCodeImage").src = `data:image/png;base64,${data.qr_code}`;
-            document.getElementById("qrCodeUrl").textContent = data.url;
-            showModal("qrCodeModal");
-        } catch (error) {
-            console.error("Erreur lors de la récupération du QR code :", error);
-            alert("Impossible de charger le QR code. Veuillez réessayer.");
-        }
-    }
+  async function showQrCodePopup() {
+      try {
+          const response = await fetch("/get_ip");
+          if (!response.ok) throw new Error(`Erreur HTTP : ${response.status}`);
+          const data = await response.json();
+          document.getElementById("qrCodeImage").src = `data:image/png;base64,${data.qr_code}`;
+          document.getElementById("qrCodeUrl").textContent = data.url;
+          showModal("qrCodeModal");
+      } catch (error) {
+          console.error("Erreur lors de la récupération du QR code :", error);
+          alert("Impossible de charger le QR code. Veuillez réessayer.");
+      }
+  }
 
-    function copyLink() {
-        const link = document.getElementById("qrCodeUrl").textContent;
-        navigator.clipboard.writeText(link).then(() => {
-            alert("Lien copié !");
-        }).catch((error) => {
-            console.error("Erreur lors de la copie du lien :", error);
-            alert("Impossible de copier le lien. Veuillez réessayer.");
-        });
-    }
+  function copyLink() {
+      const link = document.getElementById("qrCodeUrl").textContent;
+      navigator.clipboard.writeText(link).then(() => {
+          alert("Lien copié !");
+      }).catch((error) => {
+          console.error("Erreur lors de la copie du lien :", error);
+          alert("Impossible de copier le lien. Veuillez réessayer.");
+      });
+  }
 </script>
 <body>
-    <!-- Bouton pour afficher le QR code -->
-    <button class="share-control" id="shareToggle" onclick="showQrCodePopup()">
-        <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 30 30" width="24px" fill="white" height="24px"><path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"/></svg>
-    </button>
+  <!-- Bouton pour afficher le QR code -->
+  <button class="share-control" id="shareToggle" onclick="showQrCodePopup()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="24px" fill="white" height="24px">
+          <path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"/>
+      </svg>
+  </button>
 
-    <!-- Bouton de contrôle du son -->
-    <button class="sound-control" id="soundToggle">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-        </svg>
-    </button>
+  <!-- Bouton de contrôle du son -->
+  <button class="sound-control" id="soundToggle">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+      </svg>
+  </button>
 
-    <!-- Modale pour le QR code -->
-    <div id="qrCodeModal" class="modal-overlay">
-        <div class="modal-container">
-            <h2 class="modal-title">Partager le lien</h2>
-            <div class="modal-content">
-                <p id="qrCodeUrl" style="word-break: break-all; margin-bottom: 1rem;"></p>
-                <img id="qrCodeImage" alt="QR Code" style="width: 200px; height: 200px; margin: 0 auto;">
+  <!-- Modale pour le QR code -->
+  <div id="qrCodeModal" class="modal-overlay">
+      <div class="modal-container">
+          <h2 class="modal-title">Partager le lien</h2>
+          <div class="modal-content">
+              <p id="qrCodeUrl" style="word-break: break-all; margin-bottom: 1rem;"></p>
+              <img id="qrCodeImage" alt="QR Code" style="width: 200px; height: 200px; margin: 0 auto;">
+              <div style="margin-top: 1rem; text-align: center;">
+                  <button onclick="copyLink()" class="modal-button modal-button-secondary">
+                      Copier le lien
+                  </button>
+              </div>
+          </div>
+          <div class="modal-buttons">
+              <button class="modal-button modal-button-primary" onclick="hideModal('qrCodeModal')">Fermer</button>
+          </div>
+      </div>
+  </div>
+  
+  <div class="bg"></div>
+  
+  <div id="introScreen" class="intro-screen">
+      <div class="intro-content">
+          <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="intro-logo">
+          <p class="intro-text">Avertissement !</p>
+      </div>
+      <div class="security-text">
+          Veuillez noter que ce jeu peut contenir du contenu grossier ou inapproprié pour certains publics.<br><br>
+          Ce n’est en aucun cas notre intention de blesser quiconque, il s’agit simplement d’un jeu conçu pour s’amuser et rire ensemble :)
+      </div>
+  </div>
 
-                <!-- Lien à copier -->
-                <div style="margin-top: 1rem; text-align: center;">
-                    <p id="qrCodeUrl" style="word-break: break-all; margin-bottom: 1rem;"></p>
-                    <button onclick="copyLink()" class="modal-button modal-button-secondary">
-                        Copier le lien
-                    </button>
-                </div>
-                
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-button modal-button-primary" onclick="hideModal('qrCodeModal')">Fermer
-            </div>
-        </div>
-    </div>
-    
-    <div class="bg"></div>
-    
-    <div id="introScreen" class="intro-screen">
-        <div class="intro-content">
-            <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="intro-logo">
-            <p class="intro-text">Avertissement !</p>
-        </div>
-        <div class="security-text">Veuillez noter que ce jeu peut contenir du contenu grossier ou inapproprié pour certains publics. <br><br>
-             Ce n’est en aucun cas notre intention de blesser quiconque, il s’agit simplement d’un jeu conçu pour s’amuser et rire ensemble :)</div>
-    </div>
+  <div class="logo-container">
+      <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
+  </div>
 
-    <div class="logo-container">
-        <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
-    </div>
+  <div class="container">
+      <div class="grid">
+          <div>
+              <div class="game-buttons">
+                  <button class="game-button active" data-game="draw-contest">
+                      <img src="/static/images/logo/draw-contest.png" alt="Draw Contest" class="game-logo">
+                  </button>
+                  <button class="game-button" data-game="pictionary">
+                      <img src="/static/images/logo/pictionary.png" alt="Pictionary" class="game-logo">
+                  </button>
+                  <button class="game-button" data-game="quiz-rush">
+                      <img src="/static/images/logo/quiz-rush.png" alt="Quiz Rush" class="game-logo">
+                  </button>
+                  <button class="game-button" data-game="object-tales" disabled>
+                      <img src="/static/images/logo/object-tales-disabled.png" alt="Object Tales" class="game-logo">
+                  </button>
+              </div>
+          </div>
 
-    <div class="container">
-        <div class="grid">
-            <div>
-                <div class="game-buttons">
-                    <button class="game-button active" data-game="draw-contest">
-                        <img src="/static/images/logo/draw-contest.png" alt="Draw Contest" class="game-logo">
-                    </button>
-                    <button class="game-button" data-game="pictionary">
-                        <img src="/static/images/logo/pictionary.png" alt="Pictionary" class="game-logo">
-                    </button>
-                    <button class="game-button" data-game="quiz-rush">
-                        <img src="/static/images/logo/quiz-rush.png" alt="Quiz Rush" class="game-logo">
-                    </button>
-                    <button class="game-button" data-game="object-tales" disabled>
-                        <img src="/static/images/logo/object-tales-disabled.png" alt="Object Tales" class="game-logo">
-                    </button>
-                </div>
-            </div>
+          <div class="preview-card">
+              <div class="tv-static"></div>
+              <img src="/static/images/preview/draw-contest.png" alt="Game Preview" class="preview-image" id="previewImage">
+              <div class="preview-content">
+                  <h3 class="preview-title" id="previewTitle">Dessine moi un Désastre</h3>
+                  <p class="preview-description" id="previewDescription">
+                      Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence !
+                  </p>
+                  <p class="preview-player-number" id="previewPlayerNumber">4-8 Joueurs</p>
+                  <button class="preview-button">
+                      Lancer le jeu !
+                  </button>
+              </div>
+          </div>
+      </div>
 
-            <div class="preview-card">
-                <div class="tv-static"></div>
-                <img src="/static/images/preview/draw-contest.png" alt="Game Preview" class="preview-image" id="previewImage">
-                <div class="preview-content">
-                    <h3 class="preview-title" id="previewTitle">Dessine moi un Désastre</h3>
-                    <p class="preview-description" id="previewDescription">
-                        Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence !
-                    </p>
-                    <p class="preview-player-number" id="previewPlayerNumber">4-8 Joueurs</p>
-                    <button class="preview-button">
-                        Lancer le jeu !
-                    </button>
-                </div>
-            </div>
-        </div>
+      <div class="bottom-actions">
+          <!-- Les liens initiaux seront modifiés si l'utilisateur est dans un lobby -->
+          <a href="create_lobby.html" id="createLobbyLink">
+              <button class="action-button create-lobby">
+                  <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 5v14M5 12h14"></path>
+                  </svg>
+                  <span class="button-text">Créer Lobby</span>
+              </button>
+          </a>
 
-        <div class="bottom-actions">
-            <a href="create_lobby.html">
-                <button class="action-button create-lobby">
-                    <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 5v14M5 12h14"></path>
-                    </svg>
-                    <span class="button-text">Créer Lobby</span>
-                </button>
-            </a>
+          <a href="join_lobby.html" id="joinLobbyLink">
+              <button class="action-button join-lobby">
+                  <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  <span class="button-text">Rejoindre</span>
+              </button>
+          </a>
 
-            <a href="join_lobby.html">
-                <button class="action-button join-lobby">
-                    <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    <span class="button-text">Rejoindre</span>
-                </button>
-            </a>
+          <a href="credits.html">
+              <button class="action-button credits">
+                  <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="8" r="7"></circle>
+                      <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                  </svg>
+                  <span class="button-text">Credits</span>
+              </button>
+          </a>
+      </div>
+  </div>
 
-            <a href="credits.html">
-                <button class="action-button credits">
-                    <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="8" r="7"></circle>
-                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-                    </svg>
-                    <span class="button-text">Credits</span>
-                </button>
-            </a>
-        </div>
-    </div>
+  <!-- Container pour afficher la liste des joueurs dans le lobby (positionné en bas à droite) -->
+  <div id="playersContainer" class="players-container" style="display:none;"></div>
 
-    <audio id="staticSound" src="/static/music/tv-static.mp3"></audio>
+  <audio id="staticSound" src="/static/music/tv-static.mp3"></audio>
 
-    <!-- Javascript -->
-    <script src="Javascript/index.js"></script>
+  <!-- Import des modules JavaScript -->
+  <script type="module" src="Javascript/lobby_manager.js"></script>
+  <script type="module" src="Javascript/index.js"></script>
+  
+  <!-- Script pour gérer l'affichage et la modification des boutons si l'utilisateur est dans un lobby -->
+  <script type="module">
+    import LobbyManager from './Javascript/lobby_manager.js';
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Vérifier si l'utilisateur est dans un lobby (roomCode présent)
+      const roomCode = localStorage.getItem('roomCode');
+      if (roomCode) {
+        // Afficher le container des joueurs
+        document.getElementById('playersContainer').style.display = 'block';
+        
+        // Modifier le bouton "Créer Lobby" en "Quitter le lobby"
+        const createLink = document.getElementById('createLobbyLink');
+        const createBtn = createLink.querySelector('.action-button.create-lobby');
+        createBtn.querySelector('.button-text').textContent = "Quitter le lobby";
+        // Supprimer le href pour empêcher la navigation par défaut
+        createLink.removeAttribute('href');
+        createBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          // Vérifier via l'API si l'utilisateur est owner (vous pouvez stocker ce statut dans localStorage par exemple)
+          const lobby = await LobbyManager.getCurrentLobby();
+          const isOwner = lobby?.isOwner;
+          if (isOwner) {
+            if (confirm("Vous êtes l'owner. Quitter le lobby supprimera le salon. Confirmez-vous ?")) {
+              await LobbyManager.sendCommandToPlayers('lobby-deleted');
+              await LobbyManager.leaveLobby();
+              localStorage.removeItem('roomCode');
+              localStorage.removeItem('userId');
+              window.location.reload();
+            }
+          } else {
+            if (confirm("Êtes-vous sûr de vouloir quitter le lobby ?")) {
+              await LobbyManager.leaveLobby();
+              localStorage.removeItem('roomCode');
+              localStorage.removeItem('userId');
+              window.location.reload();
+            }
+          }
+        });
+        
+        // Modifier le bouton "Rejoindre" en "Salle d'attente"
+        const joinLink = document.getElementById('joinLobbyLink');
+        const joinBtn = joinLink.querySelector('.action-button.join-lobby');
+        joinBtn.querySelector('.button-text').textContent = "Salle d'attente";
+        // Supprimer le href par défaut
+        joinLink.removeAttribute('href');
+        joinBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          // Envoyer une commande pour réinitialiser l'état du lobby (passer de "in_game" à "waiting")
+          await LobbyManager.sendCommandToPlayers('return-to-waiting');
+          // Rediriger vers la waiting_room pour permettre l'ajout de joueurs
+          window.location.replace(`waiting_room.html?roomCode=${roomCode}`);
+        });
+      }
+    });
+  </script>
 </body>
 </html>

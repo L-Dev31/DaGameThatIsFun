@@ -1,6 +1,4 @@
+colorama
+ujson
 qrcode
-flask-socketio
-requests
-pillow
-
-
+Pillow

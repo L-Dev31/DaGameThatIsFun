@@ -9,7 +9,7 @@ def clear_screen():
 
 def get_lobbys():
     try:
-        response = requests.get('http://127.0.0.1:8000/api/lobbies')
+        response = requests.get('http://127.0.0.1:8080/api/lobbies')
         if response.status_code == 200:
             return response.json()
         else:
