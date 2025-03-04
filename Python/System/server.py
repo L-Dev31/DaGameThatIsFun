@@ -77,7 +77,6 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                     if room_code not in active_sessions:
                         raise ValueError("Salon introuvable")
                     lobby = active_sessions[room_code]
-                    # Utilisation de post_data déjà lue en début de méthode
                     if post_data.get('initiator') != lobby.owner:
                         self.send_error_response("Action non autorisée", 403)
                         return

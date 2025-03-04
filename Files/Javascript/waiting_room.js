@@ -102,6 +102,7 @@ function startCountdown(duration) {
     countdownNumber.textContent = counter;
     if (counter <= 0) {
       clearInterval(countdownInterval);
+      // L'owner envoie la commande de redirection, mais tous les joueurs doivent déjà avoir lancé le compte à rebours via la commande reçue
       LobbyManager.sendCommandToPlayers('redirect', { url: `index.html?roomCode=${roomCode}` });
       window.location.href = `index.html?roomCode=${roomCode}`;
     }
@@ -120,6 +121,7 @@ function setupCommandListener() {
     const command = lobby?.latest_command;
     if (command && command.timestamp > lastCommandTime) {
       lastCommandTime = command.timestamp;
+      console.log("Commande reçue :", command);
       switch (command.command) {
         case 'start-countdown':
           startCountdown(command.payload.duration);

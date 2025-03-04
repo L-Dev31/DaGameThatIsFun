@@ -8,6 +8,28 @@
   <link rel="stylesheet" href="/static/mobile_style.css">
   <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
   <style>
+    /* Styles spécifiques pour l'overlay du compte à rebours et la modal */
+    .modal-overlay, .countdown-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-container, .countdown-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .modal-buttons button, .countdown-content button {
+      margin: 5px;
+    }
   </style>
 </head>
 <body>
@@ -38,7 +60,7 @@
     </div>
   </div>
 
-  <!-- Modal de confirmation (pour quitter le salon) -->
+  <!-- Modal de confirmation pour quitter le salon -->
   <div class="modal-overlay" id="confirmationModal">
     <div class="modal-container">
       <h2 class="modal-title">Quitter le Salon ?</h2>
@@ -52,15 +74,15 @@
     </div>
   </div>
 
-  <!-- Overlay de décompte -->
+  <!-- Overlay de compte à rebours -->
   <div class="countdown-overlay" id="countdownOverlay">
     <div class="countdown-content">
       <div id="countdownNumber" class="countdown-number">3</div>
+      <!-- Bouton "Annuler" visible uniquement pour l'owner -->
       <button type="button" id="cancelCountdown" class="button button-secondary">Annuler</button>
     </div>
   </div>
 
-  <!-- Javascript -->
-  <script type="module" src="Javascript/waiting_room.js"></script>
+  <script type="module" src="/Javascript/waiting_room.js"></script>
 </body>
 </html>

@@ -106,7 +106,7 @@ class LobbyManager {
       this.stopPolling();
     }
   
-    // Correction ici : on déplace 'initiator' au niveau supérieur de l'objet JSON envoyé.
+    // Correction : Déplacer 'initiator' au niveau supérieur de l'objet JSON envoyé
     static async sendCommandToPlayers(command, payload = {}) {
       const roomCode = localStorage.getItem('roomCode');
       const lobby = await this.getCurrentLobby();
@@ -118,7 +118,7 @@ class LobbyManager {
             body: JSON.stringify({
               command,
               initiator: localStorage.getItem('userId'),
-              payload, // payload reste tel quel
+              payload, // payload reste inchangé
               timestamp: Date.now(),
             }),
           });
@@ -139,9 +139,7 @@ class LobbyManager {
             body: JSON.stringify({
               command: 'start-game',
               initiator: localStorage.getItem('userId'),
-              payload: {
-                gameUrl,
-              },
+              payload: { gameUrl },
               timestamp: Date.now(),
             }),
           });
