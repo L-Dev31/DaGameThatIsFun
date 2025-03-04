@@ -1,7 +1,6 @@
 import LobbyManager from './lobby_manager.js';
 
 let isOwner = false;
-let isRedirecting = false; // Flag indiquant qu'une redirection est en cours
 const userId = localStorage.getItem('userId');
 const roomCode = localStorage.getItem('roomCode');
 
@@ -98,8 +97,6 @@ let countdownInterval;
 
 async function handleCountdown() {
     if (!isOwner) return;
-    // Pour l'owner, on indique la redirection afin d'éviter le beforeunload
-    isRedirecting = true;
     // L'owner déclenche le compte à rebours et envoie la commande à tous
     await LobbyManager.sendCommandToPlayers('start-countdown', { duration: 5 });
     startCountdown(5);
@@ -120,9 +117,8 @@ function startCountdown(duration) {
         countdownNumber.textContent = counter;
         if (counter < 0) {
             clearInterval(countdownInterval);
-            // Redirection simultanée de tous les joueurs vers index.html (lobby en état in_game)
-            isRedirecting = true;
-            window.location.href = `index.html`;
+            // Redirection simultanée de tous les joueurs vers index.html
+            window.location.href = `index.html?lobby=${roomCode}`;
         }
     }, 1000);
 }
@@ -141,15 +137,12 @@ function setupCommandListener() {
             lastCommandTime = command.timestamp;
             switch (command.command) {
                 case 'start-countdown':
-                    // Pour tous, dès qu'une commande start-countdown est reçue, on passe en mode redirection
-                    isRedirecting = true;
                     startCountdown(command.payload.duration);
                     break;
                 case 'cancel-countdown':
                     cancelCountdownGlobal();
                     break;
                 case 'redirect':
-                    isRedirecting = true;
                     window.location.href = command.payload.url;
                     break;
                 case 'lobby-deleted':
@@ -180,9 +173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('startButton').addEventListener('click', handleCountdown);
 });
 
-// Dans beforeunload, on ne veut pas retirer le joueur du lobby en cas de redirection
-window.addEventListener('beforeunload', async (e) => {
-    if (isRedirecting) return;
+window.addEventListener('beforeunload', async () => {
     if (isOwner) {
         await LobbyManager.sendCommandToPlayers('lobby-deleted');
     }

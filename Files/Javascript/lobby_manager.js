@@ -7,12 +7,10 @@ class LobbyManager {
     static _pollTimeout = null;
     static _listeners = new Set();
 
-    // Démarre le polling
     static startPolling() {
         this._pollLobby();
     }
 
-    // Arrête le polling
     static stopPolling() {
         if (this._pollTimeout) {
             clearTimeout(this._pollTimeout);
@@ -20,50 +18,53 @@ class LobbyManager {
         }
     }
 
-    // Ajoute un écouteur pour les mises à jour du lobby
     static addListener(callback) {
         this._listeners.add(callback);
         return () => this._listeners.delete(callback);
     }
 
-    // Méthode de polling intelligente
     static async _pollLobby() {
         try {
             const lobby = await this.getCurrentLobby();
             if (lobby) {
-                // Réinitialise l'intervalle si des changements sont détectés
                 this._currentPollInterval = this.POLL_INTERVAL;
                 this._notifyListeners(lobby);
             } else {
-                // Augmente l'intervalle si le lobby est inactif
-                this._currentPollInterval = Math.min(
-                    this._currentPollInterval * this.POLL_BACKOFF_FACTOR,
-                    this.MAX_POLL_INTERVAL
-                );
+                console.error("Lobby not found, stopping polling.");
+                this.stopPolling();
+                return;
             }
         } catch (error) {
             console.error('Polling error:', error);
             this._currentPollInterval = this.MAX_POLL_INTERVAL;
         } finally {
-            this._pollTimeout = setTimeout(() => this._pollLobby(), this._currentPollInterval);
+            if (this._pollTimeout !== null) {
+                this._pollTimeout = setTimeout(() => this._pollLobby(), this._currentPollInterval);
+            }
         }
     }
 
-    // Notifie tous les écouteurs
     static _notifyListeners(lobby) {
         for (const listener of this._listeners) {
             listener(lobby);
         }
     }
 
-    // Récupère les informations du lobby actuel
     static async getCurrentLobby() {
         const roomCode = localStorage.getItem('roomCode');
         const userId = localStorage.getItem('userId');
         if (!roomCode || !userId) return null;
         try {
             const response = await fetch(`/api/lobby/${roomCode}`);
-            if (!response.ok) throw new Error('Lobby not found');
+            if (!response.ok) {
+                console.error('Lobby not found');
+                // En waiting_room, on ne supprime pas les identifiants
+                if (window.location.pathname !== "/waiting_room.html") {
+                    localStorage.removeItem('roomCode');
+                    localStorage.removeItem('userId');
+                }
+                return null;
+            }
             const data = await response.json();
             return {
                 ...data,
@@ -71,12 +72,17 @@ class LobbyManager {
                 currentUser: data.users[userId],
             };
         } catch (error) {
-            console.error('Lobby fetch error:', error);
+            if (window.location.pathname === "/waiting_room.html") {
+                console.warn('Lobby fetch error (waiting_room):', error);
+            } else {
+                console.error('Lobby fetch error:', error);
+                localStorage.removeItem('roomCode');
+                localStorage.removeItem('userId');
+            }
             return null;
         }
     }
 
-    // Quitte le lobby
     static async leaveLobby() {
         const roomCode = localStorage.getItem('roomCode');
         const userId = localStorage.getItem('userId');
@@ -96,7 +102,6 @@ class LobbyManager {
         this.stopPolling();
     }
 
-    // Envoie une commande aux joueurs
     static async sendCommandToPlayers(command, payload = {}) {
         const roomCode = localStorage.getItem('roomCode');
         const lobby = await this.getCurrentLobby();
@@ -117,7 +122,6 @@ class LobbyManager {
         }
     }
 
-    // Récupère la liste des joueurs actifs
     static async getActivePlayers() {
         const lobby = await this.getCurrentLobby();
         if (lobby) {
@@ -128,7 +132,6 @@ class LobbyManager {
                 isOwner: user.id === lobby.owner,
             }));
         }
-        // Fallback en cas d'absence de lobby
         return Array.from({ length: 8 }, (_, i) => ({
             id: `bot_${i}`,
             name: `Joueur ${i + 1}`,
