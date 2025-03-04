@@ -1,21 +1,18 @@
-import { players } from '../quiz-rush/script.js';
-
 let curtainLeft = null;
 let curtainRight = null;
 let creditsMusic = null;
 
 function preloadCurtains() {
     curtainLeft = new Image();
-    curtainLeft.src = '/Games/credits/images/curtain_left.png';
+    curtainLeft.src = 'images/curtain_left.png';
     curtainRight = new Image();
-    curtainRight.src = '/Games/credits/images/curtain_right.png';
+    curtainRight.src = 'images/curtain_right.png';
     creditsMusic = new Audio('music/Credit.mp3');
 }
 
-function showEndGameCurtains() {
+function showEndGameCurtains(players) {
     const leftCurtainDiv = document.createElement('div');
     leftCurtainDiv.id = 'left-curtain';
-
     const rightCurtainDiv = document.createElement('div');
     rightCurtainDiv.id = 'right-curtain';
 
@@ -33,7 +30,7 @@ function showEndGameCurtains() {
             leftCurtainDiv.style.left = '-40%';
             rightCurtainDiv.style.right = '-40%';
 
-            showCreditsScreen();
+            showCreditsScreen(players);
             document.addEventListener('keydown', handleKeyPress);
 
             document.querySelector('.overlay-gradient').classList.add('credit');
@@ -47,14 +44,14 @@ function handleKeyPress(event) {
     if (event.code === 'Space') window.location.href = '/index.html';
 }
 
-function showCreditsScreen() {
+function showCreditsScreen(players) {
     const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
     
     const creditsContainer = document.createElement('div');
     creditsContainer.id = 'credits-container';
 
     const logoImg = document.createElement('img');
-    logoImg.src = 'images/logo.png'; 
+    logoImg.src = 'images/logo.png';
     logoImg.alt = 'Quiz Rush Logo';
     logoImg.classList.add('credits-logo');
     creditsContainer.appendChild(logoImg);
@@ -72,7 +69,6 @@ function showCreditsScreen() {
 
     const leaderboardDiv = document.createElement('div');
     leaderboardDiv.innerHTML = `<h2 style="margin-top: 3vh">Classement Final</h2>`;
-
     const playersGrid = document.createElement('div');
     playersGrid.classList.add('players-grid');
 
@@ -97,9 +93,7 @@ function showCreditsScreen() {
 
     const exitHint = document.createElement('div');
     exitHint.classList.add('exit-hint');
-    exitHint.innerHTML = `
-        <img src="/Games/credits/images/space.png" alt="Space">
-    `;
+    exitHint.innerHTML = `<img src="/Games/credits/images/space.png" alt="Space">`;
     creditsContainer.appendChild(exitHint);
 
     document.body.appendChild(creditsContainer);
