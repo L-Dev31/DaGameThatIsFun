@@ -10,9 +10,10 @@
   <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
 </head>
 <body>
+  <!-- Contrôles généraux -->
   <button class="share-control" id="shareToggle">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="24px" fill="white" height="24px">
-      <path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"/>
+      <path d="M23 3A4 4 0 0 0 19 7A4 4 0 0 0 19.09 7.84L10.01 12.38A4 4 0 0 0 7 11A4 4 0 0 0 3 15A4 4 0 0 0 7 19A4 4 0 0 0 10.01 17.63L19.09 22.16A4 4 0 0 0 19 23A4 4 0 0 0 23 27A4 4 0 0 0 27 23A4 4 0 0 0 23 19A4 4 0 0 0 19.99 20.38L10.91 15.84A4 4 0 0 0 11 15Z"/>
     </svg>
   </button>
   <button class="sound-control" id="soundToggle">
@@ -38,6 +39,7 @@
     </div>
   </div>
   <div class="bg"></div>
+  <!-- Intro et logo -->
   <div id="introScreen" class="intro-screen">
     <div class="intro-content">
       <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="intro-logo">
@@ -51,6 +53,7 @@
   <div class="logo-container">
     <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
   </div>
+  <!-- Zone principale -->
   <div class="container">
     <div class="grid">
       <div>
@@ -82,43 +85,82 @@
         </div>
       </div>
     </div>
-    <div class="bottom-actions">
-      <a href="create_lobby.html" id="createLobbyLink">
-        <button class="action-button create-lobby">
-          <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M5 12h14"></path>
-          </svg>
-          <span class="button-text">Créer Lobby</span>
-        </button>
-      </a>
-      <a href="join_lobby.html" id="joinLobbyLink">
-        <button class="action-button join-lobby">
-          <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
-          <span class="button-text">Rejoindre</span>
-        </button>
-      </a>
-      <a href="credits.html" id="creditsLink">
-        <button class="action-button credits">
-          <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="8" r="7"></circle>
-            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-          </svg>
-          <span class="button-text">Credits</span>
-        </button>
-      </a>
-    </div>
+    <!-- Boutons du bas affichés dynamiquement -->
+    <div class="bottom-actions" id="bottomActions"></div>
   </div>
   <div id="playersContainer" class="players-container" style="display:none;"></div>
   <audio id="staticSound" src="/static/music/tv-static.mp3"></audio>
+  <!-- Chargement des modules -->
+  <script type="module" src="javascript/lobby_redirection.js"></script>
   <script type="module" src="javascript/index.js"></script>
   <script type="module">
     import LobbyManager from './javascript/lobby_manager.js';
+
+    async function loadBottomButtons() {
+      try {
+        const response = await fetch('button_config.json');
+        const config = await response.json();
+        const bottomActions = document.getElementById('bottomActions');
+        const inLobby = localStorage.getItem('roomCode') ? true : false;
+        console.log(`[INDEX] Mode ${inLobby ? "EN LOBBY" : "HORS LOBBY"} – chargement de la configuration des boutons.`);
+        const buttons = inLobby ? config.inLobby : config.outLobby;
+        bottomActions.innerHTML = '';
+        buttons.forEach(btn => {
+          const a = document.createElement('a');
+          if (btn.link) {
+            a.href = btn.link;
+          }
+          const button = document.createElement('button');
+          button.className = 'action-button';
+          if (btn.action) button.classList.add(btn.action);
+          button.innerHTML = btn.icon + btn.title;
+          button.addEventListener('click', async (e) => {
+            e.preventDefault();
+            console.log(`[INDEX] Bouton cliqué: ${btn.title}`);
+            if (inLobby) {
+              if (btn.action === 'quit') {
+                if (confirm("Êtes-vous sûr de vouloir quitter le lobby ?")) {
+                  console.log("[INDEX] Quitter le lobby demandé.");
+                  await LobbyManager.leaveLobby();
+                  localStorage.removeItem('roomCode');
+                  window.location.href = 'index.html';
+                }
+              } else if (btn.action === 'credits') {
+                const lobby = await LobbyManager.getCurrentLobby();
+                if (lobby && lobby.isOwner) {
+                  console.log("[INDEX] Owner quittant le lobby pour accéder aux Credits.");
+                  await LobbyManager.sendCommandToPlayers('lobby-deleted');
+                  await LobbyManager.leaveLobby();
+                  window.location.href = 'credits.html';
+                } else {
+                  console.log("[INDEX] Redirection automatique vers Credits pour non-owner.");
+                  automaticRedirect('credits.html');
+                }
+              } else if (btn.action === 'add_players') {
+                console.log("[INDEX] Owner envoie une commande pour que tout le monde aille en salle d'attente.");
+                await LobbyManager.sendCommandToPlayers('redirect', { url: 'waiting_room.html' });
+                window.location.href = 'waiting_room.html';
+              } else if (btn.link) {
+                console.log(`[INDEX] Redirection vers ${btn.link}`);
+                window.location.href = btn.link;
+              }
+            } else {
+              if (btn.link) {
+                console.log(`[INDEX] Redirection vers ${btn.link} (mode hors lobby)`);
+                window.location.href = btn.link;
+              }
+            }
+          });
+          a.appendChild(button);
+          bottomActions.appendChild(a);
+        });
+      } catch (error) {
+        console.error("[INDEX] Erreur lors du chargement des boutons:", error);
+      }
+    }
+
     LobbyManager.init();
-    </script>
+    loadBottomButtons();
+  </script>
 </body>
 </html>

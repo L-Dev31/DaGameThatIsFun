@@ -1,5 +1,3 @@
-// waiting_room.js - Gestion de la salle d'attente du lobby
-
 import LobbyManager from './lobby_manager.js';
 
 let isOwner = false;
@@ -7,8 +5,11 @@ const userId = localStorage.getItem('userId');
 const roomCode = localStorage.getItem('roomCode');
 
 if (!roomCode || !userId) {
-  window.location.href = document.referrer || '/';
+  console.log("[WAITING] Aucune information de lobby trouvée. Redirection vers index.html.");
+  window.location.href = '/';
 }
+
+let redirectTriggered = false;
 
 const modal = document.getElementById('confirmationModal');
 const leaveButton = document.getElementById('leaveButton');
@@ -21,10 +22,12 @@ function showModal(message, ownerLeaving = false) {
   modal.style.display = 'flex';
   confirmButton.onclick = async () => {
     if (ownerLeaving) {
+      console.log("[WAITING] L'owner a choisi de quitter le lobby. Envoi de la commande 'lobby-deleted'.");
       await LobbyManager.sendCommandToPlayers('lobby-deleted');
       await LobbyManager.leaveLobby();
       window.location.href = '/';
     } else {
+      console.log("[WAITING] Quitter le lobby demandé par un joueur.");
       await LobbyManager.leaveLobby();
       window.location.href = '/';
     }
@@ -96,13 +99,14 @@ function startCountdown(duration) {
   let counter = duration;
   cancelCountdown.style.display = isOwner ? 'block' : 'none';
   countdownNumber.textContent = counter;
+  console.log(`[WAITING] Démarrage du compte à rebours : ${duration} secondes.`);
   countdownInterval = setInterval(() => {
     counter--;
     if (counter < 0) counter = 0;
     countdownNumber.textContent = counter;
     if (counter <= 0) {
       clearInterval(countdownInterval);
-      // L'owner envoie la commande de redirection, mais tous les joueurs doivent déjà avoir lancé le compte à rebours via la commande reçue
+      console.log("[WAITING] Fin du compte à rebours. Redirection en cours.");
       LobbyManager.sendCommandToPlayers('redirect', { url: `index.html?roomCode=${roomCode}` });
       window.location.href = `index.html?roomCode=${roomCode}`;
     }
@@ -112,52 +116,66 @@ function startCountdown(duration) {
 function cancelCountdownGlobal() {
   clearInterval(countdownInterval);
   document.getElementById('countdownOverlay').style.display = 'none';
+  console.log("[WAITING] Compte à rebours annulé.");
 }
 
 function setupCommandListener() {
   let lastCommandTime = 0;
   setInterval(async () => {
-    const lobby = await LobbyManager.getCurrentLobby();
-    const command = lobby?.latest_command;
-    if (command && command.timestamp > lastCommandTime) {
-      lastCommandTime = command.timestamp;
-      console.log("Commande reçue :", command);
-      switch (command.command) {
-        case 'start-countdown':
-          startCountdown(command.payload.duration);
-          break;
-        case 'cancel-countdown':
-          cancelCountdownGlobal();
-          break;
-        case 'redirect':
-          window.location.href = command.payload.url;
-          break;
-        case 'lobby-deleted':
-          alert('Le salon a été supprimé par l\'hôte !');
-          window.location.href = '/';
-          break;
-        case 'return-to-waiting':
-          window.location.href = `waiting_room.html?roomCode=${roomCode}`;
-          break;
+    try {
+      const lobby = await LobbyManager.getCurrentLobby();
+      const command = lobby?.latest_command;
+      if (command && command.timestamp > lastCommandTime) {
+        lastCommandTime = command.timestamp;
+        console.log("[WAITING] Commande reçue :", command);
+        switch (command.command) {
+          case 'start-countdown':
+            startCountdown(command.payload.duration);
+            break;
+          case 'cancel-countdown':
+            cancelCountdownGlobal();
+            break;
+          case 'redirect':
+            console.log("[WAITING] Redirection demandée via commande.");
+            window.location.href = command.payload.url;
+            break;
+          case 'lobby-deleted':
+            alert('Le salon a été supprimé par l\'hôte !');
+            window.location.href = '/';
+            break;
+          case 'return-to-waiting':
+            window.location.href = `waiting_room.html?roomCode=${roomCode}`;
+            break;
+        }
       }
+    } catch (err) {
+      console.error("[WAITING] Erreur de commande dans le waiting room:", err);
     }
   }, 1000);
 }
 
 async function checkOwnerStatus() {
-  const lobby = await LobbyManager.getCurrentLobby();
-  if (!lobby) {
-    window.location.href = '/';
-    return;
+  try {
+    const lobby = await LobbyManager.getCurrentLobby();
+    if (!lobby) {
+      if (!redirectTriggered) {
+        redirectTriggered = true;
+        console.log("[WAITING] Lobby introuvable. Redirection vers index.html.");
+        window.location.href = 'index.html';
+      }
+      return;
+    }
+    isOwner = lobby.isOwner;
+    updatePlayersGrid(lobby.users, lobby.owner);
+    updateStartButton(Object.keys(lobby.users).length, lobby.max_players || 8);
+  } catch (error) {
+    console.error("[WAITING] Erreur lors de la vérification du lobby:", error);
   }
-  isOwner = lobby.isOwner;
-  updatePlayersGrid(lobby.users, lobby.owner);
-  updateStartButton(Object.keys(lobby.users).length, lobby.max_players || 8);
 }
 
 async function handleCountdown() {
   if (!isOwner) return;
-  console.log("Déclenchement du compte à rebours...");
+  console.log("[WAITING] L'owner déclenche le compte à rebours.");
   await LobbyManager.sendCommandToPlayers('start-countdown', { duration: 5 });
   startCountdown(5);
 }
@@ -176,5 +194,6 @@ window.addEventListener('beforeunload', async () => {
   if (isOwner) {
     const redirectData = JSON.stringify({ command: 'redirect', payload: { url: `index.html?roomCode=${roomCode}` } });
     navigator.sendBeacon('/api/send-command', redirectData);
+    console.log("[WAITING] Avant déchargement : commande de redirection envoyée.");
   }
 });

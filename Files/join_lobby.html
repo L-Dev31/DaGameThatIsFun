@@ -107,7 +107,8 @@
             </div>
             
             <div class="button-container">
-                <button type="button" class="button button-secondary" onclick="window.history.back()">Retour</button>
+                <!-- Bouton Retour redirige explicitement vers index.html -->
+                <button type="button" class="button button-secondary" onclick="window.location.href='index.html'">Retour</button>
                 <button type="submit" class="button button-primary">Rejoindre le salon</button>
             </div>
         </form>
@@ -137,6 +138,7 @@
     
         const loadLobbies = async () => {
             try {
+                console.log("[JOIN] Chargement des salons disponibles...");
                 const response = await fetch(`/api/lobbies?_=${Date.now()}`);
                 const { lobbies } = await response.json();
                 const lobbyList = document.getElementById('lobbyList');
@@ -174,7 +176,7 @@
                     });
                 });
             } catch (error) {
-                console.error('Erreur:', error);
+                console.error("[JOIN] Erreur lors du chargement des salons:", error);
             }
         };
     
@@ -210,6 +212,7 @@
             const playerName = document.getElementById('playerName').value.trim();
             const avatarIndex = currentAvatarIndex;
             try {
+                console.log(`[JOIN] Tentative de rejoindre le salon ${roomCode} avec le pseudo "${playerName}".`);
                 const response = await fetch('/api/lobby/join', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -224,6 +227,7 @@
                 localStorage.setItem('userId', result.userId);
                 localStorage.setItem('playerName', playerName);
                 localStorage.setItem('playerAvatarIndex', avatarIndex);
+                console.log(`[JOIN] Salon rejoint avec succès. Redirection vers waiting_room.html?roomCode=${roomCode}`);
                 window.location.href = `waiting_room.html?roomCode=${roomCode}`;
             } catch (error) {
                 alert(error.message);

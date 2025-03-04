@@ -1,0 +1,38 @@
+{
+    "inLobby": [
+      {
+        "title": "Quitter",
+        "icon": "<svg class=\"button-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M16 17l5-5-5-5\"/><line x1=\"21\" y1=\"12\" x2=\"9\" y2=\"12\"/></svg>",
+        "action": "quit"
+      },
+      {
+        "title": "Ajouter Joueurs",
+        "icon": "<svg class=\"button-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"/><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/></svg>",
+        "action": "add_players"
+      },
+      {
+        "title": "Credits",
+        "icon": "<svg class=\"button-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"8\" r=\"7\"/><polyline points=\"8.21 13.89 7 23 12 20 17 23 15.79 13.88\"/></svg>",
+        "action": "credits"
+      }
+    ],
+
+    "outLobby": [
+      {
+        "title": "Créer Lobby",
+        "icon": "<svg class=\"button-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M12 5v14M5 12h14\"/></svg>",
+        "link": "create_lobby.html"
+      },
+      {
+        "title": "Rejoindre",
+        "icon": "<svg class=\"button-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg>",
+        "link": "join_lobby.html"
+      },
+      {
+        "title": "Credits",
+        "icon": "<svg class=\"button-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"8\" r=\"7\"/><polyline points=\"8.21 13.89 7 23 12 20 17 23 15.79 13.88\"/></svg>",
+        "link": "credits.html"
+      }
+    ]
+  }
+  
