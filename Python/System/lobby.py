@@ -84,20 +84,21 @@ def join_lobby(room_code: str, player_name: str, password: Optional[str], avatar
         'sessionData': lobby.to_dict()
     }
 
-def leave_lobby(user_id: str, room_code: str):
+def leave_lobby(user_id: str, room_code: str) -> dict:
     if room_code not in active_sessions:
-        return
+        return {'success': False, 'error': 'Le salon n\'existe pas'}
     
     lobby = active_sessions[room_code]
 
     if user_id in lobby.users:
         del lobby.users[user_id]
 
-    if not lobby.users:
+    if user_id == lobby.owner:
+        # Si l'owner quitte, le lobby est supprimé entièrement
+        print(f"L'owner du lobby {room_code} a quitté, suppression du lobby.")
+        del active_sessions[room_code]
+    elif not lobby.users:
         print(f"Le lobby {room_code} est vide et sera supprimé.")
         del active_sessions[room_code]
-    elif user_id == lobby.owner:
-        # Si l'owner quitte mais qu'il reste des joueurs, transfert de propriété
-        new_owner = next(iter(lobby.users))
-        lobby.owner = new_owner
-        print(f"L'owner du lobby {room_code} a changé : {new_owner}")
+
+    return {'success': True}

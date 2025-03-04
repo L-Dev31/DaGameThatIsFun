@@ -1,7 +1,7 @@
 // index.js - Script principal pour la page d'accueil / sélection de jeu
 
 import LobbyManager from './lobby_manager.js';
-import { navigateLobby } from './lobby_redirection.js';
+import { automaticRedirect } from './lobby_redirection.js';
 
 document.addEventListener("DOMContentLoaded", async () => {
   const playersContainer = document.getElementById("playersContainer");
@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       'quiz-rush': '/Games/loading/loading.html?game=quiz-rush'
     };
     if (gameUrls[activeGame]) {
-      navigateLobby(gameUrls[activeGame]);
+      automaticRedirect(gameUrls[activeGame]);
     }
   });
 
@@ -151,9 +151,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     const lobby = await LobbyManager.getCurrentLobby();
     const isOwner = lobby?.isOwner || false;
 
-    createLobbyLink.innerHTML = `<button class="action-button quit-lobby">Quitter</button>`;
-    joinLobbyLink.innerHTML = `<button class="action-button add-players" ${!isOwner ? 'disabled' : ''}>Ajouter Joueurs</button>`;
-    creditsLink.innerHTML = `<button class="action-button credits">Credits</button>`;
+    createLobbyLink.innerHTML = `
+      <button class="action-button quit-lobby">
+        <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 17l5-5-5-5"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Quitter
+      </button>`;
+    joinLobbyLink.innerHTML = `
+      <button class="action-button add-players" ${!isOwner ? 'disabled' : ''}>
+        <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Ajouter Joueurs
+      </button>`;
+    creditsLink.innerHTML = `
+      <button class="action-button credits">
+        <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="8" r="7"></circle>
+          <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+        </svg>
+        Credits
+      </button>`;
 
     createLobbyLink.querySelector('button').addEventListener('click', async () => {
       if (confirm("Êtes-vous sûr de vouloir quitter le lobby ?")) {
@@ -163,11 +184,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     joinLobbyLink.querySelector('button').addEventListener('click', () => {
-      navigateLobby('waiting_room.html');
+      automaticRedirect('waiting_room.html');
     });
 
     creditsLink.querySelector('button').addEventListener('click', () => {
-      navigateLobby('credits.html');
+      automaticRedirect('credits.html');
     });
   }
 

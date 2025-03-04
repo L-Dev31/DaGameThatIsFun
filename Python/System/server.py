@@ -93,6 +93,9 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                             'initiator': lobby.owner
                         }
                     else:
+                        # Mise à jour du status du lobby si un nouveau status est fourni (ex : waiting)
+                        if command == 'redirect' and post_data.get('payload') and post_data.get('payload').get('newState'):
+                            lobby.state = post_data.get('payload').get('newState')
                         lobby.latest_command = {
                             'command': command,
                             'payload': post_data.get('payload'),
