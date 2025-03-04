@@ -1,8 +1,9 @@
+// lobby_manager.js - Gestion du lobby côté client
+
 class LobbyManager {
     static POLL_INTERVAL = 1000;
     static MAX_POLL_INTERVAL = 30000;
     static POLL_BACKOFF_FACTOR = 1.5;
-  
     static _currentPollInterval = this.POLL_INTERVAL;
     static _pollTimeout = null;
     static _listeners = new Set();
@@ -105,6 +106,7 @@ class LobbyManager {
       this.stopPolling();
     }
   
+    // Correction ici : on déplace 'initiator' au niveau supérieur de l'objet JSON envoyé.
     static async sendCommandToPlayers(command, payload = {}) {
       const roomCode = localStorage.getItem('roomCode');
       const lobby = await this.getCurrentLobby();
@@ -115,10 +117,8 @@ class LobbyManager {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               command,
-              payload: {
-                ...payload,
-                initiator: localStorage.getItem('userId')
-              },
+              initiator: localStorage.getItem('userId'),
+              payload, // payload reste tel quel
               timestamp: Date.now(),
             }),
           });
@@ -127,30 +127,29 @@ class LobbyManager {
         }
       }
     }
-
+  
     static async startGame(gameUrl) {
-        const roomCode = localStorage.getItem('roomCode');
-        const lobby = await this.getCurrentLobby();
-        
-        if (lobby?.isOwner) {
-          try {
-            await fetch(`/api/lobby/${roomCode}/command`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                command: 'start-game',
-                payload: {
-                  gameUrl,
-                  initiator: localStorage.getItem('userId')
-                },
-                timestamp: Date.now(),
-              }),
-            });
-          } catch (error) {
-            console.error('Start game error:', error);
-          }
+      const roomCode = localStorage.getItem('roomCode');
+      const lobby = await this.getCurrentLobby();
+      if (lobby?.isOwner) {
+        try {
+          await fetch(`/api/lobby/${roomCode}/command`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              command: 'start-game',
+              initiator: localStorage.getItem('userId'),
+              payload: {
+                gameUrl,
+              },
+              timestamp: Date.now(),
+            }),
+          });
+        } catch (error) {
+          console.error('Start game error:', error);
         }
       }
+    }
   
     static async getActivePlayers() {
       const userId = localStorage.getItem('userId');
@@ -168,6 +167,14 @@ class LobbyManager {
       }
       return [];
     }
+  
+    // Méthode init() pour démarrer le polling si un lobby existe
+    static init() {
+      if (localStorage.getItem('roomCode')) {
+        this.startPolling();
+      }
+    }
   }
   
   export default LobbyManager;
+  

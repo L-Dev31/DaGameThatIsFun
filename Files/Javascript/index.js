@@ -1,3 +1,5 @@
+// index.js - Script principal pour la page d'accueil / sélection de jeu
+
 import LobbyManager from './lobby_manager.js';
 import { navigateLobby } from './lobby_redirection.js';
 
@@ -67,7 +69,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const games = {
     "draw-contest": {
       title: "Dessine moi un Désastre",
-      description: "Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence ! \n 4 à 8 Joueurs",
+      description: "Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence ! \n4 à 8 Joueurs",
       preview: "/static/images/preview/draw-contest.png",
       music: "/static/music/draw-contest.mp3",
       playerNumber: "4-8"
@@ -129,13 +131,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   previewButton.addEventListener('click', () => {
     const activeGame = document.querySelector('.game-button.active')?.dataset.game;
     if (!activeGame) return;
-
     const gameUrls = {
       'draw-contest': '/Games/loading/loading.html?game=draw-contest',
       'pictionary': '/Games/loading/loading.html?game=pictionary',
       'quiz-rush': '/Games/loading/loading.html?game=quiz-rush'
     };
-
     if (gameUrls[activeGame]) {
       navigateLobby(gameUrls[activeGame]);
     }
@@ -152,7 +152,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const isOwner = lobby?.isOwner || false;
 
     createLobbyLink.innerHTML = `<button class="action-button quit-lobby">Quitter</button>`;
-    joinLobbyLink.innerHTML = `<button class="action-button add-players" ${!isOwner ? 'disabled' : ''}>Aj. Joueurs</button>`;
+    joinLobbyLink.innerHTML = `<button class="action-button add-players" ${!isOwner ? 'disabled' : ''}>Ajouter Joueurs</button>`;
     creditsLink.innerHTML = `<button class="action-button credits">Credits</button>`;
 
     createLobbyLink.querySelector('button').addEventListener('click', async () => {

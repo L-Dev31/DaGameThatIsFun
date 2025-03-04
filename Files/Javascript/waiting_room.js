@@ -1,3 +1,5 @@
+// waiting_room.js - Gestion de la salle d'attente du lobby
+
 import LobbyManager from './lobby_manager.js';
 
 let isOwner = false;
@@ -16,7 +18,7 @@ const modalMessage = document.getElementById('modalMessage');
 
 function showModal(message, ownerLeaving = false) {
   modalMessage.textContent = message;
-  modal.classList.add('active');
+  modal.style.display = 'flex';
   confirmButton.onclick = async () => {
     if (ownerLeaving) {
       await LobbyManager.sendCommandToPlayers('lobby-deleted');
@@ -30,12 +32,12 @@ function showModal(message, ownerLeaving = false) {
 }
 
 function hideModal() {
-  modal.classList.remove('active');
+  modal.style.display = 'none';
 }
 
 leaveButton.addEventListener('click', () => {
   const message = isOwner 
-    ? "Attention ! Si vous quittez, le salon sera supprimé. Continuer ?" 
+    ? "Attention ! En quittant, le salon sera supprimé. Continuer ?" 
     : "Quitter le salon ?";
   showModal(message, isOwner);
 });
@@ -153,6 +155,7 @@ async function checkOwnerStatus() {
 
 async function handleCountdown() {
   if (!isOwner) return;
+  console.log("Déclenchement du compte à rebours...");
   await LobbyManager.sendCommandToPlayers('start-countdown', { duration: 5 });
   startCountdown(5);
 }

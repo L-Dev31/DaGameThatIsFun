@@ -2,7 +2,7 @@ import os
 import time
 import threading
 import webbrowser
-from colorama import init, Fore, Style
+from colorama import init, Fore
 from System.server import run_server
 from System.utils import cleanup_inactive_lobbies
 from System.lobby import active_sessions
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     server_thread.start()
     print(Fore.GREEN + "✅ Serveur HTTP lancé sur le port 8080.")
 
-    webbrowser.open(f"http://localhost:8080")
+    webbrowser.open("http://localhost:8080")
     print(Fore.GREEN + "\n✅ Navigateur ouvert.")
     print(Fore.CYAN + "\n======================================")
     print(Fore.CYAN + "Bienvenue sur DA GAME THAT IS FUN !")

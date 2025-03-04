@@ -97,7 +97,7 @@ def leave_lobby(user_id: str, room_code: str):
         print(f"Le lobby {room_code} est vide et sera supprimé.")
         del active_sessions[room_code]
     elif user_id == lobby.owner:
-        # Si l'owner quitte mais qu'il reste des joueurs, transférer l'ownership
+        # Si l'owner quitte mais qu'il reste des joueurs, transfert de propriété
         new_owner = next(iter(lobby.users))
         lobby.owner = new_owner
         print(f"L'owner du lobby {room_code} a changé : {new_owner}")
