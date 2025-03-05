@@ -145,26 +145,29 @@ class LobbyManager {
   static async sendCommandToPlayers(command, payload = {}) {
     const roomCode = localStorage.getItem('roomCode');
     const lobby = await this.getCurrentLobby();
-    if (lobby?.isOwner) {
-      try {
-        console.log(`[LOBBY_MANAGER] Envoi de la commande '${command}' avec payload:`, payload);
-        await fetch(`/api/lobby/${roomCode}/command`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            command,
-            initiator: localStorage.getItem('userId'),
-            payload,
-            timestamp: Date.now()
-          })
-        });
-      } catch (error) {
-        console.error("[LOBBY_MANAGER] Erreur lors de l'envoi de la commande:", error);
-      }
+    
+    if (lobby?.isOwner) {  
+        try {
+            console.log(`[LOBBY_MANAGER] Envoi de la commande '${command}' avec payload:`, payload);
+            await fetch(`/api/lobby/${roomCode}/command`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    command,
+                    initiator: localStorage.getItem('userId'),
+                    payload,
+                    timestamp: Date.now()
+                })
+            });
+            console.log(`[LOBBY_MANAGER] Commande '${command}' envoyée avec succès.`);
+        } catch (error) {
+            console.error("[LOBBY_MANAGER] Erreur lors de l'envoi de la commande:", error);
+        }
     } else {
-      console.warn("[LOBBY_MANAGER] Seul l'owner peut envoyer des commandes.");
+        console.warn("[LOBBY_MANAGER] Seul l'owner peut envoyer des commandes.");
     }
   }
+
 
   static async startGame(gameUrl) {
     const roomCode = localStorage.getItem('roomCode');
