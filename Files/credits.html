@@ -6,12 +6,22 @@
     <title>Crédits - Party Game</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/mobile_style.css">
+    <link rel="stylesheet" href="/static/lobby_style.css">
     <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
 </head>
 <body>
     <div class="bg"></div>
     <div class="logo-container">
         <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
+    </div>
+
+    <!-- Ajout du conteneur des joueurs -->
+    <div id="playersContainer" class="players-container">
+        <div class="players-header">
+            <h2>Joueurs connectés</h2>
+            <div id="roomCode" class="room-code"></div>
+        </div>
+        <div id="playersGrid" class="players-grid"></div>
     </div>
     
     <div class="container credits-container">
@@ -97,7 +107,7 @@
         </div>
 
         <div class="bottom-actions">
-            <button class="action-button" onclick="window.history.back()">
+            <button class="action-button" onclick="history.back()">
                 <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
@@ -105,9 +115,78 @@
             </button>
         </div>
     </div>
+
     <script type="module">
         import LobbyManager from './javascript/lobby_manager.js';
+        import { shouldRedirect, automaticRedirect } from './javascript/lobby_redirection.js';
+
+        const roomCode = new URLSearchParams(window.location.search).get('roomCode');
+        if (!roomCode) automaticRedirect('/');
+
+        let isOwner = false;
+        let lastCommandTime = 0;
+        const backButton = document.querySelector('.action-button');
+        const playersContainer = document.getElementById("playersContainer");
+
+        async function updatePlayers() {
+            const players = await LobbyManager.getActivePlayers();
+            if (players.length === 0 && localStorage.getItem('roomCode')) {
+                localStorage.removeItem('roomCode');
+                localStorage.removeItem('userId');
+                window.location.reload();
+                return;
+            }
+            playersContainer.innerHTML = "";
+            players.forEach(player => {
+                const playerDiv = document.createElement("div");
+                playerDiv.classList.add("player");
+                playerDiv.innerHTML = `
+                    <img src="${player.avatar}" alt="${player.name}" class="player-avatar">
+                    <span class="player-name">${player.name}${player.isCurrentUser ? ' (Vous)' : ''}${player.isOwner ? ' 👑' : ''}</span>
+                `;
+                playersContainer.appendChild(playerDiv);
+            });
+        }
+
+        backButton.onclick = async () => {
+            const lobby = await LobbyManager.getCurrentLobby();
+            if (lobby && lobby.isOwner) {
+                console.log("[CREDITS] Owner redirige tout le monde vers l'index.");
+                await LobbyManager.sendCommandToPlayers('redirect', { 
+                    url: `index.html?roomCode=${roomCode}` 
+                });
+                window.location.href = `index.html?roomCode=${roomCode}`;
+            } else {
+                console.log("[CREDITS] Redirection automatique vers l'index pour non-owner.");
+                automaticRedirect(`index.html?roomCode=${roomCode}`);
+            }
+        };
+
+        function setupCommandListener() {
+            setInterval(async () => {
+                const lobby = await LobbyManager.getCurrentLobby();
+                const command = lobby?.latest_command;
+                
+                if (command?.timestamp > lastCommandTime) {
+                    lastCommandTime = command.timestamp;
+                    if (command.command === 'redirect' && shouldRedirect(command.payload.url)) {
+                        window.location.href = command.payload.url;
+                    }
+                }
+            }, 1000);
+        }
+
+        window.addEventListener('beforeunload', async () => {
+            if (isOwner) {
+                await LobbyManager.sendCommandToPlayers('lobby-deleted');
+                await LobbyManager.leaveLobby();
+            }
+        });
+
         LobbyManager.init();
-        </script>
+        setupCommandListener();
+        setInterval(updatePlayers, 5000);
+        updatePlayers();
+    </script>
 </body>
 </html>

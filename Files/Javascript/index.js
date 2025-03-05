@@ -194,3 +194,85 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (roomCode) LobbyManager.startPolling();
 });
+
+const roomCode = localStorage.getItem('roomCode');
+
+window.addEventListener('beforeunload', async () => {
+  const lobby = await LobbyManager.getCurrentLobby();
+  if (lobby?.isOwner) {
+    console.log("[INDEX] Owner quitte la page, nettoyage du lobby");
+    await LobbyManager.leaveLobby();
+  }
+});
+
+if (!roomCode) {
+  localStorage.removeItem('roomCode');
+  localStorage.removeItem('userId');
+  LobbyManager.stopPolling();
+} else {
+  LobbyManager.init();
+}
+
+async function loadBottomButtons() {
+  try {
+    const response = await fetch('button_config.json');
+    const config = await response.json();
+    const bottomActions = document.getElementById('bottomActions');
+    const inLobby = localStorage.getItem('roomCode') ? true : false;
+    console.log(`[INDEX] Mode ${inLobby ? "EN LOBBY" : "HORS LOBBY"} – chargement de la configuration des boutons.`);
+    const buttons = inLobby ? config.inLobby : config.outLobby;
+    bottomActions.innerHTML = '';
+    buttons.forEach(btn => {
+      const a = document.createElement('a');
+      if (btn.link) {
+        a.href = btn.link;
+      }
+      const button = document.createElement('button');
+      button.className = 'action-button';
+      if (btn.action) button.classList.add(btn.action);
+      button.innerHTML = btn.icon + btn.title;
+      button.addEventListener('click', async (e) => {
+        e.preventDefault();
+        console.log(`[INDEX] Bouton cliqué: ${btn.title}`);
+        if (inLobby) {
+          if (btn.action === 'quit') {
+            if (confirm("Êtes-vous sûr de vouloir quitter le lobby ?")) {
+              console.log("[INDEX] Quitter le lobby demandé.");
+              await LobbyManager.leaveLobby();
+              localStorage.removeItem('roomCode');
+              window.location.href = 'index.html';
+            }
+          } else if (btn.action === 'credits') {
+            const lobby = await LobbyManager.getCurrentLobby();
+            if (lobby && lobby.isOwner) {
+              console.log("[INDEX] Owner quittant le lobby pour accéder aux Credits.");
+              await LobbyManager.sendCommandToPlayers('redirect', { url: `credits.html?roomCode=${roomCode}` });
+              window.location.href = `credits.html?roomCode=${roomCode}`;
+            } else {
+              console.log("[INDEX] Redirection automatique vers Credits pour non-owner.");
+              automaticRedirect(`credits.html?roomCode=${roomCode}`);
+            }
+          } else if (btn.action === 'waiting') {
+            console.log("[INDEX] Owner envoie une commande pour que tout le monde aille en salle d'attente.");
+            await LobbyManager.sendCommandToPlayers('redirect', { url: `waiting_room.html?roomCode=${roomCode}` });
+            window.location.href = `waiting_room.html?roomCode=${roomCode}`;
+          } else if (btn.link) {
+            console.log(`[INDEX] Redirection vers ${btn.link}`);
+            window.location.href = btn.link;
+          }
+        } else {
+          if (btn.link) {
+            console.log(`[INDEX] Redirection vers ${btn.link} (mode hors lobby)`);
+            window.location.href = btn.link;
+          }
+        }
+      });
+      a.appendChild(button);
+      bottomActions.appendChild(a);
+    });
+  } catch (error) {
+    console.error("[INDEX] Erreur lors du chargement des boutons:", error);
+  }
+}
+
+loadBottomButtons();
