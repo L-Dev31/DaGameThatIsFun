@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
       playersContainer.appendChild(playerDiv);
     });
+    await updatePreviewButtonState();
   }
 
   await updatePlayers();
@@ -98,6 +99,40 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
+  async function updatePreviewButtonState() {
+    const previewButton = document.getElementById('previewButton');
+    const roomCode = localStorage.getItem('roomCode');
+    const activeGame = document.querySelector('.game-button.active')?.dataset.game;
+    
+    if (!roomCode || !activeGame) {
+      previewButton.style.display = 'none';
+      return;
+    }
+  
+    try {
+      const lobby = await LobbyManager.getCurrentLobby();
+      const players = await LobbyManager.getActivePlayers();
+      const gameInfo = games[activeGame];
+      
+      // Extraire le nombre minimum de joueurs
+      const minPlayers = parseInt(gameInfo.playerNumber.split('-')[0]);
+      const isOwner = lobby?.isOwner;
+      
+      // Vérifier les conditions
+      const hasEnoughPlayers = players.length >= minPlayers;
+      const shouldShowButton = isOwner && roomCode;
+  
+      previewButton.style.display = shouldShowButton ? 'block' : 'none';
+      previewButton.disabled = !hasEnoughPlayers;
+  
+    } catch (error) {
+      console.error('Error updating button state:', error);
+      previewButton.style.display = 'none';
+    }
+  }
+
+  setInterval(updatePreviewButtonState, 1000);
+
   function changeGamePreview(gameId) {
     const game = games[gameId];
     if (!game) return;
@@ -113,6 +148,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         audio.src = game.music;
         audio.load();
         if (!isMuted) audio.play().catch(console.error);
+        updatePreviewButtonState();
       }
       staticEffect.classList.remove("show-static");
     }, 200);
@@ -128,16 +164,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   const previewButton = document.querySelector('.preview-button');
-  previewButton.addEventListener('click', () => {
+    previewButton.addEventListener('click', () => {
     const activeGame = document.querySelector('.game-button.active')?.dataset.game;
-    if (!activeGame) return;
-    const gameUrls = {
-      'draw-contest': '/Games/loading/loading.html?game=draw-contest',
-      'pictionary': '/Games/loading/loading.html?game=pictionary',
-      'quiz-rush': '/Games/loading/loading.html?game=quiz-rush'
-    };
-    if (gameUrls[activeGame]) {
-      automaticRedirect(gameUrls[activeGame]);
+    const roomCode = localStorage.getItem('roomCode');
+    
+    if (activeGame && roomCode) {
+      const gameUrl = `/Games/loading/loading.html?game=${activeGame}&roomCode=${roomCode}`;
+      automaticRedirect(gameUrl);
     }
   });
 

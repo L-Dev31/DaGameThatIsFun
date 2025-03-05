@@ -227,7 +227,6 @@ a {
 }
 
 .preview-button {
-    margin-top: 1.5rem;
     padding: 0.75rem 2rem;
     background: transparent;
     border: none;
@@ -238,12 +237,18 @@ a {
     cursor: pointer;
     transition: all 0.3s;
     animation: fadeUp 0.5s ease-out 0.2s;
+    position: absolute!important;
+    bottom: 2em;
 }
 
 .preview-button:hover {
     transform: scale(1.05);
     color: gray;
     background: white;
+}
+
+.preview-description {
+    margin-bottom: 3em;
 }
 
 /* Effet TV statique */
