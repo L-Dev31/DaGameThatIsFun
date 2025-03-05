@@ -121,8 +121,19 @@
         import { shouldRedirect, automaticRedirect } from './javascript/lobby_redirection.js';
 
         const roomCode = new URLSearchParams(window.location.search).get('roomCode');
-        if (!roomCode) automaticRedirect('/');
 
+        async function checkLobbyStatus() {
+            const lobby = await LobbyManager.getCurrentLobby();
+            if (lobby) {
+                console.log("[CREDITS] L'utilisateur est dans un lobby: ", lobby);
+            } else {
+                console.log("[CREDITS] L'utilisateur n'est pas dans un lobby.");
+                playersContainer.style.display = "none";
+            }
+        }
+
+        checkLobbyStatus();
+    
         let isOwner = false;
         let lastCommandTime = 0;
         const backButton = document.querySelector('.action-button');
@@ -155,11 +166,8 @@
                 await LobbyManager.sendCommandToPlayers('redirect', { 
                     url: `index.html?roomCode=${roomCode}` 
                 });
-                window.location.href = `index.html?roomCode=${roomCode}`;
-            } else {
-                console.log("[CREDITS] Redirection automatique vers l'index pour non-owner.");
-                automaticRedirect(`index.html?roomCode=${roomCode}`);
             }
+            window.location.href = roomCode ? `index.html?roomCode=${roomCode}` : 'index.html';
         };
 
         function setupCommandListener() {
