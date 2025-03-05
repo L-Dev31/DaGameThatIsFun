@@ -1,12 +1,5 @@
 import LobbyManager from './lobby_manager.js';
 
-// Nouvelle fonction pour éviter les redirections vers la même page
-function shouldRedirect(targetUrl) {
-  const currentPath = window.location.pathname.split('/').pop();
-  const targetPath = targetUrl.split('?')[0]; // Ignore les query params
-  return currentPath !== targetPath;
-}
-
 function setupCommandListener() {
   let lastCommandTime = 0;
 
@@ -21,7 +14,7 @@ function setupCommandListener() {
         console.log("[LOBBY_REDIRECTION] Commande reçue :", command);
         switch (command.command) {
           case 'redirect':
-            if (shouldRedirect(command.payload.url)) { // Vérification ajoutée
+            if (shouldRedirect(command.payload.url)) { 
               console.log(`Redirection vers ${command.payload.url}`);
               window.location.href = command.payload.url;
             }
@@ -41,11 +34,16 @@ function setupCommandListener() {
   }, 1000);
 }
 
-// Nouvelle version de automaticRedirect avec vérification
 export function automaticRedirect(url) {
   if (shouldRedirect(url)) {
     window.location.href = url;
   }
+}
+
+export function shouldRedirect(targetUrl) {
+  const currentPath = window.location.pathname.split('/').pop();
+  const targetPath = new URL(targetUrl, window.location.href).pathname.split('/').pop();
+  return currentPath !== targetPath;
 }
 
 setupCommandListener();
