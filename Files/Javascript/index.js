@@ -275,4 +275,13 @@ async function loadBottomButtons() {
   }
 }
 
+// Vérifie si l'intro a déjà été vue
+document.addEventListener("DOMContentLoaded", function() {
+  if (localStorage.getItem('introSeen')) {
+    document.getElementById('introScreen').style.display = 'none';
+  } else {
+    localStorage.setItem('introSeen', 'true');
+  }
+});
+
 loadBottomButtons();
