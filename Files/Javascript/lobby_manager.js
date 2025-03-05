@@ -13,6 +13,23 @@ class LobbyManager {
     if (localStorage.getItem('roomCode')) {
       this.startPolling();
     }
+    this._setupUnloadListener();
+  }
+
+  static _setupUnloadListener() {
+    window.addEventListener('beforeunload', (event) => {
+      const isRedirecting = sessionStorage.getItem('isRedirecting');
+      const roomCode = localStorage.getItem('roomCode');
+      const userId = localStorage.getItem('userId');
+      
+      if (!isRedirecting && roomCode && userId) {
+        const data = { userId };
+        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        navigator.sendBeacon(`/api/lobby/${roomCode}/leave`, blob);
+        console.log("[LOBBY_MANAGER] Envoi de la requête de sortie via Beacon.");
+      }
+      sessionStorage.removeItem('isRedirecting'); // Nettoyage
+    });
   }
 
   static async getActivePlayers() {
