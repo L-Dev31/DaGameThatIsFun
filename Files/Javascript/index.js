@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const hasEnoughPlayers = players.length >= minPlayers;
       const shouldShowButton = isOwner && roomCode;
   
-      previewButton.style.display = shouldShowButton ? 'block' : 'none';
+      previewButton.style.display = shouldShowButton ? 'flex' : 'none';
       previewButton.disabled = !hasEnoughPlayers;
   
     } catch (error) {
@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  setInterval(updatePreviewButtonState, 1000);
+  setInterval(updatePreviewButtonState, 3000);
 
   function changeGamePreview(gameId) {
     const game = games[gameId];
@@ -176,7 +176,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const roomCode = localStorage.getItem("roomCode");
   if (roomCode) {
-    document.getElementById("playersContainer").style.display = "block";
+    document.getElementById("playersContainer").style.display = "flex";
     const createLobbyLink = document.getElementById("createLobbyLink");
     const joinLobbyLink = document.getElementById("joinLobbyLink");
     const creditsLink = document.getElementById("creditsLink");
