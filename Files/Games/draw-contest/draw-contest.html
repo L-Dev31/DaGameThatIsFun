@@ -5,14 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dessine moi un Désastre</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="credits.css">
   <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
 </head>
 <body>
   <video autoplay muted loop id="bgVideo">
     <source src="images/BG.mp4" type="video/mp4">
   </video>
+  
+  <div class="overlay-gradient"></div>
 
-  <div class="game-container">
+  <div class="main-container">
+    <img src="images/bg.png" class="bgImage">
+
     <div id="word-reveal"></div>
     <div id="title-container">
       <div id="question"></div>
@@ -27,12 +32,12 @@
       <div class="color-pick active" style="background: #000000" data-color="#000000"></div>
       <div class="color-pick" style="background: #cc3333" data-color="#cc3333"></div>
       <div class="color-pick" style="background: #33cc33" data-color="#33cc33"></div>
-      <div class="color-pick" style="background: #3333cc" data-color="#3333cc"></div>
-      <div class="color-pick" style="background: #cccc33" data-color="#cccc33"></div>
-      <div class="color-pick" style="background: #cc8844" data-color="#cc8844"></div>
-      <div class="color-pick" style="background: #9F2B68" data-color="#9F2B68"></div>
-      <div class="color-pick" style="background: #cc66cc" data-color="#cc66cc"></div>
-      <div class="color-pick" style="background: #33cccc" data-color="#33cccc"></div>
+      <div class="color-pick" style="background: #1919cd" data-color="#1919cd"></div>
+      <div class="color-pick" style="background: #f5d924" data-color="#f5d924"></div>
+      <div class="color-pick" style="background: #ff952c" data-color="#ff952c"></div>
+      <div class="color-pick" style="background: #6f2b9f" data-color="#6f2b9f"></div>
+      <div class="color-pick" style="background: #ff83c1" data-color="#ff83c1"></div>
+      <div class="color-pick" style="background: #4b90ff" data-color="#4b90ff"></div>
     </div>
 
     <div class="tools">
@@ -42,9 +47,11 @@
       <div class="tool" data-tool="eraser">
         <svg viewBox="0 0 24 24"><path d="M15.14 3c-.51 0-1.02.2-1.41.59L2.59 14.73c-.78.77-.78 2.04 0 2.83L5.03 20h7.66l8.72-8.72c.78-.77.78-2.04 0-2.83l-4.85-4.86c-.39-.39-.9-.59-1.41-.59M17 18l-3-3 3-3 3 3-3 3z"/></svg>
       </div>
+      <!--
       <div class="tool" data-tool="bucket">
         <svg viewBox="0 0 24 24"><path d="M19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5M5.21 10L10 5.21 14.79 10M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15c-.59.59-.59 1.54 0 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12z"/></svg>
       </div>
+      -->
       <div class="tool" id="undoButton">
         <svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
       </div>
@@ -77,6 +84,6 @@
       <button class="next-round">Tour suivant</button>
     </div>
   </div>
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

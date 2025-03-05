@@ -28,11 +28,27 @@ body {
   z-index: -1;
 }
 
-.game-container {
+.bgImage {
+  min-width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.main-container {
   position: relative;
   width: 100vw;
   height: 100vh;
-  background: rgba(255, 255, 255, 0.8);
+}
+
+.overlay-gradient {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #ffffffaa;
+  z-index: 0;
 }
 
 #word-reveal {
@@ -42,7 +58,7 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 6rem;
-  color: #2c3e50;
+  color: #4b90ff;
   text-align: center;
   opacity: 0;
   transition: all 0.5s ease;
@@ -51,11 +67,11 @@ body {
 
 #title-container {
   position: fixed;
-  top: 35px;
-  left: 20px;
+  top: 1em;
+  left: 3em;
   text-align: left;
   transition: all 0.5s ease;
-  z-index: 100;
+  z-index: 2;
   opacity: 0;
   letter-spacing: -2.5px;
 }
@@ -64,7 +80,9 @@ body {
   letter-spacing: -2.5px;
   font-family: 'Chalkzone', sans-serif;
   font-size: 4rem;
-  color: #2c3e50;
+  color: #4b90ff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.99);
+  z-index: 2;
 }
 
 .canvas-container {
@@ -74,7 +92,11 @@ body {
   transform: translate(-50%, -50%);
   background: #fafafa;
   border-radius: 15px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  box-shadow: 
+  0 0 0 5px #ff83c1,
+  0 0 0 10px #f5d924,
+  0 0 0 15px #4b90ff,
+  0 0 50px rgba(0,0,0,0.5);
   overflow: hidden;
 }
 
@@ -85,7 +107,7 @@ canvas {
 
 .color-palette {
   position: fixed;
-  left: 20px;
+  left: 3em;
   top: 50%;
   transform: translateY(-50%);
   display: grid;
@@ -94,7 +116,11 @@ canvas {
   background: #fff;
   padding: 15px;
   border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 
+  0 0 0 5px #ff83c1,
+  0 0 0 10px #f5d924,
+  0 0 0 15px #4b90ff,
+  0 0 50px rgba(0,0,0,0.5);
 }
 
 .color-pick {
@@ -117,7 +143,7 @@ canvas {
 
 .tools {
   position: fixed;
-  right: 20px;
+  right: 3em;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -126,7 +152,11 @@ canvas {
   background: #fff;
   padding: 15px;
   border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 
+  0 0 0 5px #ff83c1,
+  0 0 0 10px #f5d924,
+  0 0 0 15px #4b90ff,
+  0 0 50px rgba(0,0,0,0.5);
 }
 
 .tool {
@@ -160,14 +190,18 @@ canvas {
 
 .brush-sizes {
   position: fixed;
-  left: 20px;
-  bottom: 20px;
+  left: 3em;
+  bottom: 3em;
   display: flex;
   gap: 10px;
   background: #fff;
   padding: 15px;
   border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 
+  0 0 0 5px #ff83c1,
+  0 0 0 10px #f5d924,
+  0 0 0 15px #4b90ff,
+  0 0 50px rgba(0,0,0,0.5);
 }
 
 .brush-size {
@@ -210,10 +244,10 @@ canvas {
 }
 
 .timer {
-  border: 5px solid #ff69b4;
+  border: 5px solid #ff83c1;
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 3em;
+  right: 3em;
   width: 80px;
   height: 80px;
   background: #fff;
@@ -232,22 +266,28 @@ canvas {
 
 .finish-button {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #ff69b4;
-  color: #fff;
+  bottom: 2em;
+  right: 2em;
+  background: white;
+  color: #ff83c1;
   border: none;
   border-radius: 30px;
   padding: 15px 40px;
   font-size: 1.5rem;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-shadow: 
+    0 0 0 5px #ff83c1,
+    0 0 0 10px #f5d924,
+    0 0 0 15px #4b90ff,
+    10px 10px 30px rgba(0,0,0,0.75);
   transition: transform 0.3s, background 0.3s;
 }
 
+
+
 .finish-button:hover {
-  background: #ff85c1;
-  transform: scale(1.05);
+  background: #eee;
+  transform: scale(1.05) translate(-10px, -10px) rotate(-5deg);
 }
 
 .voting-container, .ranking-container {
@@ -304,18 +344,23 @@ canvas {
 .drawing-card.selected {
   transform: scale(1.05);
   box-shadow: 0 8px 25px rgba(255,105,180,0.3);
-  border: 3px solid #ff69b4;
+  border: 3px solid #ff83c1;
 }
 
 .submit-votes, .next-round {
-  background: #ff69b4;
-  color: #fff;
+  margin-top: 10px;
+  background: white;
+  color: #ff83c1;
   border: none;
   border-radius: 30px;
   padding: 15px 40px;
   font-size: 1.5rem;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-shadow: 
+    0 0 0 5px #ff83c1,
+    0 0 0 10px #f5d924,
+    0 0 0 15px #4b90ff,
+    0 0 50px rgba(0,0,0,0.5);
   transition: transform 0.3s;
 }
 
@@ -374,7 +419,13 @@ canvas {
 
 .ranking-item.winner {
   outline: 2px solid goldenrod !important;
-  animation: winner-pulse 2s infinite;
+  animation:  jump 1s ease-out, winner-pulse 2s infinite;
+}
+
+@keyframes jump {
+  0% { transform: translateY(0) scaleY(1); filter: brightness(1)}
+  50% { transform: translateY(-50px) scaleY(1.1); filter: brightness(1.5)}
+  100% { transform: translateY(0) scaleY(1); filter: brightness(1)}
 }
 
 .ranking-item.winner .rank {

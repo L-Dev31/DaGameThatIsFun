@@ -63,22 +63,24 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     margin-top: 15px;
-    gap: 35px;
+    gap: 50px;
     width: 100%;
 }
 
 .leaderboard-player {
-    color: white;
     max-width: 250px;
     max-height: auto;
     border-radius: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 15px;
-    border: 3px solid gray;
-    backdrop-filter: blur(10px);
-    background: #ffffff30;
+    padding: 7.5px;
+    box-shadow: 
+    0 0 0 5px #ff83c1,
+    0 0 0 10px #f5d924,
+    0 0 0 15px #4b90ff,
+    0 0 50px rgba(0,0,0,0.5);
+    background: #ffffff;
     overflow: hidden;
 }
 
@@ -87,6 +89,7 @@
     font-family: Arial, Helvetica, sans-serif;
     font-size: 1.2em;
     font-weight: bolder;
+    color: #2c3e50;
 }
 
 .leaderboard-player img {
@@ -97,23 +100,31 @@
     object-fit: cover;
 }
 
-.rank-1 { border: 3px solid gold; animation: goldShimmer 2s infinite; color: gold!important; }
-.rank-2 { border: 3px solid silver; animation: silverShimmer 2s infinite; color: silver!important;}
-.rank-3 { border: 3px solid #cd7f32; animation: bronzeShimmer 2s infinite; color: #cd7f32!important;}
-
-@keyframes goldShimmer {
-    0%, 100% { box-shadow: 0 0 15px gold; }
-    50% { box-shadow: 0 0 25px gold; }
+.rank-1 { 
+    box-shadow: 
+    0 0 0 5px gold,
+    0 0 0 10px goldenrod,
+    0 0 0 15px gold,
+    0 0 50px #ffd700; 
+    color: gold!important; 
 }
 
-@keyframes silverShimmer {
-    0%, 100% { box-shadow: 0 0 12px silver; }
-    50% { box-shadow: 0 0 20px silver; }
+.rank-2 { 
+    box-shadow: 
+    0 0 0 5px silver,
+    0 0 0 10px #999,
+    0 0 0 15px silver,
+    0 0 50px #c0c0c0; 
+    color: silver!important; 
 }
 
-@keyframes bronzeShimmer {
-    0%, 100% { box-shadow: 0 0 10px #cd7f32; }
-    50% { box-shadow: 0 0 15px #cd7f32; }
+.rank-3 { 
+    box-shadow: 
+    0 0 0 5px #CD7F32,
+    0 0 0 10px #925920,
+    0 0 0 15px #CD7F32,
+    0 0 50px #CD7F32; 
+    color: #CD7F32!important; 
 }
 
 /* Indication de sortie */
@@ -138,5 +149,7 @@
 }
 
 .overlay-gradient.credit {
-    background-color: #1c1c1cf9;
+    backdrop-filter: brightness(1.05) blur(10px);
+    background-color: white;
+    mix-blend-mode: difference;
 }

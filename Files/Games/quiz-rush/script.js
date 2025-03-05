@@ -1,5 +1,5 @@
-import { preloadCurtains } from '/Games/credits/credits.js';
-import { showEndGameCurtains } from '/Games/credits/credits.js';
+import { preloadCurtains } from '/Games/general/credits.js';
+import { showEndGameCurtains } from '/Games/general/credits.js';
  
 document.addEventListener("DOMContentLoaded", () => {
     const startButton = document.getElementById('start-button');
@@ -180,7 +180,7 @@ function preloadImage(url) {
 }
 
 async function initQuiz() {
-    if (currentQuestionIndex >= 5) {
+    if (currentQuestionIndex >= 1) {
         preloadCurtains();
         showEndGameCurtains(players);
         return;

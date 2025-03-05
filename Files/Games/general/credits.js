@@ -11,6 +11,13 @@ function preloadCurtains() {
 }
 
 function showEndGameCurtains(players) {
+    console.log("Joueurs reçus dans credits.js :", players);
+
+    if (!players || players.length === 0) {
+        console.error("⚠️ Erreur : Aucun joueur trouvé !");
+        return;
+    }
+
     const leftCurtainDiv = document.createElement('div');
     leftCurtainDiv.id = 'left-curtain';
     const rightCurtainDiv = document.createElement('div');
@@ -93,7 +100,7 @@ function showCreditsScreen(players) {
 
     const exitHint = document.createElement('div');
     exitHint.classList.add('exit-hint');
-    exitHint.innerHTML = `<img src="/Games/credits/images/space.png" alt="Space">`;
+    exitHint.innerHTML = `<img src="/Games/general/images/space.png" alt="Space">`;
     creditsContainer.appendChild(exitHint);
 
     document.body.appendChild(creditsContainer);

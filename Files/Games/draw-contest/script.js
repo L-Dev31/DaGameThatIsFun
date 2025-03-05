@@ -1,3 +1,7 @@
+import { preloadCurtains } from '/Games/general/credits.js';
+import { showEndGameCurtains } from '/Games/general/credits.js';
+import { players } from '/Games/general/players.js'; 
+
 class DrawingGame {
   constructor() {
     this.words = [];
@@ -274,14 +278,25 @@ class DrawingGame {
   finishDrawing() {
     clearInterval(this.timerInterval);
     const drawingData = this.canvas.toDataURL();
+    
+    // Use quiz-rush players structure
+    const userPlayer = players.find(p => p.avatar.includes('8.png')); // Find Bob
+    const simulatedPlayers = players.filter(p => !p.avatar.includes('8.png')); // Other players
+
     this.currentDrawings = [
-      { image: drawingData, votes: 0, isUser: true, username: 'You', pfp: '/static/images/avatar/8.png' },
-      ...Array(7).fill(null).map((_, i) => ({
+      { 
+        image: drawingData,
+        votes: 0,
+        isUser: true,
+        username: userPlayer.name,
+        pfp: userPlayer.avatar
+      },
+      ...simulatedPlayers.map(player => ({
         image: this.generateSimulatedDrawing(),
         votes: 0,
         isUser: false,
-        username: `Player ${i + 1}`,
-        pfp: `/static/images/avatar/${i + 1}.png`
+        username: player.name,
+        pfp: player.avatar
       }))
     ];
     this.showVoting();
@@ -443,38 +458,22 @@ class DrawingGame {
     this.redoStack = [];
   }
 
-  showFinalResults() {
-    const finalScores = this.currentDrawings.map(drawing => ({
-      username: drawing.username,
-      pfp: drawing.pfp,
-      score: drawing.votes
-    })).sort((a, b) => b.score - a.score);
-
-    this.rankingContainer.innerHTML = `
-      <h2>Résultats finaux</h2>
-      <div class="final-ranking-list">
-        ${finalScores.map((player, index) => `
-          <div class="final-ranking-item ${index === 0 ? 'winner' : ''}">
-            <div class="rank">#${index + 1}</div>
-            <img src="${player.pfp}" alt="${player.username}'s profile picture" class="pfp">
-            <div class="username">${player.username}</div>
-            <div class="score">Score: ${player.score}</div>
-            ${index === 0 ? '<div class="crown">👑</div>' : ''}
-          </div>
-        `).join('')}
-      </div>
-      <button class="new-game">Nouvelle partie</button>
-    `;
-
-    document.querySelector('.new-game').addEventListener('click', () => this.startNewGame());
-  }
-
   startNewGame() {
     this.currentRound = 1;
     this.resetCanvas();
     this.rankingContainer.classList.remove('active');
     this.rankingContainer.classList.add('hidden');
     this.startGame();
+  }
+
+  showFinalResults() {
+    const players = this.currentDrawings.map(drawing => ({
+      name: drawing.username,
+      score: drawing.votes,
+      avatar: drawing.pfp
+    }));
+    
+    showEndGameCurtains(players);
   }
 
   addToHistory() {
@@ -503,5 +502,6 @@ class DrawingGame {
 }
 
 window.onload = () => {
+  preloadCurtains();
   window.game = new DrawingGame();
 };
