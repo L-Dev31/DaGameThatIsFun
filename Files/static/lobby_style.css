@@ -1,37 +1,42 @@
-/* lobby_style.css */
-.players-container {
+#playersContainer {
     position: fixed;
-    bottom: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 10px;
-    border-radius: 8px;
-    max-width: 220px;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    z-index: 1000;
+    bottom: 50px;
+    right: 80px;
+    display: flex!important;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-width: 400px;
+    border-radius: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    background: #00000099;
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    z-index: 1000; 
+    outline: 2px solid #666;
+    color: white;
 }
 
-.players-container .player {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
+.player {
+    border-radius: 5px;
+    text-align: center;
+    width: 150px;
+    font-size: 1em;
 }
 
-.players-container .player:last-child {
-    margin-bottom: 0;
-}
-
-.players-container .player-avatar {
-    width: 30px;
-    height: 30px;
+.player img {
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
-    margin-right: 8px;
-    object-fit: cover;
+    display: block;
+    margin: 0 auto;
+    border: 3px solid #a855f7!important;
 }
 
-.players-container .player-name {
-    font-size: 14px;
+.player-name {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 5px;
 }
 
 .preview-button {
