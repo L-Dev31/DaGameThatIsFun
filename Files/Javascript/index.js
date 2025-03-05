@@ -73,14 +73,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       description: "Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence ! \n4 à 8 Joueurs",
       preview: "/static/images/preview/draw-contest.png",
       music: "/static/music/draw-contest.mp3",
-      playerNumber: "4-8"
+      playerNumber: "3-8"
     },
     "pictionary": {
       title: "Gribouilles & Embrouilles",
       description: "Montrez vos talents artistiques ! Un joueur dessine pendant que les autres se dépêchent de deviner le mot.",
       preview: "/static/images/preview/banner.png",
       music: "/static/music/pictionary.mp3",
-      playerNumber: "2-8"
+      playerNumber: "3-8"
     },
     "quiz-rush": {
       title: "Quiz Rush",
