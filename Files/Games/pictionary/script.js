@@ -1,3 +1,6 @@
+import { preloadCurtains, showEndGameCurtains } from '/Games/general/credits.js';
+import { players } from '/Games/general/players.js';
+
 document.addEventListener("DOMContentLoaded", () => {
     const startButton = document.getElementById('start-button');
     const mainContainer = document.querySelector('.main-container');
@@ -21,22 +24,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let redoStack = [];
     let lastX, lastY;
     let canvasRect;
-    let backgroundMusic; // Variable pour la musique de fond
-
-    const players = [
-        { name: "Jean-Jaquelino", score: 0, avatar: '/static/images/avatar/1.png' },
-        { name: "Lucette-Albert", score: 0, avatar: '/static/images/avatar/2.png' },
-        { name: "George-Paulin", score: 0, avatar: '/static/images/avatar/3.png' },
-        { name: "Bob XVII", score: 0, avatar: '/static/images/avatar/4.png' },
-        { name: "L'Enclume", score: 0, avatar: '/static/images/avatar/5.png' },
-        { name: "Jean-Paulon", score: 0, avatar: '/static/images/avatar/6.png' },
-        { name: "⎍⋔ ⎍ ⏃⋔⟒", score: 0, avatar: '/static/images/avatar/7.png' },
-        { name: "Bob", score: 0, avatar: '/static/images/avatar/8.png' }
-    ];
+    let backgroundMusic;
+    let currentPath = [];
+    let backgroundMusicFadeInterval;
 
     const brushSizes = { small: 3, medium: 6, large: 12 };
 
-    // Initialisation du canvas
     function initCanvas() {
         const container = canvas.parentElement;
         canvas.width = container.offsetWidth;
@@ -46,7 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.lineJoin = 'round';
     }
 
-    // Gestion du dessin
     function getCanvasPosition(e) {
         const scaleX = canvas.width / canvasRect.width;
         const scaleY = canvas.height / canvasRect.height;
@@ -85,10 +77,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentPath.length > 0) {
             pathHistory.push(currentPath);
             redoStack = [];
+            currentPath = [];
         }
     }
 
-    // Outils de dessin
     function setupDrawingTools() {
         document.querySelectorAll('.tool-button').forEach(tool => {
             tool.addEventListener('click', () => {
@@ -141,7 +133,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Chat
     function setupChat() {
         chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && chatInput.value.trim() !== '') {
@@ -162,7 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // Mots à deviner
     async function fetchWords() {
         try {
             const response = await fetch('guess-list.json');
@@ -173,14 +163,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Démarrage du jeu
     startButton.addEventListener('click', () => {
         startButton.classList.add('disappear');
         setTimeout(() => {
             startButton.style.display = 'none';
             addPlayersWithDelay();
-
-            // Démarrer la musique après l'interaction utilisateur
             if (backgroundMusic) {
                 backgroundMusic.play().catch(error => console.error("Erreur lors de la lecture de la musique :", error));
             }
@@ -195,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (index === players.length - 1) {
                     launchGameCountdown();
                 }
-            }, index * 1000); 
+            }, index * 1000);
         });
     }
 
@@ -210,11 +197,8 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         `;
         playersContainer.appendChild(playerDiv);
-        
         void playerDiv.offsetWidth;
-        
         playerDiv.style.animation = 'pop 0.4s ease-out forwards';
-        
         playerDiv.addEventListener('animationend', () => {
             playerDiv.style.animation = 'none';
         });
@@ -225,14 +209,11 @@ document.addEventListener("DOMContentLoaded", () => {
         countdownDiv.id = 'countdown';
         countdownDiv.textContent = `Début dans 5...`;
         countdownDiv.classList.add('countdown');
-
         document.body.appendChild(countdownDiv);
-
         let countdown = 5;
         const countdownInterval = setInterval(() => {
             countdown--;
             countdownDiv.textContent = `Début dans ${countdown}...`;
-            
             if (countdown <= 0) {
                 clearInterval(countdownInterval);
                 countdownDiv.remove();
@@ -241,7 +222,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     mainContainer.style.opacity = 1;
                     drawingSection.style.opacity = 1;
                     chatSection.style.opacity = 1;
-
                     document.querySelectorAll('.player').forEach(player => {
                         player.style.animation = 'none';
                     });
@@ -252,15 +232,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function startGame() {
-        // Arrêter la musique si elle est déjà en cours
         stopBackgroundMusic();
-
         initCanvas();
         setupDrawingTools();
         setupChat();
         fetchWords().then(() => startNewRound());
-
-        // Lancer la musique en boucle
         backgroundMusic = new Audio('music/BG.mp3');
         backgroundMusic.loop = true;
         backgroundMusic.play().catch(error => console.error("Erreur lors de la lecture de la musique :", error));
@@ -269,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function stopBackgroundMusic() {
         if (backgroundMusic) {
             backgroundMusic.pause();
-            backgroundMusic.currentTime = 0; // Remettre la musique au début
+            backgroundMusic.currentTime = 0;
         }
     }
 
@@ -278,16 +254,12 @@ document.addEventListener("DOMContentLoaded", () => {
         fakePlayersIntervals = [];
         pathHistory = [];
         redrawCanvas();
-
         currentWord = guessList[Math.floor(Math.random() * guessList.length)];
         document.getElementById('wordDisplay').querySelector('span').textContent = currentWord;
-
         updateDrawerDisplay();
         updateGameState();
         showDrawerPopup();
-
         startTimer(35);
-
         players.forEach((player, index) => {
             if (index !== currentDrawerIndex) {
                 const interval = setInterval(() => {
@@ -330,17 +302,45 @@ document.addEventListener("DOMContentLoaded", () => {
     function checkGuess(guess, player = players[0]) {
         if (guess.toLowerCase() === currentWord.toLowerCase()) {
             player.score++;
+            playersClicked++;
+            if (playersClicked >= 15) {
+                endGame();
+                return;
+            }
             currentDrawerIndex = players.indexOf(player);
             startNewRound();
         }
     }
 
+    function endGame() {
+        if (backgroundMusic) {
+            clearInterval(backgroundMusicFadeInterval);
+            backgroundMusicFadeInterval = setInterval(() => {
+                if (backgroundMusic.volume > 0.1) {
+                    backgroundMusic.volume -= 0.1;
+                } else {
+                    backgroundMusic.volume = 0;
+                    clearInterval(backgroundMusicFadeInterval);
+                    backgroundMusic.pause();
+                    backgroundMusic.currentTime = 0;
+                }
+            }, 100);
+        }
+        showEndGameCurtains(players);
+        setTimeout(() => {
+            playersClicked = 0;
+            players.forEach(player => player.score = 0);
+            startNewRound();
+            if (backgroundMusic) {
+                backgroundMusic.volume = 1;
+            }
+        }, 10000);
+    }
+
     function startTimer(seconds) {
         let timeLeft = seconds;
         const timerElement = document.getElementById('timer');
-
         if (currentTimerInterval) clearInterval(currentTimerInterval);
-
         currentTimerInterval = setInterval(() => {
             timerElement.textContent = --timeLeft;
             if (timeLeft <= 0) {
@@ -358,10 +358,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function showDrawerPopup() {
         const drawer = players[currentDrawerIndex];
-        
         const overlay = document.createElement('div');
         overlay.className = 'popup-overlay';
-        
         const popup = document.createElement('div');
         popup.className = 'drawer-popup';
         popup.innerHTML = `
@@ -369,17 +367,13 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="username">${drawer.name}</div>
             <div class="status">dessine...</div>
         `;
-
         document.body.appendChild(overlay);
         document.body.appendChild(popup);
-
         new Audio('/static/music/swoosh-1.mp3').play().catch(() => {});
-
         setTimeout(() => {
             new Audio('/static/music/swoosh-2.mp3').play().catch(() => {});
             popup.classList.add('slide-out');
             overlay.style.opacity = '0';
-            
             setTimeout(() => {
                 popup.remove();
                 overlay.remove();

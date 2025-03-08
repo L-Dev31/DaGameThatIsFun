@@ -1,5 +1,6 @@
 import { preloadCurtains } from '/Games/general/credits.js';
 import { showEndGameCurtains } from '/Games/general/credits.js';
+import { players } from '/Games/general/players.js'; 
  
 document.addEventListener("DOMContentLoaded", () => {
     const startButton = document.getElementById('start-button');
@@ -62,17 +63,6 @@ function addPlayerToContainer(playerIndex) {
     playersContainer.appendChild(playerDiv);
     playPopSound();
 }
-
-const players = [
-    { name: "Jean-Jaquelino", score: 0, avatar: '/static/images/avatar/1.png' },
-    { name: "Lucette-Albert", score: 0, avatar: '/static/images/avatar/2.png' },
-    { name: "George-Paulin", score: 0, avatar: '/static/images/avatar/3.png' },
-    { name: "Bob XVII", score: 0, avatar: '/static/images/avatar/4.png' },
-    { name: "L'Enclume", score: 0, avatar: '/static/images/avatar/5.png' },
-    { name: "Jean-Paulon", score: 0, avatar: '/static/images/avatar/6.png' },
-    { name: "⎍⋔ ⎍ ⏃⋔⟒", score: 0, avatar: '/static/images/avatar/7.png' },
-    { name: "Bob", score: 0, avatar: '/static/images/avatar/8.png' }
-];
 
 let selectedAnswer = null;
 let usedQuestions = [];
@@ -180,7 +170,7 @@ function preloadImage(url) {
 }
 
 async function initQuiz() {
-    if (currentQuestionIndex >= 1) {
+    if (currentQuestionIndex >= 5) {
         preloadCurtains();
         showEndGameCurtains(players);
         return;
@@ -304,5 +294,3 @@ function showPlusOne(playerIndex) {
         }, 1500);
     }
 }
-
-export { players };

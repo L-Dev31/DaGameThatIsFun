@@ -6,7 +6,7 @@ class DrawingGame {
   constructor() {
     this.words = [];
     this.currentRound = 1;
-    this.maxRounds = 1;
+    this.maxRounds = 5;
     this.totalGamesPlayed = 0;
     this.history = [];
     this.redoStack = [];

@@ -122,11 +122,11 @@ a {
     transition: background-color 0.3s;
 }
 
-.sound-control {
+.share-control {
     right: 1rem;
 }
 
-.share-control {
+.sound-control {
     right: 4.5rem;
 }
 
@@ -932,7 +932,8 @@ input:checked + .slider:before {
 .modal-overlay.active {
     display: flex;
     opacity: 1;
-}
+    z-index: 999;
+  }
 
 .modal-container {
     background: white;

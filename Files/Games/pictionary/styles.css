@@ -1,9 +1,10 @@
 :root {
-    --burgundy: #800020;
-    --light-burgundy: #aa1111;
-    --cream: #ffc5c5;
-    --dark-blue: #1a1a2e;
-    --light-gray: #e0e0e0;
+    --deep-blue: #004A7C;
+    --vivid-cyan: #00a9cb;
+    --light-cyan: #44c1da;
+    --soft-white: #F0F7F4;
+    --light-gray: #ddd;
+    --dark-gray: #333333;
 }
 
 @font-face {
@@ -23,7 +24,8 @@ body {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background-color: rgba(128, 0, 32, 0.5);
+    background-color: var(--deep-blue);
+    color: var(--soft-white);
 }
 
 .video-background {
@@ -34,7 +36,7 @@ body {
     height: 100%;
     object-fit: cover;
     z-index: -1;
-    opacity: 0.5;
+    opacity: 0.3;
 }
 
 .main-container {
@@ -44,7 +46,7 @@ body {
     height: 100%;
     padding: 20px;
     gap: 30px;
-    background: #ff6f6fcc;
+    background: rgba(0, 74, 124, 0.8);
 }
 
 .drawing-section,
@@ -68,6 +70,7 @@ body {
 .word-display {
     font-size: 24px;
     font-weight: bold;
+    color: var(--vivid-cyan);
     animation: wordAppear 0.5s ease-out;
 }
 
@@ -79,21 +82,21 @@ body {
 .timer {
     font-size: 24px;
     font-weight: bold;
-    background-color: var(--light-burgundy);
+    background-color: var(--light-cyan);
     padding: 10px 20px;
     border-radius: 10px;
-    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
+    color: var(--soft-white);
 }
 
 .canvas-container {
     flex: 1;
-    background-color: white;
+    background-color: var(--soft-white);
     border-radius: 15px;
-    border: 3px solid var(--burgundy);
+    border: 3px solid var(--vivid-cyan);
     position: relative;
     width: 100%;
     height: 60vh;
-    box-shadow: 0.5vw 0.5vw 0.1vh 0.05vh #00000025;
+    box-shadow: 0.5vw 0.5vw 0.1vh 0.05vh rgba(0, 0, 0, 0.1);
 }
 
 #drawingCanvas {
@@ -108,9 +111,9 @@ body {
     align-items: center;
     gap: 25px;
     padding: 15px;
-    background-color: var(--burgundy);
+    background-color: var(--vivid-cyan);
     border-radius: 15px;
-    box-shadow: inset 0 0 20px #ff6464aa, 0.5vw 0.5vw 0.1vh 0.05vh #00000025;
+    box-shadow: 0.5vw 0.5vw 0.1vh 0.05vh rgba(0, 0, 0, 0.1);
 }
 
 .tool-button {
@@ -126,19 +129,18 @@ body {
 }
 
 .tool-button.active {
-    background-color: var(--light-burgundy);
-    box-shadow: inset 0 0 5px 5px rgba(255, 255, 255, 0.2);
+    background-color: var(--light-cyan);
 }
 
 .tool-button:hover {
-    background-color: var(--light-burgundy);
+    background-color: var(--light-cyan);
     transform: scale(1.1);
 }
 
 .tool-button svg {
     width: 28px;
     height: 28px;
-    fill: white;
+    fill: var(--soft-white);
 }
 
 .size-buttons {
@@ -161,12 +163,11 @@ body {
 }
 
 .size-button svg {
-    fill: white;
+    fill: var(--soft-white);
 }
 
 .size-button.active {
-    background-color: var(--light-burgundy);
-    box-shadow: inset 0 0 4px 4px rgba(255, 255, 255, 0.2);
+    background-color: var(--light-cyan);
 }
 
 .size-button:hover {
@@ -175,12 +176,12 @@ body {
 
 .chat-section {
     flex: 1;
-    background-color: white;
+    background-color: var(--soft-white);
     border-radius: 15px;
-    border: 3px solid var(--burgundy);
+    border: 3px solid var(--vivid-cyan);
     display: flex;
     flex-direction: column;
-    box-shadow: 0.5vw 0.5vw 0.1vh 0.05vh #00000025;
+    box-shadow: 0.5vw 0.5vw 0.1vh 0.05vh rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
@@ -205,7 +206,7 @@ body {
     background-color: var(--light-gray);
     animation: messageAppear 0.3s ease-out;
     font-weight: bold;
-    color: var(--burgundy);
+    color: var(--dark-gray);
     max-width: 80%;
     word-wrap: break-word;
 }
@@ -217,7 +218,7 @@ body {
 
 .chat-input {
     padding: 15px;
-    border-top: 2px solid var(--burgundy);
+    border-top: 2px solid var(--vivid-cyan);
     background-color: var(--light-gray);
 }
 
@@ -227,46 +228,50 @@ body {
     border: none;
     border-radius: 8px;
     font-size: 16px;
-    background-color: white;
+    background-color: var(--soft-white);
 }
 
 .chat-input input:focus {
     outline: none;
-    background-color: #f0f0f0;
+    background-color: #e0f7fa;
 }
 
 .player.current-drawer {
-    color: var(--burgundy);
-    border: 2px solid var(--burgundy);
+    color: var(--vivid-cyan);
+    border: 2px solid var(--vivid-cyan);
     border-radius: 10px;
     padding: 5px;
-    background-color: rgba(128, 0, 32, 0.1);
+    background-color: rgba(0, 180, 216, 0.1);
     animation: pulseGlow 1.5s infinite;
 }
 
+.player.current-drawer .player-info {
+    color: var(--deep-blue);
+}
+
 .player.current-drawer .player-score {
-    background-color: var(--cream);
-    color: var(--burgundy);
+    background-color: var(--light-cyan);
+    color: var(--deep-blue);
 }
 
 .player.current-drawer img {
-    outline: 2px solid var(--burgundy) !important;
+    outline: 2px solid var(--vivid-cyan) !important;
 }
 
 @keyframes pulseGlow {
-    0% { box-shadow: 0 0 5px rgba(128, 0, 32, 0.3); }
-    50% { box-shadow: 0 0 15px rgba(128, 0, 32, 0.6); }
-    100% { box-shadow: 0 0 5px rgba(128, 0, 32, 0.3); }
+    0% { box-shadow: 0 0 5px rgba(0, 180, 216, 0.3); }
+    50% { box-shadow: 0 0 15px rgba(0, 180, 216, 0.6); }
+    100% { box-shadow: 0 0 5px rgba(0, 180, 216, 0.3); }
 }
 
 .drawer-info {
     display: flex;
     align-items: center; 
     gap: 20px; 
-    background-color: var(--burgundy);
+    background-color: var(--vivid-cyan);
     padding: 10px 20px;
     border-radius: 15px;
-    box-shadow: inset 0 0 20px #ff6464aa, 0.5vw 0.5vw 0.1vh 0.05vh #00000025;
+    box-shadow: 0.5vw 0.5vw 0.1vh 0.05vh rgba(0, 0, 0, 0.1);
     position: relative;
 }
 
@@ -275,17 +280,17 @@ body {
     height: 80px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid white;
+    border: 2px solid var(--soft-white);
 }
 
 .drawer-name {
-    color: white;
+    color: var(--soft-white);
     font-weight: bold;
     font-size: 3vh;
 }
 
 .game-info {
-    color: white;
+    color: var(--soft-white);
     display: flex;
     align-items: center;
     gap: 20px;
@@ -313,11 +318,11 @@ body {
 }
 
 .players-section {
-    background-color: white;
-    border: 3px solid var(--burgundy);
+    background-color: var(--soft-white);
+    border: 3px solid var(--vivid-cyan);
     border-radius: 15px;
     padding: 15px;
-    box-shadow: 0.5vw 0.5vw 0.1vh 0.05vh #00000025;
+    box-shadow: 0.5vw 0.5vw 0.1vh 0.05vh rgba(0, 0, 0, 0.1);
 }
 
 #players-container {
@@ -353,6 +358,7 @@ body {
 }
 
 .player-info {
+    color: var(--dark-gray);
     display: flex;
     flex-direction: column;
     align-items: center; 
@@ -361,7 +367,7 @@ body {
 
 .player-score {
     width: 2vw;
-    color: var(--dark-blue);
+    color: var(--dark-gray);
     font-weight: bold;
     font-size: 1.5em;
     background-color: var(--light-gray);
@@ -379,7 +385,7 @@ body {
     50% { transform: scale(1.3); }
     100% { transform: scale(1); }
 }
-/* Nouveaux styles pour la popup du dessinateur */
+
 .popup-overlay {
     position: fixed;
     top: 0;
@@ -396,11 +402,11 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: white;
+    background: var(--soft-white);
     padding: 30px;
     border-radius: 15px;
-    border: 3px solid var(--burgundy);
-    box-shadow: 0.5vw 0.5vw 0.1vh 0.05vh #00000025;
+    border: 3px solid var(--vivid-cyan);
+    box-shadow: 0.5vw 0.5vw 0.1vh 0.05vh rgba(0, 0, 0, 0.1);
     z-index: 1000;
     text-align: center;
     min-width: 300px;
@@ -415,20 +421,20 @@ body {
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    border: 2px solid var(--burgundy);
+    border: 2px solid var(--vivid-cyan);
     margin-bottom: 15px;
 }
 
 .drawer-popup .username {
     font-weight: bold;
     font-size: 2em;
-    color: var(--burgundy);
+    color: var(--vivid-cyan);
     margin-bottom: 10px;
 }
 
 .drawer-popup .status {
     font-size: 1.2em;
-    color: var(--dark-blue);
+    color: var(--dark-gray);
 }
 
 @keyframes fadeIn {
@@ -464,25 +470,23 @@ body {
     padding: 20px 40px;
     font-size: 4vh;
     font-family: 'Chalkboy', sans-serif;
-    color: white;
-    background-color: var(--burgundy);
-    border: 3px solid white;
+    color: var(--soft-white);
+    background-color: var(--light-cyan);
+    border: 3px solid var(--soft-white);
     border-radius: 15px;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: inset 0 0 20px #ff6464aa;
     letter-spacing: 2px;
     text-transform: uppercase;
 }
 
 #start-button:hover {
     transform: translate(-50%, -50%) scale(1.1) rotate(-3deg);
-    background-color: var(--light-burgundy);
-    box-shadow: inset 0 0 20px #ff6464aa, 0.5vw 0.5vw 0.1vh 0.05vh #00000025;
+    background-color: var(--vivid-cyan);
+    box-shadow: 0.5vw 0.5vw 0.1vh 0.05vh rgba(0, 0, 0, 0.1);
 }
 
 #start-button.disappear {
-    box-shadow: none;
     animation: disappear 0.5s ease-in forwards;
 }
 
@@ -506,7 +510,7 @@ body {
     transform: translate(-50%, -50%);
     font-family: 'Chalkboy', sans-serif;
     font-size: 7.5vh;
-    color: white;
-    text-shadow: 0.5vw 0.5vw 0.1vh #00000045;
+    color: var(--soft-white);
+    text-shadow: 0.5vw 0.5vw 0.1vh rgba(0, 0, 0, 0.2);
     z-index: 1000;
 }

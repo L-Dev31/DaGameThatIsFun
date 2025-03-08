@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "pictionary": {
       title: "Gribouilles & Embrouilles",
       description: "Montrez vos talents artistiques ! Un joueur dessine pendant que les autres se dépêchent de deviner le mot.",
-      preview: "/static/images/preview/banner.png",
+      preview: "/static/images/preview/pictionary.png",
       music: "/static/music/pictionary.mp3",
       playerNumber: "3-8"
     },
