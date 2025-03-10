@@ -30,7 +30,7 @@ a, button, [role="button"], input[type="submit"], input[type="button"], .answer 
 
 #loading-screen img {
     width: 400px;
-    height: 200px;
+    height: auto;
 }
 
 /* Styles pour le lecteur vidéo */
