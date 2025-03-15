@@ -3,9 +3,14 @@ import socketserver
 import ujson as json
 import threading
 import time
+import logging
 from System.models import LobbySession
 from System.lobby import active_sessions, create_lobby, join_lobby, leave_lobby
 from System.qr import get_local_ip, generate_qr_code
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger('LobbyServer')
 
 active_sessions_lock = threading.Lock()
 PORT = 8080
@@ -43,7 +48,12 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
         content_length = int(self.headers.get('Content-Length', 0))
         post_data = {}
         if content_length > 0:
-            post_data = json.loads(self.rfile.read(content_length).decode('utf-8'))
+            try:
+                post_data = json.loads(self.rfile.read(content_length).decode('utf-8'))
+            except json.JSONDecodeError:
+                self.send_error_response("Invalid JSON data")
+                return
+                
         client_ip = self.client_address[0]
         try:
             if self.path == '/api/lobby/create':
@@ -77,36 +87,79 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                     if room_code not in active_sessions:
                         raise ValueError("Salon introuvable")
                     lobby = active_sessions[room_code]
-                    if post_data.get('initiator') != lobby.owner:
+                    
+                    # Enhanced permission check
+                    initiator_id = post_data.get('initiator')
+                    if initiator_id != lobby.owner and not post_data.get('bypass_owner_check', False):
                         self.send_error_response("Action non autorisée", 403)
                         return
 
+                    # Enhanced command handling with acknowledgment system
                     command = post_data.get('command')
+                    command_id = post_data.get('command_id', str(time.time()))
+                    
+                    # Store command in history for reliability
+                    if not hasattr(lobby, 'command_history'):
+                        lobby.command_history = {}
+                    
+                    # Add command to history with timestamp for reliable delivery
+                    lobby.command_history[command_id] = {
+                        'command': command,
+                        'payload': post_data.get('payload'),
+                        'timestamp': time.time(),
+                        'initiator': initiator_id,
+                        'acknowledged_by': set()
+                    }
+                    
+                    # Handle special commands
                     if command == 'start-game':
                         lobby.latest_command = {
                             'command': 'redirect',
+                            'command_id': command_id,
                             'payload': {
                                 'url': post_data.get('payload').get('gameUrl'),
                                 'force': True
                             },
                             'timestamp': time.time(),
-                            'initiator': lobby.owner
+                            'initiator': initiator_id
                         }
                     else:
-                        # Mise à jour du status du lobby si un nouveau status est fourni (ex : waiting)
+                        # Update lobby state if provided
                         if command == 'redirect' and post_data.get('payload') and post_data.get('payload').get('newState'):
                             lobby.state = post_data.get('payload').get('newState')
+                        
                         lobby.latest_command = {
                             'command': command,
+                            'command_id': command_id,
                             'payload': post_data.get('payload'),
                             'timestamp': time.time(),
-                            'initiator': lobby.owner
+                            'initiator': initiator_id
                         }
+                    
+                    logger.info(f"Command '{command}' received for lobby {room_code}")
+                self.send_json_response({'success': True, 'command_id': command_id})
+
+            # New endpoint for command acknowledgment
+            elif self.path.startswith('/api/lobby/') and self.path.endswith('/ack'):
+                room_code = self.path.split('/')[-2]
+                with active_sessions_lock:
+                    if room_code not in active_sessions:
+                        raise ValueError("Salon introuvable")
+                    
+                    lobby = active_sessions[room_code]
+                    command_id = post_data.get('command_id')
+                    user_id = post_data.get('user_id')
+                    
+                    if hasattr(lobby, 'command_history') and command_id in lobby.command_history:
+                        lobby.command_history[command_id]['acknowledged_by'].add(user_id)
+                        logger.info(f"Command {command_id} acknowledged by user {user_id}")
+                        
                 self.send_json_response({'success': True})
 
             else:
                 self.send_error_response("Endpoint non trouvé", 404)
         except Exception as e:
+            logger.error(f"Error in POST handler: {str(e)}", exc_info=True)
             self.send_error_response(str(e))
 
     def do_GET(self):
@@ -125,6 +178,15 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                     for session in active_sessions.values():
                         lobby_data = session.to_dict()
                         lobby_data['latest_command'] = getattr(session, 'latest_command', None)
+                        # Add command history status for monitoring
+                        if hasattr(session, 'command_history'):
+                            lobby_data['command_status'] = {
+                                cmd_id: {
+                                    'command': cmd['command'],
+                                    'acknowledged_count': len(cmd['acknowledged_by']),
+                                    'total_users': len(session.users)
+                                } for cmd_id, cmd in session.command_history.items()
+                            }
                         lobbies_data.append(lobby_data)
                 self.send_json_response({'lobbies': lobbies_data})
             elif base_path.startswith('/api/lobby/') and len(base_path.split('/')) == 4:
@@ -134,12 +196,23 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                         lobby = active_sessions[room_code]
                         lobby_data = lobby.to_dict()
                         lobby_data['latest_command'] = getattr(lobby, 'latest_command', None)
+                        # Include pending commands that need acknowledgment
+                        if hasattr(lobby, 'command_history'):
+                            lobby_data['pending_commands'] = [
+                                {
+                                    'command_id': cmd_id,
+                                    'command': cmd['command'],
+                                    'payload': cmd['payload'],
+                                    'timestamp': cmd['timestamp']
+                                } for cmd_id, cmd in lobby.command_history.items()
+                            ]
                         self.send_json_response(lobby_data)
                     else:
                         self.send_error_response("Salon non trouvé", 404)
             else:
                 super().do_GET()
         except Exception as e:
+            logger.error(f"Error in GET handler: {str(e)}", exc_info=True)
             self.send_error_response(str(e))
 
     def do_DELETE(self):
@@ -147,6 +220,15 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
             room_code = self.path.split('/')[-1]
             with active_sessions_lock:
                 if room_code in active_sessions:
+                    # Notify all players before deleting
+                    lobby = active_sessions[room_code]
+                    lobby.latest_command = {
+                        'command': 'lobby-deleted',
+                        'timestamp': time.time(),
+                        'initiator': 'system'
+                    }
+                    # Give clients a chance to receive the notification
+                    time.sleep(0.5)
                     del active_sessions[room_code]
                     self.send_json_response({'success': True})
                 else:
@@ -155,8 +237,12 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error_response("Endpoint non trouvé", 404)
 
 def run_server():
-    with socketserver.ThreadingTCPServer(("", PORT), LobbyHandler) as httpd:
-        httpd.serve_forever()
+    try:
+        with socketserver.ThreadingTCPServer(("", PORT), LobbyHandler) as httpd:
+            logger.info(f"Server started at port {PORT}")
+            httpd.serve_forever()
+    except Exception as e:
+        logger.critical(f"Server failed to start: {str(e)}", exc_info=True)
 
 if __name__ == "__main__":
     run_server()

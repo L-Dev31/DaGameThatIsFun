@@ -1,179 +1,141 @@
 import LobbyManager from './lobby_manager.js';
-import { shouldRedirect } from './lobby_redirection.js';
 
 let isOwner = false;
 const userId = localStorage.getItem('userId');
 const roomCode = localStorage.getItem('roomCode');
 
-if (!roomCode || !userId) {
-  window.location.href = '/';
-}
+if (!roomCode || !userId) window.location.href = '/';
 
-const modal = document.getElementById('confirmationModal');
-const leaveButton = document.getElementById('leaveButton');
-const cancelButton = document.getElementById('cancelButton');
-const confirmButton = document.getElementById('confirmButton');
-const modalMessage = document.getElementById('modalMessage');
-
-function showModal(message, ownerLeaving = false) {
-  modalMessage.textContent = message;
-  modal.style.display = 'flex';
-  confirmButton.onclick = async () => {
-    if (ownerLeaving) {
-      await LobbyManager.sendCommandToPlayers('lobby-deleted');
-      await LobbyManager.leaveLobby();
-      window.location.href = '/';
-    } else {
-      await LobbyManager.leaveLobby();
-      window.location.href = '/';
-    }
-  };
-}
-
-function hideModal() {
-  modal.style.display = 'none';
-}
-
-leaveButton.addEventListener('click', () => {
-  showModal(isOwner ? "Attention ! En quittant, le salon sera supprimé. Continuer ?" : "Quitter le salon ?", isOwner);
-});
-
-cancelButton.addEventListener('click', hideModal);
-modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
+const elements = {
+  modal: document.getElementById('confirmationModal'),
+  leaveButton: document.getElementById('leaveButton'),
+  cancelButton: document.getElementById('cancelButton'),
+  confirmButton: document.getElementById('confirmButton'),
+  modalMessage: document.getElementById('modalMessage'),
+  playersGrid: document.getElementById('playersGrid'),
+  startButton: document.getElementById('startButton'),
+  countdownOverlay: document.getElementById('countdownOverlay'),
+  countdownNumber: document.getElementById('countdownNumber'),
+  cancelCountdown: document.getElementById('cancelCountdown'),
+  roomCodeDisplay: document.getElementById('roomCode')
+};
 
 function updatePlayersGrid(users, ownerId) {
-  const playersGrid = document.getElementById('playersGrid');
-  playersGrid.innerHTML = '';
+  if (!elements.playersGrid) return;
+  elements.playersGrid.innerHTML = '';
   const currentUserId = localStorage.getItem('userId');
   const sortedUsers = Object.values(users).sort((a, b) => {
     if (a.id === ownerId) return -1;
     if (b.id === ownerId) return 1;
     return a.join_time - b.join_time;
   });
-  
   for (let i = 0; i < 8; i++) {
-    const playerSlot = document.createElement('div');
-    playerSlot.classList.add('player-slot');
+    const slot = document.createElement('div');
+    slot.className = `player-slot ${i >= 4 ? 'bottom-row' : ''}`;
     if (i < sortedUsers.length) {
       const user = sortedUsers[i];
-      playerSlot.innerHTML = `
+      slot.innerHTML = `
         <div class="player-avatar${user.id === currentUserId ? ' current-player' : ''}">
           <img src="/static/images/avatar/${user.avatar_index + 1}.png" alt="${user.name}">
+          ${user.id === ownerId ? '<div class="crown">👑</div>' : ''}
         </div>
         <span class="waiting-text">
           <strong>${user.name}</strong>
-          ${user.id === ownerId ? ' 👑' : ''}
           ${user.id === currentUserId ? ' (Vous)' : ''}
         </span>`;
     } else {
-      playerSlot.innerHTML = `
+      slot.innerHTML = `
         <div class="player-avatar empty">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
           </svg>
         </div>
         <span class="waiting-text">En attente...</span>`;
     }
-    playersGrid.appendChild(playerSlot);
+    elements.playersGrid.appendChild(slot);
   }
 }
 
-function updateStartButton(userCount, maxPlayers) {
-  const startButton = document.getElementById('startButton');
-  startButton.textContent = `Lancer la partie (${userCount}/${maxPlayers})`;
-  startButton.disabled = !isOwner || userCount < 2;
+function updateStartButton(userCount) {
+  if (elements.startButton) {
+    elements.startButton.textContent = `Lancer la partie (${userCount}/8)`;
+    elements.startButton.disabled = !isOwner || userCount < 2;
+  }
 }
 
-let countdownInterval;
-function startCountdown(duration) {
-  const countdownOverlay = document.getElementById('countdownOverlay');
-  const countdownNumber = document.getElementById('countdownNumber');
-  const cancelCountdown = document.getElementById('cancelCountdown');
-  countdownOverlay.style.display = 'flex';
-  let counter = duration;
-  cancelCountdown.style.display = isOwner ? 'block' : 'none';
-  countdownNumber.textContent = counter;
-  
-  countdownInterval = setInterval(() => {
-    counter--;
-    countdownNumber.textContent = counter < 0 ? 0 : counter;
-    if (counter <= 0) {
-      clearInterval(countdownInterval);
-      LobbyManager.sendCommandToPlayers('redirect', { url: `index.html?roomCode=${roomCode}` });
-      if (shouldRedirect(`index.html?roomCode=${roomCode}`)) {
-        window.location.href = `index.html?roomCode=${roomCode}`;
-      }
-    }
-  }, 1000);
-}
-
-function setupCommandListener() {
-  let lastCommandTime = 0;
-  setInterval(async () => {
-    try {
-      const lobby = await LobbyManager.getCurrentLobby();
-      const command = lobby?.latest_command;
-      if (command && command.timestamp > lastCommandTime) {
-        lastCommandTime = command.timestamp;
-        switch (command.command) {
-          case 'start-countdown':
-            startCountdown(command.payload.duration);
-            break;
-          case 'cancel-countdown':
-            clearInterval(countdownInterval);
-            document.getElementById('countdownOverlay').style.display = 'none';
-            break;
-          case 'redirect':
-            if (shouldRedirect(command.payload.url)) {
-              window.location.href = command.payload.url;
-            }
-            break;
-          case 'lobby-deleted':
-            alert('Le salon a été supprimé par l\'hôte !');
-            window.location.href = '/';
-            break;
-        }
-      }
-    } catch (err) {
-      console.error("[WAITING] Erreur:", err);
-    }
-  }, 1000);
-}
-
-async function checkOwnerStatus() {
+async function checkLobbyState() {
   try {
     const lobby = await LobbyManager.getCurrentLobby();
-    if (!lobby) {
-      window.location.href = 'index.html';
-      return;
-    }
-    isOwner = lobby.isOwner;
+    if (!lobby) return window.location.href = '/';
+    isOwner = lobby.owner === userId;
     updatePlayersGrid(lobby.users, lobby.owner);
-    updateStartButton(Object.keys(lobby.users).length, lobby.max_players || 8);
+    updateStartButton(Object.keys(lobby.users).length);
   } catch (error) {
-    console.error("[WAITING] Erreur:", error);
+    console.error('Lobby check failed:', error);
   }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  document.getElementById('roomCode').textContent = roomCode;
-  await checkOwnerStatus();
-  setupCommandListener();
-  setInterval(checkOwnerStatus, 1000);
-  document.getElementById('startButton').addEventListener('click', () => {
-    if (isOwner) {
-      LobbyManager.sendCommandToPlayers('start-countdown', { duration: 5 });
-      startCountdown(5);
+  if (elements.roomCodeDisplay) elements.roomCodeDisplay.textContent = roomCode;
+  
+  LobbyManager.addCommandListener('redirect', payload => {
+    console.log('Redirect command received:', payload);
+    if (window.location.pathname !== new URL(payload.url).pathname) {
+      sessionStorage.setItem('isRedirecting', 'true');
+      window.location.href = payload.url;
     }
   });
+
+  LobbyManager.addCommandListener('lobby-deleted', () => {
+    console.log('Lobby deletion command received');
+    localStorage.clear();
+    window.location.href = '/';
+  });
+
+  elements.leaveButton?.addEventListener('click', () => {
+    elements.modalMessage.textContent = isOwner ? 
+      "Attention ! En quittant, le salon sera supprimé. Continuer ?" : 
+      "Quitter le salon ?";
+    elements.modal.style.display = 'flex';
+  });
+
+  elements.confirmButton?.addEventListener('click', async () => {
+    console.log('Confirming lobby deletion');
+    if (isOwner) await LobbyManager.sendCommand('lobby-deleted');
+    await LobbyManager.leaveLobby();
+    window.location.href = '/';
+  });
+
+  elements.cancelButton?.addEventListener('click', () => {
+    elements.modal.style.display = 'none';
+  });
+
+  elements.startButton?.addEventListener('click', () => {
+    console.log('Start button clicked - isOwner:', isOwner);
+    if (isOwner) {
+      console.log('Sending start-countdown command');
+      LobbyManager.sendCommand('start-countdown', { duration: 5 })
+        .then(success => console.log('Command success:', success))
+        .catch(err => console.error('Command error:', err));
+    }
+  });
+
+  elements.cancelCountdown?.addEventListener('click', () => {
+    console.log('Cancel countdown clicked');
+    if (isOwner) LobbyManager.sendCommand('cancel-countdown');
+  });
+
+  await checkLobbyState();
+  setInterval(checkLobbyState, 2000);
 });
 
-window.addEventListener('beforeunload', async () => {
+window.addEventListener('beforeunload', () => {
   if (isOwner) {
-    navigator.sendBeacon('/api/send-command', JSON.stringify({
-      command: 'redirect',
-      payload: { url: `index.html?roomCode=${roomCode}` }
-    }));
+    console.log('Sending lobby-deleted on unload');
+    LobbyManager.sendCommand('lobby-deleted', {}, {
+      priority: 'critical',
+      persistent: false
+    });
   }
 });
