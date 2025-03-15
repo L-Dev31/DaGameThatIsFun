@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateGameState() {
         const isUserDrawer = players[currentDrawerIndex].name === "Jean-Jaquelino";
-        const isChatDisabled = isCreditsVisible || isPopupVisible || isUserDrawer; // Inversez la logique ici
+        const isChatDisabled = isCreditsVisible || isPopupVisible || isUserDrawer; 
         
         // Chat Section
         chatSection.style.filter = isChatDisabled ? "brightness(0.8)" : "brightness(1)";
