@@ -1,0 +1,151 @@
+#credits-container h2{
+    font-family: 'Chalkboy', sans-serif; 
+    font-size: 3em;
+    margin-top: 0;
+    margin-bottom: 0.5vh;
+    font-weight: lighter;
+}
+
+#credits-container p{
+    font-size: 2vh;
+    color: white;
+}
+
+#left-curtain, #right-curtain {
+    position: fixed;
+    top: 0;
+    width: 55%;
+    height: 100vh;
+    background-size: cover;
+    transition: all 1s ease-in-out;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+#left-curtain { 
+    left: -50%;
+    background-image: url('images/curtain_left.png');
+    background-position: right;
+}
+
+#right-curtain {
+    right: -50%;
+    background-image: url('images/curtain_right.png');
+    background-position: left;
+}
+
+/* Conteneur des crédits */
+#credits-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70%;
+    height: 90%;
+    color: #a855f7;
+    z-index: 1002;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    animation: fadeIn 1s ease-in-out;
+    z-index: 1;
+}
+
+/* Logo du jeu */
+.credits-logo {
+    height: 100px;
+    width: auto;
+    margin-bottom: 20px;
+}
+
+/* Classement des joueurs */
+.players-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 15px;
+    gap: 15px;
+    width: 100%;
+}
+
+.leaderboard-player {
+    max-width: 250px;
+    max-height: auto;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    border: 3px solid gray;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.rank-1 { border: 3px solid gold; animation: goldShimmer 2s infinite;}
+.rank-2 { border: 3px solid silver; animation: silverShimmer 2s infinite;}
+.rank-3 { border: 3px solid #cd7f32; animation: bronzeShimmer 2s infinite;}
+
+.leaderboard-player span, .leaderboard-player p {
+    color: #333333! important;
+    margin: 2.5px;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 1.2em;
+    font-weight: bolder;
+}
+
+.rank-1 p, .rank-1 span{ color: #b89c00!important; }
+.rank-2 p, .rank-2 span { color: #848484!important; }
+.rank-3 p, .rank-3 span { color: #a16121!important; }
+
+.leaderboard-player img {
+    width: 5vh;
+    height: 5vh;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    object-fit: cover;
+}
+
+@keyframes goldShimmer {
+    0%, 100% { box-shadow: 0 0 5px gold; }
+    50% { box-shadow: 0 0 15px gold; }
+}
+
+@keyframes silverShimmer {
+    0%, 100% { box-shadow: 0 0 5px silver; }
+    50% { box-shadow: 0 0 15px silver; }
+}
+
+@keyframes bronzeShimmer {
+    0%, 100% { box-shadow: 0 0 5px #cd7f32; }
+    50% { box-shadow: 0 0 15px #cd7f32; }
+}
+
+/* Indication de sortie */
+.exit-hint {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    z-index: 1003;
+    transition: all 0.2s ease-in-out;
+}
+
+.exit-hint:hover {
+    transform: scale(1.05);
+}
+
+.exit-hint img {
+    width: auto;
+    height: 30px;
+    margin-right: 10px;
+}
+
+.overlay-gradient.credit {
+    background-color: #181818f9;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

@@ -27,8 +27,30 @@ document.addEventListener("DOMContentLoaded", () => {
     let backgroundMusic;
     let currentPath = [];
     let backgroundMusicFadeInterval;
+    let gameActive = true;
+    let isPopupVisible = false;
+    let isCreditsVisible = false;
 
     const brushSizes = { small: 3, medium: 6, large: 12 };
+
+    preloadCurtains();
+
+    function updateGameState() {
+        const isUserDrawer = players[currentDrawerIndex].name === "Jean-Jaquelino";
+        const isChatDisabled = isCreditsVisible || isPopupVisible || isUserDrawer; // Inversez la logique ici
+        
+        // Chat Section
+        chatSection.style.filter = isChatDisabled ? "brightness(0.8)" : "brightness(1)";
+        chatSection.style.pointerEvents = isChatDisabled ? 'none' : 'auto';
+        
+        // Drawing Tools
+        document.getElementById('drawingTools').style.display = isUserDrawer ? 'flex' : 'none';
+        document.getElementById('wordDisplay').style.display = isUserDrawer ? 'block' : 'none';
+        canvas.style.pointerEvents = isUserDrawer ? 'auto' : 'none';
+        
+        // Input Chat
+        chatInput.disabled = isChatDisabled;
+    }
 
     function initCanvas() {
         const container = canvas.parentElement;
@@ -49,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function startDrawing(e) {
-        if (currentDrawerIndex !== 0) return;
+        if (isCreditsVisible || currentDrawerIndex !== 0 || !gameActive) return;
         isDrawing = true;
         const pos = getCanvasPosition(e);
         [lastX, lastY] = [pos.x, pos.y];
@@ -59,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function draw(e) {
-        if (!isDrawing || currentDrawerIndex !== 0) return;
+        if (isCreditsVisible || !isDrawing || currentDrawerIndex !== 0 || !gameActive) return;
         const pos = getCanvasPosition(e);
         ctx.beginPath();
         ctx.moveTo(lastX, lastY);
@@ -84,6 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function setupDrawingTools() {
         document.querySelectorAll('.tool-button').forEach(tool => {
             tool.addEventListener('click', () => {
+                if (isCreditsVisible) return;
                 document.querySelectorAll('.tool-button').forEach(t => t.classList.remove('active'));
                 tool.classList.add('active');
                 currentTool = tool.id.replace('Tool', '');
@@ -92,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.querySelectorAll('.size-button').forEach(button => {
             button.addEventListener('click', () => {
+                if (isCreditsVisible) return;
                 document.querySelectorAll('.size-button').forEach(b => b.classList.remove('active'));
                 button.classList.add('active');
                 currentSize = button.dataset.size;
@@ -104,6 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
         canvas.addEventListener('mouseout', stopDrawing);
 
         document.getElementById('undoTool').addEventListener('click', () => {
+            if (isCreditsVisible) return;
             if (pathHistory.length > 0) {
                 redoStack.push(pathHistory.pop());
                 redrawCanvas();
@@ -111,6 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         document.getElementById('redoTool').addEventListener('click', () => {
+            if (isCreditsVisible) return;
             if (redoStack.length > 0) {
                 pathHistory.push(redoStack.pop());
                 redrawCanvas();
@@ -119,6 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function redrawCanvas() {
+        if (isCreditsVisible) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         pathHistory.forEach(path => {
             if (path.length < 2) return;
@@ -135,6 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function setupChat() {
         chatInput.addEventListener('keypress', (e) => {
+            if (isCreditsVisible || !gameActive) return;
             if (e.key === 'Enter' && chatInput.value.trim() !== '') {
                 if (players[currentDrawerIndex].name !== "Jean-Jaquelino") {
                     addMessage(chatInput.value, "Vous");
@@ -146,6 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function addMessage(text, sender) {
+        if (isCreditsVisible) return;
         const msgDiv = document.createElement('div');
         msgDiv.className = 'message';
         msgDiv.textContent = `${sender}: ${text}`;
@@ -164,6 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     startButton.addEventListener('click', () => {
+        if (isCreditsVisible) return;
         startButton.classList.add('disappear');
         setTimeout(() => {
             startButton.style.display = 'none';
@@ -175,6 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     function addPlayersWithDelay() {
+        if (isCreditsVisible) return;
         players.forEach((player, index) => {
             setTimeout(() => {
                 addPlayerToContainer(player);
@@ -187,6 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function addPlayerToContainer(player) {
+        if (isCreditsVisible) return;
         const playerDiv = document.createElement('div');
         playerDiv.className = 'player';
         playerDiv.innerHTML = `
@@ -205,6 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function launchGameCountdown() {
+        if (isCreditsVisible) return;
         const countdownDiv = document.createElement('div');
         countdownDiv.id = 'countdown';
         countdownDiv.textContent = `Début dans 5...`;
@@ -232,6 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function startGame() {
+        if (isCreditsVisible) return;
         stopBackgroundMusic();
         initCanvas();
         setupDrawingTools();
@@ -250,6 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function startNewRound() {
+        if (isCreditsVisible || !gameActive) return;
         fakePlayersIntervals.forEach(clearInterval);
         fakePlayersIntervals = [];
         pathHistory = [];
@@ -259,10 +294,10 @@ document.addEventListener("DOMContentLoaded", () => {
         updateDrawerDisplay();
         updateGameState();
         showDrawerPopup();
-        startTimer(35);
         players.forEach((player, index) => {
             if (index !== currentDrawerIndex) {
                 const interval = setInterval(() => {
+                    if (isCreditsVisible || !gameActive) return;
                     const guess = guessList[Math.floor(Math.random() * guessList.length)];
                     addMessage(guess, player.name);
                     checkGuess(guess, player);
@@ -273,6 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateDrawerDisplay() {
+        if (isCreditsVisible) return;
         const drawer = players[currentDrawerIndex];
         document.querySelector('.drawer-avatar').src = drawer.avatar;
         document.querySelector('.drawer-name').textContent = `${drawer.name} dessine...`;
@@ -280,30 +316,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderPlayers() {
-        playersContainer.innerHTML = players.map(player => `
-            <div class="player ${players[currentDrawerIndex] === player ? 'current-drawer' : ''}">
+        if (isCreditsVisible) return;
+        playersContainer.innerHTML = players.map(player => 
+            `<div class="player ${players[currentDrawerIndex] === player ? 'current-drawer' : ''}">
                 <img src="${player.avatar}" alt="${player.name}">
                 <div class="player-info">
                     <div class="player-name">${player.name}</div>
                     <div class="player-score">${player.score}</div>
                 </div>
-            </div>
-        `).join('');
-    }
-
-    function updateGameState() {
-        const isUserDrawer = players[currentDrawerIndex].name === "Jean-Jaquelino";
-        document.querySelector('.chat-section').classList.toggle('disabled', isUserDrawer);
-        document.getElementById('chatInput').disabled = isUserDrawer;
-        document.getElementById('drawingTools').style.display = isUserDrawer ? 'flex' : 'none';
-        document.getElementById('wordDisplay').style.display = isUserDrawer ? 'block' : 'none';
+            </div>`
+        ).join('');
     }
 
     function checkGuess(guess, player = players[0]) {
+        if (isCreditsVisible || !gameActive) return;
         if (guess.toLowerCase() === currentWord.toLowerCase()) {
             player.score++;
             playersClicked++;
-            if (playersClicked >= 15) {
+            if (playersClicked >= 10) {
                 endGame();
                 return;
             }
@@ -313,6 +343,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function endGame() {
+        showEndGameCurtains(players);
+        
+        if (isCreditsVisible) return;
+        isCreditsVisible = true;
+        gameActive = false;
+        fakePlayersIntervals.forEach(clearInterval);
+        fakePlayersIntervals = [];
+        clearInterval(currentTimerInterval);
+        document.querySelectorAll('.popup-overlay, .drawer-popup').forEach(el => el.remove());
         if (backgroundMusic) {
             clearInterval(backgroundMusicFadeInterval);
             backgroundMusicFadeInterval = setInterval(() => {
@@ -326,37 +365,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }, 100);
         }
-        showEndGameCurtains(players);
-        setTimeout(() => {
-            playersClicked = 0;
-            players.forEach(player => player.score = 0);
-            startNewRound();
-            if (backgroundMusic) {
-                backgroundMusic.volume = 1;
-            }
-        }, 10000);
-    }
-
-    function startTimer(seconds) {
-        let timeLeft = seconds;
-        const timerElement = document.getElementById('timer');
-        if (currentTimerInterval) clearInterval(currentTimerInterval);
-        currentTimerInterval = setInterval(() => {
-            timerElement.textContent = --timeLeft;
-            if (timeLeft <= 0) {
-                clearInterval(currentTimerInterval);
-                players[currentDrawerIndex].score = Math.max(0, players[currentDrawerIndex].score - 1);
-                nextDrawer();
-            }
-        }, 1000);
-    }
-
-    function nextDrawer() {
-        currentDrawerIndex = (currentDrawerIndex + 1) % players.length;
-        startNewRound();
+        updateGameState();
     }
 
     function showDrawerPopup() {
+        if (isCreditsVisible) return;
+        isPopupVisible = true;
+        updateGameState();
         const drawer = players[currentDrawerIndex];
         const overlay = document.createElement('div');
         overlay.className = 'popup-overlay';
@@ -377,11 +392,36 @@ document.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => {
                 popup.remove();
                 overlay.remove();
+                isPopupVisible = false;
+                updateGameState();
+                startTimer(30);
             }, 500);
         }, 3000);
     }
 
+    function startTimer(seconds) {
+        if (isCreditsVisible) return;
+        let timeLeft = seconds;
+        const timerElement = document.getElementById('timer');
+        if (currentTimerInterval) clearInterval(currentTimerInterval);
+        currentTimerInterval = setInterval(() => {
+            timerElement.textContent = --timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(currentTimerInterval);
+                players[currentDrawerIndex].score = Math.max(0, players[currentDrawerIndex].score - 1);
+                nextDrawer();
+            }
+        }, 1000);
+    }
+
+    function nextDrawer() {
+        if (isCreditsVisible || !gameActive) return;
+        currentDrawerIndex = (currentDrawerIndex + 1) % players.length;
+        startNewRound();
+    }
+
     function playPopSound() {
+        if (isCreditsVisible) return;
         const selectSound = new Audio('/static/music/pop.mp3');
         selectSound.play().catch(error => console.error("Erreur son:", error));
     }

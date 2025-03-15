@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pictionary</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="credits.css">
     <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
 </head>
 <body>
     <video class="video-background" autoplay muted loop>
         <source src="images/BG.mp4" type="video/mp4">
     </video>
+
+    <div class="overlay-gradient"></div>
 
     <div class="main-container">
         <section class="drawing-section">
@@ -20,7 +23,7 @@
                 
                 <div class="game-info">
                     <div id="wordDisplay"><span></span></div>
-                    <div class="timer" id="timer">35</div>
+                    <div class="timer" id="timer">30</div>
                 </div>
             </div>
 
