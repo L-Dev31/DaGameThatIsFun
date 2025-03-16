@@ -13,7 +13,7 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
 
 # **Dessine moi un Désastre**
    - **Description** : Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence !
-   - **Nombre de joueurs** : 4 à 8
+   - **Nombre de joueurs** : 3 à 8
    - **Objectif** : Dessinez ce qui vous est demandé et votez pour le meilleur (ou le pire) dessin !
 
 # **Gribouilles & Embrouilles**
@@ -23,7 +23,7 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
 
 # **La Quête Legendaire [A VENIR !]**
    - **Description** : Devenez le maître du récit ! Inventez l'histoire la plus drôle ou intrigante à propos d'un objet étrange. Parviendrez-vous à captiver le public avec votre imagination débordante ?
-   - **Nombre de joueurs** : 4 à 8
+   - **Nombre de joueurs** : 3 à 8
    - **Objectif** : Créez l'histoire la plus originale et amusez vos amis avec vos idées farfelues !
 
 ---
