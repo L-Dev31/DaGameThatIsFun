@@ -7,28 +7,24 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
 ## 🎲 **Modes de Jeu Disponibles**
 
 # **Quiz Rush**
-![image](https://github.com/user-attachments/assets/caecaf7c-abb0-44a2-a37d-6bde8081d5b7)
    - **Description** : Pensez vite ! Répondez à des questions originales dans ce quiz effréné. Plus vous répondez vite, plus vous marquez de points – mais méfiez-vous des questions pièges !
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Soyez le plus rapide et le plus malin pour remporter la victoire !
 
 # **Dessine moi un Désastre**
-![image](https://github.com/user-attachments/assets/d15a4e83-526c-4654-a795-c0e39e7affc9)
    - **Description** : Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence !
    - **Nombre de joueurs** : 4 à 8
    - **Objectif** : Dessinez ce qui vous est demandé et votez pour le meilleur (ou le pire) dessin !
 
-
-![image](https://github.com/user-attachments/assets/bc585ffe-61fd-4ab1-84e8-85fa4d79fd0a)
-   - **Description** : Devenez le maître du récit ! Inventez l'histoire la plus drôle ou intrigante à propos d'un objet étrange. Parviendrez-vous à captiver le public avec votre imagination débordante ?
-   - **Nombre de joueurs** : 4 à 8
-   - **Objectif** : Créez l'histoire la plus originale et amusez vos amis avec vos idées farfelues !
-
 # **Gribouilles & Embrouilles**
-![image](https://github.com/user-attachments/assets/f1ac38e3-7126-402a-9d25-6c80e47cf91a)
    - **Description** : Montrez vos talents artistiques ! Un joueur dessine pendant que les autres se dépêchent de deviner le mot. Votre chef-d'œuvre sera-t-il compris ou hilaramment mal interprété ?
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Devinez le mot le plus vite possible ou soyez celui qui fait rire tout le monde avec vos dessins !
+
+# **La Quête Legendaire [A VENIR !]**
+   - **Description** : Devenez le maître du récit ! Inventez l'histoire la plus drôle ou intrigante à propos d'un objet étrange. Parviendrez-vous à captiver le public avec votre imagination débordante ?
+   - **Nombre de joueurs** : 4 à 8
+   - **Objectif** : Créez l'histoire la plus originale et amusez vos amis avec vos idées farfelues !
 
 ---
 
