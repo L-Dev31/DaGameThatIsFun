@@ -147,6 +147,24 @@ class LobbyManager {
     }
   }
 
+  static async getActivePlayers() {
+    console.log("[LOBBY_MANAGER] Récupération des joueurs actifs...");
+    const userId = localStorage.getItem('userId');
+    const lobby = await this.getCurrentLobby();
+    if (lobby) {
+        return Object.values(lobby.users)
+            .sort((a, b) => a.join_time - b.join_time)
+            .map((user) => ({
+                id: user.id,
+                name: user.name,
+                avatar: `/static/images/avatar/${user.avatar_index + 1}.png`,
+                isOwner: user.id === lobby.owner,
+                isCurrentUser: user.id === userId
+            }));
+    }
+    return [];
+  }
+
   static async isCurrentUserOwner() {
     const lobby = await this.getCurrentLobby();
     return lobby?.owner === localStorage.getItem('userId');
