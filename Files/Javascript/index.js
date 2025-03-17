@@ -1,4 +1,4 @@
-import LobbyManager from './lobby_manager.js';
+import { LobbyManager } from './lobby_manager.js';
 
 document.addEventListener("DOMContentLoaded", async () => {
   const playersContainer = document.getElementById("playersContainer");

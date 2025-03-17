@@ -207,4 +207,4 @@ class LobbyManager {
     }, 1000);
   }
 }
-export default LobbyManager;
+export { LobbyManager };

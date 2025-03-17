@@ -1,4 +1,4 @@
-import LobbyManager from './lobby_manager.js';
+import { LobbyManager } from './lobby_manager.js';
 
 let isOwner = false;
 const userId = localStorage.getItem('userId');
@@ -136,8 +136,8 @@ async function checkOwnerStatus() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('roomCode').textContent = roomCode;
+  LobbyManager.init();
   await checkOwnerStatus();
-  LobbyManager.setupCommandListener();
   setInterval(checkOwnerStatus, 1000);
   document.getElementById('startButton').addEventListener('click', () => {
     if (isOwner) {
