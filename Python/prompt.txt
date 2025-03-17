@@ -1,0 +1,1697 @@
+[f:\Github\DaGameThatIsFun\Python\System\lobby.py]
+import random
+import string
+import time
+import threading
+from typing import Dict, Optional
+from System.models import LobbySession, User
+
+active_sessions: Dict[str, LobbySession] = {}
+active_sessions_lock = threading.Lock()
+
+def generate_code() -> str:
+    while True:
+        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+        with active_sessions_lock:
+            if code not in active_sessions:
+                return code
+
+def create_lobby(player_name: str, password: Optional[str], avatar_index: int, max_players: int, client_ip: str) -> dict:
+    if not player_name:
+        raise ValueError("Le nom du joueur est requis")
+    if max_players not in range(2, 9):
+        raise ValueError("Le nombre de joueurs doit être entre 2 et 8")
+
+    room_code = generate_code()
+    user_id = str(random.randint(10000, 99999))
+
+    owner = User(
+        id=user_id,
+        name=player_name,
+        avatar_index=avatar_index,
+        join_time=time.time(),
+        ip_address=client_ip
+    )
+
+    lobby_session = LobbySession(
+        code=room_code,
+        name=f"Salon de {player_name}",
+        owner=user_id,
+        password=password,
+        users={user_id: owner},
+        created_at=time.time(),
+        max_players=max_players
+    )
+
+    with active_sessions_lock:
+        active_sessions[room_code] = lobby_session
+
+    return {
+        'success': True,
+        'roomCode': room_code,
+        'userId': user_id,
+        'sessionData': lobby_session.to_dict()
+    }
+
+def join_lobby(room_code: str, player_name: str, password: Optional[str], avatar_index: int, client_ip: str) -> dict:
+    if not room_code or not player_name:
+        raise ValueError("Le code du salon et le nom du joueur sont requis")
+
+    with active_sessions_lock:
+        if room_code not in active_sessions:
+            raise ValueError("Le salon n'existe pas")
+        lobby = active_sessions[room_code]
+
+    with lobby.lock:
+        if lobby.password and lobby.password != password:
+            raise ValueError("Mot de passe incorrect")
+        if len(lobby.users) >= lobby.max_players:
+            raise ValueError("Le salon est plein")
+
+        user_id = str(random.randint(10000, 99999))
+        new_user = User(
+            id=user_id,
+            name=player_name,
+            avatar_index=avatar_index,
+            join_time=time.time(),
+            ip_address=client_ip
+        )
+
+        lobby.users[user_id] = new_user
+
+    return {
+        'success': True,
+        'userId': user_id,
+        'sessionData': lobby.to_dict()
+    }
+
+def leave_lobby(user_id: str, room_code: str) -> dict:
+    if room_code not in active_sessions:
+        return {'success': False, 'error': 'Le salon n\'existe pas'}
+    
+    lobby = active_sessions[room_code]
+
+    if user_id in lobby.users:
+        del lobby.users[user_id]
+
+    if user_id == lobby.owner:
+        # Si l'owner quitte, le lobby est supprimé entièrement
+        print(f"L'owner du lobby {room_code} a quitté, suppression du lobby.")
+        del active_sessions[room_code]
+    elif not lobby.users:
+        print(f"Le lobby {room_code} est vide et sera supprimé.")
+        del active_sessions[room_code]
+
+    return {'success': True}
+
+
+[f:\Github\DaGameThatIsFun\Python\System\models.py]
+from dataclasses import dataclass, field
+from typing import Dict, Optional
+import threading
+
+@dataclass
+class User:
+    id: str
+    name: str
+    avatar_index: int
+    join_time: float
+    ip_address: str
+
+@dataclass
+class LobbySession:
+    code: str
+    name: str
+    owner: str
+    password: Optional[str]
+    users: Dict[str, User]
+    created_at: float
+    max_players: int
+    state: str = "waiting"
+    lock: threading.Lock = field(default_factory=threading.Lock)
+    
+    def to_dict(self):
+        with self.lock:
+            return {
+                'code': self.code,
+                'name': self.name,
+                'owner': self.owner,
+                'hasPassword': bool(self.password),
+                'users': {uid: {
+                    'id': u.id,
+                    'name': u.name,
+                    'avatar_index': u.avatar_index,
+                    'join_time': u.join_time,
+                    'ip_address': u.ip_address
+                } for uid, u in self.users.items()},
+                'created_at': self.created_at,
+                'max_players': self.max_players,
+                'state': self.state  
+            }
+
+
+[f:\Github\DaGameThatIsFun\Python\System\server.py]
+import http.server
+import socketserver
+import ujson as json
+import threading
+import time
+from System.models import LobbySession
+from System.lobby import active_sessions, create_lobby, join_lobby, leave_lobby
+from System.qr import get_local_ip, generate_qr_code
+
+active_sessions_lock = threading.Lock()
+PORT = 8080
+DIRECTORY = "Files"
+
+class LobbyHandler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=DIRECTORY, **kwargs)
+
+    def end_headers(self):
+        if self.path.startswith('/api'):
+            self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+        else:
+            self.send_header('Cache-Control', 'max-age=3600')
+        super().end_headers()
+
+    def send_json_response(self, data, status=200):
+        self.send_response(status)
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        self.wfile.write(json.dumps(data).encode())
+
+    def send_error_response(self, message, status=400):
+        self.send_json_response({'error': message, 'success': False}, status)
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+
+    def do_POST(self):
+        content_length = int(self.headers.get('Content-Length', 0))
+        post_data = {}
+        if content_length > 0:
+            post_data = json.loads(self.rfile.read(content_length).decode('utf-8'))
+        client_ip = self.client_address[0]
+        try:
+            if self.path == '/api/lobby/create':
+                response = create_lobby(
+                    post_data.get('playerName'),
+                    post_data.get('password'),
+                    post_data.get('avatarIndex', 0),
+                    post_data.get('maxPlayers', 8),
+                    client_ip
+                )
+                self.send_json_response(response)
+
+            elif self.path == '/api/lobby/join':
+                response = join_lobby(
+                    post_data.get('roomCode'),
+                    post_data.get('playerName'),
+                    post_data.get('password'),
+                    post_data.get('avatarIndex', 0),
+                    client_ip
+                )
+                self.send_json_response(response)
+
+            elif self.path.startswith('/api/lobby/') and self.path.endswith('/leave'):
+                room_code = self.path.split('/')[-2]
+                response = leave_lobby(post_data.get('userId'), room_code)
+                self.send_json_response(response)
+
+            elif self.path.startswith('/api/lobby/') and self.path.endswith('/command'):
+                room_code = self.path.split('/')[-2]
+                with active_sessions_lock:
+                    if room_code not in active_sessions:
+                        raise ValueError("Salon introuvable")
+                    lobby = active_sessions[room_code]
+                    if post_data.get('initiator') != lobby.owner:
+                        self.send_error_response("Action non autorisée", 403)
+                        return
+
+                    command = post_data.get('command')
+                    if command == 'start-game':
+                        lobby.latest_command = {
+                            'command': 'redirect',
+                            'payload': {
+                                'url': post_data.get('payload').get('gameUrl'),
+                                'force': True
+                            },
+                            'timestamp': time.time(),
+                            'initiator': lobby.owner
+                        }
+                    else:
+                        # Mise à jour du status du lobby si un nouveau status est fourni (ex : waiting)
+                        if command == 'redirect' and post_data.get('payload') and post_data.get('payload').get('newState'):
+                            lobby.state = post_data.get('payload').get('newState')
+                        lobby.latest_command = {
+                            'command': command,
+                            'payload': post_data.get('payload'),
+                            'timestamp': time.time(),
+                            'initiator': lobby.owner
+                        }
+                self.send_json_response({'success': True})
+
+            else:
+                self.send_error_response("Endpoint non trouvé", 404)
+        except Exception as e:
+            self.send_error_response(str(e))
+
+    def do_GET(self):
+        try:
+            base_path = self.path.split('?')[0]
+            if base_path == '/get_ip':
+                ip = get_local_ip()
+                qr_code = generate_qr_code(ip, PORT)
+                self.send_json_response({
+                    "url": f"http://{ip}:{PORT}",
+                    "qr_code": qr_code
+                })
+            elif base_path == '/api/lobbies':
+                lobbies_data = []
+                with active_sessions_lock:
+                    for session in active_sessions.values():
+                        lobby_data = session.to_dict()
+                        lobby_data['latest_command'] = getattr(session, 'latest_command', None)
+                        lobbies_data.append(lobby_data)
+                self.send_json_response({'lobbies': lobbies_data})
+            elif base_path.startswith('/api/lobby/') and len(base_path.split('/')) == 4:
+                room_code = base_path.split('/')[-1]
+                with active_sessions_lock:
+                    if room_code in active_sessions:
+                        lobby = active_sessions[room_code]
+                        lobby_data = lobby.to_dict()
+                        lobby_data['latest_command'] = getattr(lobby, 'latest_command', None)
+                        self.send_json_response(lobby_data)
+                    else:
+                        self.send_error_response("Salon non trouvé", 404)
+            else:
+                super().do_GET()
+        except Exception as e:
+            self.send_error_response(str(e))
+
+    def do_DELETE(self):
+        if self.path.startswith('/api/lobby/delete/'):
+            room_code = self.path.split('/')[-1]
+            with active_sessions_lock:
+                if room_code in active_sessions:
+                    del active_sessions[room_code]
+                    self.send_json_response({'success': True})
+                else:
+                    self.send_error_response("Le salon n'existe pas", 404)
+        else:
+            self.send_error_response("Endpoint non trouvé", 404)
+
+def run_server():
+    with socketserver.ThreadingTCPServer(("", PORT), LobbyHandler) as httpd:
+        httpd.serve_forever()
+
+if __name__ == "__main__":
+    run_server()
+
+
+[f:\Github\DaGameThatIsFun\Python\System\utils.py]
+import time
+from typing import Dict
+from System.models import LobbySession
+
+def cleanup_inactive_lobbies(active_sessions: Dict[str, LobbySession]):
+    while True:
+        current_time = time.time()
+        to_remove = []
+        
+        for code, lobby in active_sessions.items():
+            if current_time - lobby.created_at > 7200:  # 2 heures
+                to_remove.append(code)
+                
+        for code in to_remove:
+            del active_sessions[code]
+            
+        time.sleep(300)
+
+
+[f:\Github\DaGameThatIsFun\Files\waiting_room.html]
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salon d'attente</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/mobile_style.css">
+  <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
+  <style>
+    /* Styles spécifiques pour l'overlay du compte à rebours et la modal */
+    .modal-overlay, .countdown-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-container, .countdown-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .modal-buttons button, .countdown-content button {
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Contrôles généraux -->
+  <button class="share-control" id="shareToggle">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="white">
+    <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92S19.61 16.08 18 16.08z"/>
+    </svg>
+</button>
+<div id="qrCodeModal" class="modal-overlay">
+    <div class="modal-container">
+    <h2 class="modal-title">Partager le lien</h2>
+    <div class="modal-content">
+        <p id="qrCodeUrl" style="word-break: break-all; margin-bottom: 1rem;"></p>
+        <img id="qrCodeImage" alt="QR Code" style="width: 200px; height: 200px; margin: 0 auto;">
+        <div style="margin-top: 1rem; text-align: center;">
+        <button onclick="copyLink()" class="modal-button modal-button-secondary">Copier le lien</button>
+        </div>
+    </div>
+    <div class="modal-buttons">
+        <button class="modal-button modal-button-primary" onclick="hideModal('qrCodeModal')">Fermer</button>
+    </div>
+    </div>
+</div>
+
+  <div class="bg"></div>
+  <div class="logo-container">
+    <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
+  </div>
+
+  <div class="container">
+    <div class="waiting-room">
+      <div class="room-info">
+        <h2 class="title">Salon d'attente</h2>
+        <div class="room-code">
+          CODE: <span id="roomCode"></span>
+        </div>
+      </div>
+
+      <div class="players-grid" id="playersGrid">
+        <!-- Les joueurs seront ajoutés ici dynamiquement -->
+      </div>
+
+      <div class="button-container">
+        <button type="button" class="button button-secondary" id="leaveButton">Quitter le salon</button>
+        <button type="button" class="button button-primary" id="startButton" disabled>
+          Lancer la partie (1/8)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmation pour quitter le salon -->
+  <div class="modal-overlay" id="confirmationModal">
+    <div class="modal-container">
+      <h2 class="modal-title">Quitter le Salon ?</h2>
+      <div class="modal-content">
+        <p id="modalMessage">Êtes-vous sûr de vouloir quitter le salon ?</p>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-button modal-button-secondary" id="cancelButton">Annuler</button>
+        <button class="modal-button modal-button-primary" id="confirmButton">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay de compte à rebours -->
+  <div class="countdown-overlay" id="countdownOverlay">
+    <div class="countdown-content">
+      <div id="countdownNumber" class="countdown-number">3</div>
+      <!-- Bouton "Annuler" visible uniquement pour l'owner -->
+      <button type="button" id="cancelCountdown" class="button button-secondary">Annuler</button>
+    </div>
+  </div>
+
+  <script type="module" src="/Javascript/waiting_room.js"></script>
+  <script type="module" src="javascript/button_controls.js"></script>
+  <script type="module">
+    import { initShareButton} from './javascript/button_controls.js';
+    document.addEventListener("DOMContentLoaded", () => {
+      initShareButton();
+    });
+  </script>
+</body>
+</html>
+
+
+[f:\Github\DaGameThatIsFun\Files\index.html]
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Party Game Lobby</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/mobile_style.css">
+  <link rel="stylesheet" href="/static/lobby_style.css">
+  <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
+</head>
+<body>
+  <button class="share-control" id="shareToggle">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="white">
+      <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92S19.61 16.08 18 16.08z"/>
+    </svg>
+  </button>
+  <button class="sound-control" id="soundToggle">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+    </svg>
+  </button>
+  <div id="qrCodeModal" class="modal-overlay">
+    <div class="modal-container">
+      <h2 class="modal-title">Partager le lien</h2>
+      <div class="modal-content">
+        <p id="qrCodeUrl" style="word-break: break-all; margin-bottom: 1rem;"></p>
+        <img id="qrCodeImage" alt="QR Code" style="width: 200px; height: 200px; margin: 0 auto;">
+        <div style="margin-top: 1rem; text-align: center;">
+          <button class="modal-button modal-button-secondary">Copier le lien</button>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-button modal-button-primary">Fermer</button>
+      </div>
+    </div>
+  </div>
+  <div class="bg"></div>
+  <div id="introScreen" class="intro-screen">
+    <div class="intro-content">
+      <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="intro-logo">
+      <p class="intro-text">Avertissement !</p>
+    </div>
+    <div class="security-text">
+      Veuillez noter que ce jeu peut contenir du contenu grossier ou inapproprié pour certains publics.<br><br>
+      Ce n’est en aucun cas notre intention de blesser quiconque, il s’agit simplement d’un jeu conçu pour s’amuser et rire ensemble :)
+    </div>
+  </div>
+  <div class="logo-container">
+    <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
+  </div>
+  <div class="container">
+    <div class="grid">
+      <div>
+        <div class="game-buttons">
+          <button class="game-button active" data-game="draw-contest">
+            <img src="/static/images/logo/draw-contest.png" alt="Draw Contest" class="game-logo">
+          </button>
+          <button class="game-button" data-game="pictionary">
+            <img src="/static/images/logo/pictionary.png" alt="Pictionary" class="game-logo">
+          </button>
+          <button class="game-button" data-game="quiz-rush">
+            <img src="/static/images/logo/quiz-rush.png" alt="Quiz Rush" class="game-logo">
+          </button>
+          <button class="game-button" data-game="object-tales" disabled>
+            <img src="/static/images/logo/object-tales-disabled.png" alt="Object Tales" class="game-logo">
+          </button>
+        </div>
+      </div>
+      <div class="preview-card">
+        <div class="tv-static"></div>
+        <img src="/static/images/preview/draw-contest.png" alt="Game Preview" class="preview-image" id="previewImage">
+        <div class="preview-content">
+          <h3 class="preview-title" id="previewTitle">Dessine moi un Désastre</h3>
+          <p class="preview-description" id="previewDescription">
+            Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence !
+          </p>
+          <p class="preview-player-number" id="previewPlayerNumber">4-8 Joueurs</p>
+          <button class="preview-button" id="previewButton" style="display: none;" disabled>
+            Lancer le jeu !
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-actions" id="bottomActions"></div>
+    
+  </div><div id="playersContainer"></div>
+
+  <audio id="staticSound" src="/static/music/tv-static.mp3"></audio>
+  
+  <script type="module" src="javascript/index.js"></script>
+  <script type="module">
+    import { initShareButton} from './javascript/button_controls.js';
+    document.addEventListener("DOMContentLoaded", () => {
+      initShareButton();
+    });
+  </script>
+</body>
+</html>
+
+
+[f:\Github\DaGameThatIsFun\Files\credits.html]
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crédits - Party Game</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/mobile_style.css">
+    <link rel="stylesheet" href="/static/lobby_style.css">
+    <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
+</head>
+<body>
+    <!-- Contrôles généraux -->
+    <button class="share-control" id="shareToggle">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="white">
+        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92S19.61 16.08 18 16.08z"/>
+        </svg>
+    </button>
+    <div id="qrCodeModal" class="modal-overlay">
+        <div class="modal-container">
+        <h2 class="modal-title">Partager le lien</h2>
+        <div class="modal-content">
+            <p id="qrCodeUrl" style="word-break: break-all; margin-bottom: 1rem;"></p>
+            <img id="qrCodeImage" alt="QR Code" style="width: 200px; height: 200px; margin: 0 auto;">
+            <div style="margin-top: 1rem; text-align: center;">
+            <button onclick="copyLink()" class="modal-button modal-button-secondary">Copier le lien</button>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-button modal-button-primary" onclick="hideModal('qrCodeModal')">Fermer</button>
+        </div>
+        </div>
+    </div>
+
+    <div class="bg"></div>
+    <div class="logo-container">
+        <img src="/static/images/logo/logo.png" alt="Party Game Logo" class="logo">
+    </div>
+
+    <!-- Ajout du conteneur des joueurs -->
+    <div id="playersContainer" class="players-container">
+        <div class="players-header">
+            <h2>Joueurs connectés</h2>
+            <div id="roomCode" class="room-code"></div>
+        </div>
+        <div id="playersGrid" class="players-grid"></div>
+    </div>
+    
+    <div class="container credits-container">
+        <h1 class="title">Crédits</h1>
+        
+        <div class="credits-section">
+            <div class="credits-category">
+                <h2 class="credits-subtitle">Équipe de développement</h2>
+                <div class="team-grid">
+                    <div class="team-member">
+                        <div class="member-avatar">
+                            <img src="/static/images/devs/ltosku.png" alt="Développeur" class="avatar-image">
+                        </div>
+                        <h3 class="member-name">Léo Tosku</h3>
+                        <p class="member-role">Développeur Principal, Back-end et Front-end</p>
+                    </div>
+                    <div class="team-member">
+                        <div class="member-avatar">
+                            <img src="/static/images/devs/klamothe-jacob.png" alt="Développeur" class="avatar-image">
+                        </div>
+                        <h3 class="member-name">Korail Lamothe-Jacob</h3>
+                        <p class="member-role">Développeur Back-end</p>
+                    </div>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">
+                        <img src="static/images/devs/adesbonnes.png" alt="Développeur" class="avatar-image">
+                    </div>
+                    <h3 class="member-name">Axel Desbonnes</h3>
+                    <p class="member-role">Game designer</p>
+                </div>
+            </div>
+
+            <div class="credits-category">
+                <h2 class="credits-subtitle">Remerciements spéciaux</h2>
+                <div class="thanks-container">
+                    <ul class="thanks-list">
+                        <li>L'équipe des Trophées NSI Guadeloupe pour l'opportunité</li>
+                        <li>Monsieur Girondin pour ne pas avoir été offusqué par notre mauvais humour</li>
+                        <li>Les sites W3School, StackOverflow, Python Central et le serveur Discord Design Squad..</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="credits-category">
+                <h2 class="credits-subtitle">Technologies utilisées</h2>
+                <div class="tech-grid">
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <svg viewBox="0 0 24 24" class="tech-svg python">
+                                <path class="part1" fill="#3776AB" d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09z"/>
+                                <path class="part2" fill="#ffde57" d="M20.04 6.11l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.20.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.20.35-.14.33-.10.30-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.50-.21.41-.28.33-.32.27-.35.20-.36.15-.36.10-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"/>
+                            </svg>
+                        </div>
+                        <span class="tech-name">Python</span>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <svg viewBox="0 0 24 24" class="tech-svg html">
+                                <path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z"/>
+                            </svg>
+                        </div>
+                        <span class="tech-name">HTML</span>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <svg viewBox="0 0 24 24" class="tech-svg css">
+                                <path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.565-2.438L1.5 0zm17.09 4.413L5.41 4.41l.213 2.622 10.125.002-.255 2.716h-6.64l.24 2.573h6.182l-.366 3.523-2.91.804-2.956-.81-.188-2.11h-2.61l.29 3.855L12 19.288l5.373-1.53L18.59 4.414z"/>
+                            </svg>
+                        </div>
+                        <span class="tech-name">CSS</span>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <svg viewBox="0 0 24 24" class="tech-svg js">
+                                <path d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"/>
+                            </svg>
+                        </div>
+                        <span class="tech-name">JavaScript</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="credits-category">
+            <h2 class="credits-subtitle">Chat LLM utilisés</h2>
+            <div class="tech-grid">
+                <!-- ChatGPT -->
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <img src="/static/images/llm-icons/chatgpt.png" alt="ChatGPT" class="llm-icon">
+                    </div>
+                    <span class="tech-name">ChatGPT</span>
+                </div>
+
+                <!-- DeepSeek -->
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <img src="/static/images/llm-icons/deepseek.png" alt="DeepSeek" class="llm-icon">
+                    </div>
+                    <span class="tech-name">DeepSeek</span>
+                </div>
+
+                <!-- Claude -->
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <img src="/static/images/llm-icons/claude.png" alt="Claude" class="llm-icon">
+                    </div>
+                    <span class="tech-name">Claude</span>
+                </div>
+
+                <!-- Qwen -->
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <img src="/static/images/llm-icons/qwen.png" alt="Qwen" class="llm-icon">
+                    </div>
+                    <span class="tech-name">Qwen</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-actions">
+            <button class="action-button" onclick="history.back()">
+                <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                <span class="button-text">Retour</span>
+            </button>
+        </div>
+    </div>
+
+    <script type="module" src="Javascript/credits.js"></script>
+    <script type="module" src="javascript/button_controls.js"></script>
+    <script type="module">
+      import { initShareButton} from './javascript/button_controls.js';
+      document.addEventListener("DOMContentLoaded", () => {
+        initShareButton();
+      });
+    </script>
+</body>
+</html>
+
+[f:\Github\DaGameThatIsFun\Files\button_config.json]
+{
+    "inLobby": [
+      {
+        "title": "Quitter",
+        "icon": "<svg class=\"button-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M16 17l5-5-5-5\"/><line x1=\"21\" y1=\"12\" x2=\"9\" y2=\"12\"/></svg>",
+        "action": "quit"
+      },
+      {
+        "title": "Ajouter Joueurs",
+        "icon": "<svg class=\"button-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"/><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/></svg>",
+        "action": "waiting"
+      },
+      {
+        "title": "Credits",
+        "icon": "<svg class=\"button-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"8\" r=\"7\"/><polyline points=\"8.21 13.89 7 23 12 20 17 23 15.79 13.88\"/></svg>",
+        "action": "credits"
+      }
+    ],
+
+    "outLobby": [
+      {
+        "title": "Créer Lobby",
+        "icon": "<svg class=\"button-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M12 5v14M5 12h14\"/></svg>",
+        "link": "create_lobby.html"
+      },
+      {
+        "title": "Rejoindre",
+        "icon": "<svg class=\"button-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg>",
+        "link": "join_lobby.html"
+      },
+      {
+        "title": "Credits",
+        "icon": "<svg class=\"button-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"8\" r=\"7\"/><polyline points=\"8.21 13.89 7 23 12 20 17 23 15.79 13.88\"/></svg>",
+        "link": "credits.html"
+      }
+    ]
+  }
+  
+
+[F:\Github\DaGameThatIsFun\Files\Javascript\lobby_manager.js]
+class LobbyManager {
+  static POLL_INTERVAL = 1000;
+  static MAX_POLL_INTERVAL = 30000;
+  static POLL_BACKOFF_FACTOR = 1.5;
+  static _currentPollInterval = this.POLL_INTERVAL;
+  static _pollTimeout = null;
+  static _listeners = new Set();
+  static _errorCount = 0;
+  static _MAX_ERRORS = 5;
+
+  static init() {
+    console.log("[LOBBY_MANAGER] Initialisation...");
+    if (localStorage.getItem('roomCode')) {
+      this.startPolling();
+    }
+    this._setupUnloadListener();
+  }
+
+  static _setupUnloadListener() {
+    window.addEventListener('beforeunload', (event) => {
+      const isRedirecting = sessionStorage.getItem('isRedirecting');
+      const roomCode = localStorage.getItem('roomCode');
+      const userId = localStorage.getItem('userId');
+      
+      if (!isRedirecting && roomCode && userId) {
+        const data = { userId };
+        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        navigator.sendBeacon(`/api/lobby/${roomCode}/leave`, blob);
+        console.log("[LOBBY_MANAGER] Envoi de la requête de sortie via Beacon.");
+      }
+      sessionStorage.removeItem('isRedirecting'); // Nettoyage
+    });
+  }
+
+  static async getActivePlayers() {
+      console.log("[LOBBY_MANAGER] Récupération des joueurs actifs...");
+      const userId = localStorage.getItem('userId');
+      const lobby = await this.getCurrentLobby();
+      if (lobby) {
+          return Object.values(lobby.users)
+              .sort((a, b) => a.join_time - b.join_time)
+              .map((user) => ({
+                  id: user.id,
+                  name: user.name,
+                  avatar: `/static/images/avatar/${user.avatar_index + 1}.png`,
+                  isOwner: user.id === lobby.owner,
+                  isCurrentUser: user.id === userId
+              }));
+      }
+      return [];
+  }
+
+  static startPolling() {
+    if (this._pollTimeout !== null) return;
+    console.log("[LOBBY_MANAGER] Début du polling du lobby.");
+    this._pollLobby();
+  }
+
+  static stopPolling() {
+    if (this._pollTimeout) {
+      clearTimeout(this._pollTimeout);
+      this._pollTimeout = null;
+      console.log("[LOBBY_MANAGER] Polling arrêté.");
+    }
+  }
+
+  static addListener(callback) {
+    this._listeners.add(callback);
+    return () => this._listeners.delete(callback);
+  }
+
+  static async _pollLobby() {
+    try {
+      const lobby = await this.getCurrentLobby();
+      if (lobby) {
+        this._errorCount = 0;
+        this._currentPollInterval = this.POLL_INTERVAL;
+        this._notifyListeners(lobby);
+      } else {
+        console.error("[LOBBY_MANAGER] Lobby introuvable, arrêt du polling.");
+        this.stopPolling();
+        return;
+      }
+    } catch (error) {
+      this._errorCount++;
+      console.error(`[LOBBY_MANAGER] Erreur lors du polling (${this._errorCount}/${this._MAX_ERRORS}):`, error);
+      if (this._errorCount >= this._MAX_ERRORS) {
+        console.error("[LOBBY_MANAGER] Nombre maximum d'erreurs atteint. Arrêt du polling.");
+        this.stopPolling();
+        return;
+      }
+      this._currentPollInterval = Math.min(
+        this._currentPollInterval * this.POLL_BACKOFF_FACTOR,
+        this.MAX_POLL_INTERVAL
+      );
+    } finally {
+      if (this._pollTimeout !== null) {
+        this._pollTimeout = setTimeout(() => this._pollLobby(), this._currentPollInterval);
+      }
+    }
+  }
+
+  static _notifyListeners(lobby) {
+    for (const listener of this._listeners) {
+      listener(lobby);
+    }
+  }
+
+  static async getCurrentLobby() {
+    const roomCode = localStorage.getItem('roomCode');
+    const userId = localStorage.getItem('userId');
+    if (!roomCode || !userId) return null;
+    try {
+      const response = await fetch(`/api/lobby/${roomCode}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.error("[LOBBY_MANAGER] Lobby non trouvé (404). Nettoyage des données locales.");
+          localStorage.removeItem('roomCode');
+          localStorage.removeItem('userId');
+          this.stopPolling();
+        }
+        return null;
+      }
+      const data = await response.json();
+      console.log("[LOBBY_MANAGER] Lobby récupéré :", data);
+      return {
+        ...data,
+        isOwner: data.owner === userId,
+        currentUser: data.users[userId]
+      };
+    } catch (error) {
+      console.error("[LOBBY_MANAGER] Erreur lors du fetch du lobby:", error);
+      return null;
+    }
+  }
+
+  static async isCurrentUserOwner() {
+    const lobby = await this.getCurrentLobby();
+    return lobby?.isOwner || false;
+  }
+
+  static async leaveLobby() {
+    const roomCode = localStorage.getItem('roomCode');
+    const userId = localStorage.getItem('userId');
+    if (roomCode && userId) {
+      try {
+        console.log("[LOBBY_MANAGER] Envoi de la requête pour quitter le lobby.");
+        await fetch(`/api/lobby/${roomCode}/leave`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId })
+        });
+      } catch (error) {
+        console.error("[LOBBY_MANAGER] Erreur lors de la demande de sortie du lobby:", error);
+      }
+    }
+    localStorage.removeItem('roomCode');
+    localStorage.removeItem('userId');
+    this.stopPolling();
+  }
+
+  static async sendCommandToPlayers(command, payload = {}) {
+    const roomCode = localStorage.getItem('roomCode');
+    const lobby = await this.getCurrentLobby();
+    
+    if (lobby?.isOwner) {  
+        try {
+            console.log(`[LOBBY_MANAGER] Envoi de la commande '${command}' avec payload:`, payload);
+            await fetch(`/api/lobby/${roomCode}/command`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    command,
+                    initiator: localStorage.getItem('userId'),
+                    payload,
+                    timestamp: Date.now()
+                })
+            });
+            console.log(`[LOBBY_MANAGER] Commande '${command}' envoyée avec succès.`);
+        } catch (error) {
+            console.error("[LOBBY_MANAGER] Erreur lors de l'envoi de la commande:", error);
+        }
+    } else {
+        console.warn("[LOBBY_MANAGER] Seul l'owner peut envoyer des commandes.");
+    }
+  }
+
+  static async getActivePlayers() {
+    const userId = localStorage.getItem('userId');
+    const lobby = await this.getCurrentLobby();
+    if (lobby) {
+        return Object.values(lobby.users)
+            .sort((a, b) => a.join_time - b.join_time)
+            .map((user) => ({
+                id: user.id,
+                name: user.name,
+                avatar: `/static/images/avatar/${user.avatar_index + 1}.png`,
+                isOwner: user.id === lobby.owner,
+                isCurrentUser: user.id === userId
+            }));
+    }
+    return [];
+}
+
+  static async startGame(gameUrl) {
+    const roomCode = localStorage.getItem('roomCode');
+    const lobby = await this.getCurrentLobby();
+    if (lobby?.isOwner) {
+      try {
+        console.log("[LOBBY_MANAGER] Lancement de la partie avec l'URL:", gameUrl);
+        await fetch(`/api/lobby/${roomCode}/command`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            command: 'start-game',
+            initiator: localStorage.getItem('userId'),
+            payload: { gameUrl },
+            timestamp: Date.now()
+          })
+        });
+      } catch (error) {
+        console.error("[LOBBY_MANAGER] Erreur lors du lancement de la partie:", error);
+      }
+    }
+  }
+}
+
+export default LobbyManager;
+
+
+[F:\Github\DaGameThatIsFun\Files\Javascript\lobby_redirection.js]
+import LobbyManager from './lobby_manager.js';
+
+function setupCommandListener() {
+  let lastCommandTime = 0;
+
+  setInterval(async () => {
+    try {
+      const lobby = await LobbyManager.getCurrentLobby();
+      const command = lobby?.latest_command;
+      
+      if (command && command.timestamp > lastCommandTime) {
+        lastCommandTime = command.timestamp;
+        
+        console.log("[LOBBY_REDIRECTION] Commande reçue :", command);
+        switch (command.command) {
+          case 'redirect':
+            if (shouldRedirect(command.payload.url)) { 
+              console.log(`Redirection vers ${command.payload.url}`);
+              window.location.href = command.payload.url;
+            }
+            break;
+          case 'lobby-deleted':
+            console.log("Nettoyage du lobby...");
+            localStorage.removeItem('roomCode');
+            localStorage.removeItem('userId');
+            LobbyManager.stopPolling();
+            window.location.href = 'index.html';
+            break;
+        }
+      }
+    } catch (err) {
+      console.error("Erreur de traitement :", err);
+    }
+  }, 1000);
+}
+
+export function automaticRedirect(url) {
+  if (shouldRedirect(url)) {
+    window.location.href = url;
+  }
+}
+
+export function shouldRedirect(targetUrl) {
+  const currentPath = window.location.pathname.split('/').pop();
+  const targetPath = new URL(targetUrl, window.location.href).pathname.split('/').pop();
+  return currentPath !== targetPath;
+}
+
+setupCommandListener();
+
+[F:\Github\DaGameThatIsFun\Files\Javascript\waiting_room.js]
+import LobbyManager from './lobby_manager.js';
+import { shouldRedirect } from './lobby_redirection.js';
+
+let isOwner = false;
+const userId = localStorage.getItem('userId');
+const roomCode = localStorage.getItem('roomCode');
+
+if (!roomCode || !userId) {
+  window.location.href = '/';
+}
+
+const modal = document.getElementById('confirmationModal');
+const leaveButton = document.getElementById('leaveButton');
+const cancelButton = document.getElementById('cancelButton');
+const confirmButton = document.getElementById('confirmButton');
+const modalMessage = document.getElementById('modalMessage');
+
+function showModal(message, ownerLeaving = false) {
+  modalMessage.textContent = message;
+  modal.style.display = 'flex';
+  confirmButton.onclick = async () => {
+    if (ownerLeaving) {
+      await LobbyManager.sendCommandToPlayers('lobby-deleted');
+      await LobbyManager.leaveLobby();
+      window.location.href = '/';
+    } else {
+      await LobbyManager.leaveLobby();
+      window.location.href = '/';
+    }
+  };
+}
+
+function hideModal() {
+  modal.style.display = 'none';
+}
+
+leaveButton.addEventListener('click', () => {
+  showModal(isOwner ? "Attention ! En quittant, le salon sera supprimé. Continuer ?" : "Quitter le salon ?", isOwner);
+});
+
+cancelButton.addEventListener('click', hideModal);
+modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
+
+function updatePlayersGrid(users, ownerId) {
+  const playersGrid = document.getElementById('playersGrid');
+  playersGrid.innerHTML = '';
+  const currentUserId = localStorage.getItem('userId');
+  const sortedUsers = Object.values(users).sort((a, b) => {
+    if (a.id === ownerId) return -1;
+    if (b.id === ownerId) return 1;
+    return a.join_time - b.join_time;
+  });
+  
+  for (let i = 0; i < 8; i++) {
+    const playerSlot = document.createElement('div');
+    playerSlot.classList.add('player-slot');
+    if (i < sortedUsers.length) {
+      const user = sortedUsers[i];
+      playerSlot.innerHTML = `
+        <div class="player-avatar${user.id === currentUserId ? ' current-player' : ''}">
+          <img src="/static/images/avatar/${user.avatar_index + 1}.png" alt="${user.name}">
+        </div>
+        <span class="waiting-text">
+          <strong>${user.name}</strong>
+          ${user.id === ownerId ? ' 👑' : ''}
+          ${user.id === currentUserId ? ' (Vous)' : ''}
+        </span>`;
+    } else {
+      playerSlot.innerHTML = `
+        <div class="player-avatar empty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <span class="waiting-text">En attente...</span>`;
+    }
+    playersGrid.appendChild(playerSlot);
+  }
+}
+
+function updateStartButton(userCount, maxPlayers) {
+  const startButton = document.getElementById('startButton');
+  startButton.textContent = `Lancer la partie (${userCount}/${maxPlayers})`;
+  startButton.disabled = !isOwner || userCount < 2;
+}
+
+let countdownInterval;
+function startCountdown(duration) {
+  const countdownOverlay = document.getElementById('countdownOverlay');
+  const countdownNumber = document.getElementById('countdownNumber');
+  const cancelCountdown = document.getElementById('cancelCountdown');
+  countdownOverlay.style.display = 'flex';
+  let counter = duration;
+  cancelCountdown.style.display = isOwner ? 'block' : 'none';
+  countdownNumber.textContent = counter;
+  
+  countdownInterval = setInterval(() => {
+    counter--;
+    countdownNumber.textContent = counter < 0 ? 0 : counter;
+    if (counter <= 0) {
+      clearInterval(countdownInterval);
+      LobbyManager.sendCommandToPlayers('redirect', { url: `index.html?roomCode=${roomCode}` });
+      if (shouldRedirect(`index.html?roomCode=${roomCode}`)) {
+        window.location.href = `index.html?roomCode=${roomCode}`;
+      }
+    }
+  }, 1000);
+}
+
+function setupCommandListener() {
+  let lastCommandTime = 0;
+  setInterval(async () => {
+    try {
+      const lobby = await LobbyManager.getCurrentLobby();
+      const command = lobby?.latest_command;
+      if (command && command.timestamp > lastCommandTime) {
+        lastCommandTime = command.timestamp;
+        switch (command.command) {
+          case 'start-countdown':
+            startCountdown(command.payload.duration);
+            break;
+          case 'cancel-countdown':
+            clearInterval(countdownInterval);
+            document.getElementById('countdownOverlay').style.display = 'none';
+            break;
+          case 'redirect':
+            if (shouldRedirect(command.payload.url)) {
+              window.location.href = command.payload.url;
+            }
+            break;
+          case 'lobby-deleted':
+            alert('Le salon a été supprimé par l\'hôte !');
+            window.location.href = '/';
+            break;
+        }
+      }
+    } catch (err) {
+      console.error("[WAITING] Erreur:", err);
+    }
+  }, 1000);
+}
+
+async function checkOwnerStatus() {
+  try {
+    const lobby = await LobbyManager.getCurrentLobby();
+    if (!lobby) {
+      window.location.href = 'index.html';
+      return;
+    }
+    isOwner = lobby.isOwner;
+    updatePlayersGrid(lobby.users, lobby.owner);
+    updateStartButton(Object.keys(lobby.users).length, lobby.max_players || 8);
+  } catch (error) {
+    console.error("[WAITING] Erreur:", error);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('roomCode').textContent = roomCode;
+  await checkOwnerStatus();
+  setupCommandListener();
+  setInterval(checkOwnerStatus, 1000);
+  document.getElementById('startButton').addEventListener('click', () => {
+    if (isOwner) {
+      LobbyManager.sendCommandToPlayers('start-countdown', { duration: 5 });
+      startCountdown(5);
+    }
+  });
+});
+
+window.addEventListener('beforeunload', async () => {
+  if (isOwner) {
+    navigator.sendBeacon('/api/send-command', JSON.stringify({
+      command: 'redirect',
+      payload: { url: `index.html?roomCode=${roomCode}` }
+    }));
+  }
+});
+
+[F:\Github\DaGameThatIsFun\Files\Javascript\button_controls.js]
+export function initShareButton() {
+  const shareButton = document.getElementById("shareToggle");
+  const qrCodeModal = document.getElementById("qrCodeModal");
+  const qrCodeUrl = document.getElementById("qrCodeUrl");
+  const qrCodeImage = document.getElementById("qrCodeImage");
+  if (!shareButton || !qrCodeModal || !qrCodeUrl || !qrCodeImage) return;
+  shareButton.addEventListener("click", async () => {
+    try {
+      const response = await fetch('/get_ip');
+      if (!response.ok) {
+        console.error("Erreur lors de la récupération des infos QR");
+        return;
+      }
+      const data = await response.json();
+      const url = data.url;
+      const qr_code = data.qr_code;
+      qrCodeUrl.textContent = url;
+      qrCodeImage.src = "data:image/png;base64," + qr_code;
+      qrCodeModal.classList.add("active");
+    } catch (err) {
+      console.error("Erreur lors de l'appel /get_ip", err);
+    }
+  });
+  const copyButton = qrCodeModal.querySelector(".modal-button-secondary");
+  if (copyButton) {
+    copyButton.addEventListener("click", async () => {
+      try {
+        const textToCopy = qrCodeUrl.textContent;
+        await navigator.clipboard.writeText(textToCopy);
+        alert("Lien copié !");
+      } catch (err) {
+        console.error("Erreur lors de la copie du lien :", err);
+      }
+    });
+  }
+  const closeButton = qrCodeModal.querySelector(".modal-button-primary");
+  if (closeButton) {
+    closeButton.addEventListener("click", () => {
+      qrCodeModal.classList.remove("active");
+    });
+  }
+}
+
+
+[F:\Github\DaGameThatIsFun\Files\Javascript\credits.js]
+import LobbyManager from './lobby_manager.js';
+import { shouldRedirect, automaticRedirect } from './lobby_redirection.js';
+
+const roomCode = new URLSearchParams(window.location.search).get('roomCode');
+const playersContainer = document.getElementById("playersContainer");
+const backButton = document.querySelector('.action-button');
+
+async function checkLobbyStatus() {
+  const lobby = await LobbyManager.getCurrentLobby();
+  if (lobby) {
+    console.log("[CREDITS] L'utilisateur est dans un lobby: ", lobby);
+  } else {
+    console.log("[CREDITS] L'utilisateur n'est pas dans un lobby.");
+    if (playersContainer) playersContainer.style.display = "none";
+  }
+}
+checkLobbyStatus();
+
+let isOwner = false;
+let lastCommandTime = 0;
+
+async function updatePlayers() {
+  const players = await LobbyManager.getActivePlayers();
+  if (players.length === 0 && localStorage.getItem('roomCode')) {
+    localStorage.removeItem('roomCode');
+    localStorage.removeItem('userId');
+    window.location.reload();
+    return;
+  }
+  playersContainer.innerHTML = "";
+  players.forEach(player => {
+    const playerDiv = document.createElement("div");
+    playerDiv.classList.add("player");
+    playerDiv.innerHTML = `
+      <img src="${player.avatar}" alt="${player.name}" class="player-avatar">
+      <span class="player-name">${player.name}${player.isCurrentUser ? ' (Vous)' : ''}${player.isOwner ? ' 👑' : ''}</span>
+    `;
+    playersContainer.appendChild(playerDiv);
+  });
+}
+
+backButton.onclick = async () => {
+  const lobby = await LobbyManager.getCurrentLobby();
+  if (lobby && lobby.isOwner) {
+    console.log("[CREDITS] Owner redirige tout le monde vers l'index.");
+    await LobbyManager.sendCommand('redirect', { url: `index.html?roomCode=${roomCode}` }, { priority: 'high', target: 'all' });
+  }
+  window.location.href = roomCode ? `index.html?roomCode=${roomCode}` : 'index.html';
+};
+
+function setupCommandListener() {
+  setInterval(async () => {
+    const lobby = await LobbyManager.getCurrentLobby();
+    const command = lobby?.latest_command;
+    if (command?.timestamp > lastCommandTime) {
+      lastCommandTime = command.timestamp;
+      if (command.command === 'redirect' && shouldRedirect(command.payload.url)) {
+        window.location.href = command.payload.url;
+      }
+    }
+  }, 1000);
+}
+
+window.addEventListener('beforeunload', async () => {
+  if (isOwner) {
+    await LobbyManager.sendCommand('lobby-deleted');
+    await LobbyManager.leaveLobby();
+  }
+});
+
+LobbyManager.init();
+setupCommandListener();
+setInterval(updatePlayers, 5000);
+updatePlayers();
+
+
+[F:\Github\DaGameThatIsFun\Files\Javascript\index.js]
+// index.js - Script principal pour la page d'accueil / sélection de jeu
+
+import LobbyManager from './lobby_manager.js';
+import { automaticRedirect } from './lobby_redirection.js';
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const playersContainer = document.getElementById("playersContainer");
+
+  async function updatePlayers() {
+    const players = await LobbyManager.getActivePlayers();
+    if (players.length === 0 && localStorage.getItem('roomCode')) {
+      localStorage.removeItem('roomCode');
+      localStorage.removeItem('userId');
+      window.location.reload();
+      return;
+    }
+    playersContainer.innerHTML = "";
+    players.forEach(player => {
+      const playerDiv = document.createElement("div");
+      playerDiv.classList.add("player");
+      playerDiv.innerHTML = `
+        <img src="${player.avatar}" alt="${player.name}" class="player-avatar">
+        <span class="player-name">${player.name}${player.isCurrentUser ? ' (Vous)' : ''}${player.isOwner ? ' 👑' : ''}</span>
+      `;
+      playersContainer.appendChild(playerDiv);
+    });
+    await updatePreviewButtonState();
+  }
+
+  await updatePlayers();
+  setInterval(updatePlayers, 5000);
+
+  const introScreen = document.getElementById("introScreen");
+  setTimeout(() => {
+    introScreen.classList.add("hidden");
+    setTimeout(() => {
+      introScreen.style.display = "none";
+    }, 1000);
+  }, 8000);
+
+  const staticSound = document.getElementById("staticSound");
+  const staticEffect = document.querySelector(".tv-static");
+  const soundToggle = document.getElementById("soundToggle");
+  let isMuted = true;
+  const audio = new Audio("/static/music/draw-contest.mp3");
+  audio.loop = true;
+
+  function updateSoundIcon() {
+    soundToggle.innerHTML = isMuted ? `
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <line x1="23" y1="9" x2="17" y2="15"></line>
+        <line x1="17" y1="9" x2="23" y2="15"></line>
+      </svg>` : `
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+      </svg>`;
+  }
+
+  soundToggle.addEventListener("click", () => {
+    isMuted = !isMuted;
+    if (isMuted) audio.pause();
+    else audio.play().catch(console.error);
+    updateSoundIcon();
+  });
+  updateSoundIcon();
+
+  const games = {
+    "draw-contest": {
+      title: "Dessine moi un Désastre",
+      description: "Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence ! \n4 à 8 Joueurs",
+      preview: "/static/images/preview/draw-contest.png",
+      music: "/static/music/draw-contest.mp3",
+      playerNumber: "3-8"
+    },
+    "pictionary": {
+      title: "Gribouilles & Embrouilles",
+      description: "Montrez vos talents artistiques ! Un joueur dessine pendant que les autres se dépêchent de deviner le mot.",
+      preview: "/static/images/preview/pictionary.png",
+      music: "/static/music/pictionary.mp3",
+      playerNumber: "3-8"
+    },
+    "quiz-rush": {
+      title: "Quiz Rush",
+      description: "Pensez vite ! Répondez à des questions originales dans ce quiz effréné.",
+      preview: "/static/images/preview/quiz-rush.png",
+      music: "/static/music/quiz-rush.mp3",
+      playerNumber: "2-8"
+    },
+    "object-tales": {
+      title: "La Quête Légendaire",
+      description: "Devenez le maître du récit ! Inventez l'histoire la plus drôle ou intrigante à propos d'un objet étrange.",
+      preview: "/static/images/preview/object-tales.png",
+      music: "/static/music/object-tales.mp3",
+      playerNumber: "4-8",
+      disabled: true
+    }
+  };
+
+  async function updatePreviewButtonState() {
+    const previewButton = document.getElementById('previewButton');
+    const roomCode = localStorage.getItem('roomCode');
+    const activeGame = document.querySelector('.game-button.active')?.dataset.game;
+    
+    if (!roomCode || !activeGame) {
+      previewButton.style.display = 'none';
+      return;
+    }
+  
+    try {
+      const lobby = await LobbyManager.getCurrentLobby();
+      const players = await LobbyManager.getActivePlayers();
+      const gameInfo = games[activeGame];
+      
+      // Extraire le nombre minimum de joueurs
+      const minPlayers = parseInt(gameInfo.playerNumber.split('-')[0]);
+      const isOwner = lobby?.isOwner;
+      
+      // Vérifier les conditions
+      const hasEnoughPlayers = players.length >= minPlayers;
+      const shouldShowButton = isOwner && roomCode;
+  
+      previewButton.style.display = shouldShowButton ? 'flex' : 'none';
+      previewButton.disabled = !hasEnoughPlayers;
+  
+    } catch (error) {
+      console.error('Error updating button state:', error);
+      previewButton.style.display = 'none';
+    }
+  }
+
+  setInterval(updatePreviewButtonState, 3000);
+
+  function changeGamePreview(gameId) {
+    const game = games[gameId];
+    if (!game) return;
+    staticEffect.classList.add("show-static");
+    staticSound.currentTime = 0;
+    staticSound.play();
+    setTimeout(() => {
+      document.getElementById("previewImage").src = game.preview;
+      document.getElementById("previewTitle").textContent = game.title;
+      document.getElementById("previewDescription").textContent = game.description;
+      document.getElementById("previewPlayerNumber").textContent = game.playerNumber + " Joueurs";
+      if (audio.src !== game.music) {
+        audio.src = game.music;
+        audio.load();
+        if (!isMuted) audio.play().catch(console.error);
+        updatePreviewButtonState();
+      }
+      staticEffect.classList.remove("show-static");
+    }, 200);
+  }
+
+  document.querySelectorAll('.game-button').forEach(button => {
+    button.addEventListener("click", () => {
+      if (button.disabled) return;
+      changeGamePreview(button.dataset.game);
+      document.querySelectorAll('.game-button').forEach(btn => btn.classList.remove("active"));
+      button.classList.add("active");
+    });
+  });
+
+  const previewButton = document.querySelector('.preview-button');
+    previewButton.addEventListener('click', () => {
+    const activeGame = document.querySelector('.game-button.active')?.dataset.game;
+    const roomCode = localStorage.getItem('roomCode');
+    
+    if (activeGame && roomCode) {
+      const gameUrl = `/Games/loading/loading.html?game=${activeGame}&roomCode=${roomCode}`;
+      automaticRedirect(gameUrl);
+    }
+  });
+
+  const roomCode = localStorage.getItem("roomCode");
+  if (roomCode) {
+    document.getElementById("playersContainer").style.display = "flex";
+    const createLobbyLink = document.getElementById("createLobbyLink");
+    const joinLobbyLink = document.getElementById("joinLobbyLink");
+    const creditsLink = document.getElementById("creditsLink");
+
+    const lobby = await LobbyManager.getCurrentLobby();
+    const isOwner = lobby?.isOwner || false;
+
+    createLobbyLink.innerHTML = `
+      <button class="action-button quit-lobby">
+        <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 17l5-5-5-5"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Quitter
+      </button>`;
+    joinLobbyLink.innerHTML = `
+      <button class="action-button add-players" ${!isOwner ? 'disabled' : ''}>
+        <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Ajouter Joueurs
+      </button>`;
+    creditsLink.innerHTML = `
+      <button class="action-button credits">
+        <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="8" r="7"></circle>
+          <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+        </svg>
+        Credits
+      </button>`;
+
+    createLobbyLink.querySelector('button').addEventListener('click', async () => {
+      if (confirm("Êtes-vous sûr de vouloir quitter le lobby ?")) {
+        await LobbyManager.leaveLobby();
+        window.location.reload();
+      }
+    });
+
+    joinLobbyLink.querySelector('button').addEventListener('click', () => {
+      automaticRedirect('waiting_room.html');
+    });
+
+    creditsLink.querySelector('button').addEventListener('click', () => {
+      automaticRedirect('credits.html');
+    });
+  }
+
+  if (roomCode) LobbyManager.startPolling();
+});
+
+const roomCode = localStorage.getItem('roomCode');
+
+window.addEventListener('beforeunload', async () => {
+  const lobby = await LobbyManager.getCurrentLobby();
+  if (lobby?.isOwner) {
+    console.log("[INDEX] Owner quitte la page, nettoyage du lobby");
+    await LobbyManager.leaveLobby();
+  }
+});
+
+if (!roomCode) {
+  localStorage.removeItem('roomCode');
+  localStorage.removeItem('userId');
+  LobbyManager.stopPolling();
+} else {
+  LobbyManager.init();
+}
+
+async function loadBottomButtons() {
+  try {
+    const response = await fetch('button_config.json');
+    const config = await response.json();
+    const bottomActions = document.getElementById('bottomActions');
+    const inLobby = localStorage.getItem('roomCode') ? true : false;
+    console.log(`[INDEX] Mode ${inLobby ? "EN LOBBY" : "HORS LOBBY"} – chargement de la configuration des boutons.`);
+    const buttons = inLobby ? config.inLobby : config.outLobby;
+    bottomActions.innerHTML = '';
+    buttons.forEach(btn => {
+      const a = document.createElement('a');
+      if (btn.link) {
+        a.href = btn.link;
+      }
+      const button = document.createElement('button');
+      button.className = 'action-button';
+      if (btn.action) button.classList.add(btn.action);
+      button.innerHTML = btn.icon + btn.title;
+      button.addEventListener('click', async (e) => {
+        e.preventDefault();
+        console.log(`[INDEX] Bouton cliqué: ${btn.title}`);
+        if (inLobby) {
+          if (btn.action === 'quit') {
+            if (confirm("Êtes-vous sûr de vouloir quitter le lobby ?")) {
+              console.log("[INDEX] Quitter le lobby demandé.");
+              await LobbyManager.leaveLobby();
+              localStorage.removeItem('roomCode');
+              window.location.href = 'index.html';
+            }
+          } else if (btn.action === 'credits') {
+            const lobby = await LobbyManager.getCurrentLobby();
+            if (lobby && lobby.isOwner) {
+              console.log("[INDEX] Owner quittant le lobby pour accéder aux Credits.");
+              await LobbyManager.sendCommandToPlayers('redirect', { url: `credits.html?roomCode=${roomCode}` });
+              window.location.href = `credits.html?roomCode=${roomCode}`;
+            } else {
+              console.log("[INDEX] Redirection automatique vers Credits pour non-owner.");
+              automaticRedirect(`credits.html?roomCode=${roomCode}`);
+            }
+          } else if (btn.action === 'waiting') {
+            console.log("[INDEX] Owner envoie une commande pour que tout le monde aille en salle d'attente.");
+            await LobbyManager.sendCommandToPlayers('redirect', { url: `waiting_room.html?roomCode=${roomCode}` });
+            window.location.href = `waiting_room.html?roomCode=${roomCode}`;
+          } else if (btn.link) {
+            console.log(`[INDEX] Redirection vers ${btn.link}`);
+            window.location.href = btn.link;
+          }
+        } else {
+          if (btn.link) {
+            console.log(`[INDEX] Redirection vers ${btn.link} (mode hors lobby)`);
+            window.location.href = btn.link;
+          }
+        }
+      });
+      a.appendChild(button);
+      bottomActions.appendChild(a);
+    });
+  } catch (error) {
+    console.error("[INDEX] Erreur lors du chargement des boutons:", error);
+  }
+}
+
+// Vérifie si l'intro a déjà été vue
+document.addEventListener("DOMContentLoaded", function() {
+  if (localStorage.getItem('introSeen')) {
+    document.getElementById('introScreen').style.display = 'none';
+  } else {
+    localStorage.setItem('introSeen', 'true');
+  }
+});
+
+loadBottomButtons();
+
