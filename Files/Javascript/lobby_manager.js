@@ -1,4 +1,4 @@
-import { lobbyCommands } from './lobby_commands.js';
+import { lobbyCommands } from "./lobby_commands.js";
 class LobbyManager {
   static POLL_INTERVAL = 1000;
   static MAX_POLL_INTERVAL = 30000;
@@ -9,27 +9,27 @@ class LobbyManager {
   static _errorCount = 0;
   static _MAX_ERRORS = 5;
   static init() {
-    if (localStorage.getItem('roomCode')) {
+    if (localStorage.getItem("roomCode")) {
       this.startPolling();
       this.setupCommandListener();
     }
     this._setupUnloadListener();
   }
   static _setupUnloadListener() {
-    window.addEventListener('beforeunload', () => {
-      const isRedirecting = sessionStorage.getItem('isRedirecting');
-      const roomCode = localStorage.getItem('roomCode');
-      const userId = localStorage.getItem('userId');
+    window.addEventListener("beforeunload", () => {
+      const isRedirecting = sessionStorage.getItem("isRedirecting");
+      const roomCode = localStorage.getItem("roomCode");
+      const userId = localStorage.getItem("userId");
       if (!isRedirecting && roomCode && userId) {
         const data = { userId };
-        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
         navigator.sendBeacon(`/api/lobby/${roomCode}/leave`, blob);
       }
-      sessionStorage.removeItem('isRedirecting');
+      sessionStorage.removeItem("isRedirecting");
     });
   }
   static async getActivePlayers() {
-    const userId = localStorage.getItem('userId');
+    const userId = localStorage.getItem("userId");
     const lobby = await this.getCurrentLobby();
     if (lobby) {
       return Object.values(lobby.users)
@@ -75,10 +75,7 @@ class LobbyManager {
         this.stopPolling();
         return;
       }
-      this._currentPollInterval = Math.min(
-        this._currentPollInterval * this.POLL_BACKOFF_FACTOR,
-        this.MAX_POLL_INTERVAL
-      );
+      this._currentPollInterval = Math.min(this._currentPollInterval * this.POLL_BACKOFF_FACTOR, this.MAX_POLL_INTERVAL);
     } finally {
       if (this._pollTimeout !== null) {
         this._pollTimeout = setTimeout(() => this._pollLobby(), this._currentPollInterval);
@@ -91,15 +88,15 @@ class LobbyManager {
     }
   }
   static async getCurrentLobby() {
-    const roomCode = localStorage.getItem('roomCode');
-    const userId = localStorage.getItem('userId');
+    const roomCode = localStorage.getItem("roomCode");
+    const userId = localStorage.getItem("userId");
     if (!roomCode || !userId) return null;
     try {
       const response = await fetch(`/api/lobby/${roomCode}?userId=${userId}`);
       if (!response.ok) {
         if (response.status === 404) {
-          localStorage.removeItem('roomCode');
-          localStorage.removeItem('userId');
+          localStorage.removeItem("roomCode");
+          localStorage.removeItem("userId");
           this.stopPolling();
         }
         return null;
@@ -119,56 +116,54 @@ class LobbyManager {
     return lobby?.isOwner || false;
   }
   static async leaveLobby() {
-    const roomCode = localStorage.getItem('roomCode');
-    const userId = localStorage.getItem('userId');
+    const roomCode = localStorage.getItem("roomCode");
+    const userId = localStorage.getItem("userId");
     if (roomCode && userId) {
       try {
         await fetch(`/api/lobby/${roomCode}/leave`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId })
         });
       } catch (error) {}
     }
-    localStorage.removeItem('roomCode');
-    localStorage.removeItem('userId');
+    localStorage.removeItem("roomCode");
+    localStorage.removeItem("userId");
     this.stopPolling();
   }
   static async sendCommandToPlayers(command, payload = {}) {
-    const roomCode = localStorage.getItem('roomCode');
+    const roomCode = localStorage.getItem("roomCode");
     const lobby = await this.getCurrentLobby();
     if (lobby?.isOwner) {
       try {
         const commandData = {
           command,
-          initiator: localStorage.getItem('userId'),
+          initiator: localStorage.getItem("userId"),
           payload,
           timestamp: Date.now()
         };
         await fetch(`/api/lobby/${roomCode}/command`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(commandData)
         });
         if (lobbyCommands[command]) {
           lobbyCommands[command](payload, this);
         }
-      } catch (error) {
-        console.error("[LOBBY_MANAGER] Erreur lors de l'envoi de la commande:", error);
-      }
+      } catch (error) {}
     }
   }
   static async startGame(gameUrl) {
-    const roomCode = localStorage.getItem('roomCode');
+    const roomCode = localStorage.getItem("roomCode");
     const lobby = await this.getCurrentLobby();
     if (lobby?.isOwner) {
       try {
         await fetch(`/api/lobby/${roomCode}/command`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            command: 'start-game',
-            initiator: localStorage.getItem('userId'),
+            command: "start-game",
+            initiator: localStorage.getItem("userId"),
             payload: { gameUrl },
             timestamp: Date.now()
           })
@@ -190,6 +185,10 @@ class LobbyManager {
         }
       } catch (err) {}
     }, 1000);
+  }
+  static automaticRedirect(url) {
+    sessionStorage.setItem("isRedirecting", "true");
+    window.location.href = url;
   }
 }
 export { LobbyManager };
