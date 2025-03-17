@@ -14,40 +14,40 @@ class LobbyManager {
       this.startPolling();
     }
     this._setupUnloadListener();
+    this.setupRedirectionListener();
   }
 
   static _setupUnloadListener() {
-    window.addEventListener('beforeunload', (event) => {
+    window.addEventListener('beforeunload', () => {
       const isRedirecting = sessionStorage.getItem('isRedirecting');
       const roomCode = localStorage.getItem('roomCode');
       const userId = localStorage.getItem('userId');
-      
       if (!isRedirecting && roomCode && userId) {
         const data = { userId };
         const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
         navigator.sendBeacon(`/api/lobby/${roomCode}/leave`, blob);
         console.log("[LOBBY_MANAGER] Envoi de la requête de sortie via Beacon.");
       }
-      sessionStorage.removeItem('isRedirecting'); // Nettoyage
+      sessionStorage.removeItem('isRedirecting');
     });
   }
 
   static async getActivePlayers() {
-      console.log("[LOBBY_MANAGER] Récupération des joueurs actifs...");
-      const userId = localStorage.getItem('userId');
-      const lobby = await this.getCurrentLobby();
-      if (lobby) {
-          return Object.values(lobby.users)
-              .sort((a, b) => a.join_time - b.join_time)
-              .map((user) => ({
-                  id: user.id,
-                  name: user.name,
-                  avatar: `/static/images/avatar/${user.avatar_index + 1}.png`,
-                  isOwner: user.id === lobby.owner,
-                  isCurrentUser: user.id === userId
-              }));
-      }
-      return [];
+    console.log("[LOBBY_MANAGER] Récupération des joueurs actifs...");
+    const userId = localStorage.getItem('userId');
+    const lobby = await this.getCurrentLobby();
+    if (lobby) {
+      return Object.values(lobby.users)
+        .sort((a, b) => a.join_time - b.join_time)
+        .map((user) => ({
+          id: user.id,
+          name: user.name,
+          avatar: `/static/images/avatar/${user.avatar_index + 1}.png`,
+          isOwner: user.id === lobby.owner,
+          isCurrentUser: user.id === userId
+        }));
+    }
+    return [];
   }
 
   static startPolling() {
@@ -162,45 +162,27 @@ class LobbyManager {
   static async sendCommandToPlayers(command, payload = {}) {
     const roomCode = localStorage.getItem('roomCode');
     const lobby = await this.getCurrentLobby();
-    
-    if (lobby?.isOwner) {  
-        try {
-            console.log(`[LOBBY_MANAGER] Envoi de la commande '${command}' avec payload:`, payload);
-            await fetch(`/api/lobby/${roomCode}/command`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    command,
-                    initiator: localStorage.getItem('userId'),
-                    payload,
-                    timestamp: Date.now()
-                })
-            });
-            console.log(`[LOBBY_MANAGER] Commande '${command}' envoyée avec succès.`);
-        } catch (error) {
-            console.error("[LOBBY_MANAGER] Erreur lors de l'envoi de la commande:", error);
-        }
+    if (lobby?.isOwner) {
+      try {
+        console.log(`[LOBBY_MANAGER] Envoi de la commande '${command}' avec payload:`, payload);
+        await fetch(`/api/lobby/${roomCode}/command`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            command,
+            initiator: localStorage.getItem('userId'),
+            payload,
+            timestamp: Date.now()
+          })
+        });
+        console.log(`[LOBBY_MANAGER] Commande '${command}' envoyée avec succès.`);
+      } catch (error) {
+        console.error("[LOBBY_MANAGER] Erreur lors de l'envoi de la commande:", error);
+      }
     } else {
-        console.warn("[LOBBY_MANAGER] Seul l'owner peut envoyer des commandes.");
+      console.warn("[LOBBY_MANAGER] Seul l'owner peut envoyer des commandes.");
     }
   }
-
-  static async getActivePlayers() {
-    const userId = localStorage.getItem('userId');
-    const lobby = await this.getCurrentLobby();
-    if (lobby) {
-        return Object.values(lobby.users)
-            .sort((a, b) => a.join_time - b.join_time)
-            .map((user) => ({
-                id: user.id,
-                name: user.name,
-                avatar: `/static/images/avatar/${user.avatar_index + 1}.png`,
-                isOwner: user.id === lobby.owner,
-                isCurrentUser: user.id === userId
-            }));
-    }
-    return [];
-}
 
   static async startGame(gameUrl) {
     const roomCode = localStorage.getItem('roomCode');
@@ -222,6 +204,49 @@ class LobbyManager {
         console.error("[LOBBY_MANAGER] Erreur lors du lancement de la partie:", error);
       }
     }
+  }
+
+  static shouldRedirect(targetUrl) {
+    const currentPath = window.location.pathname.split('/').pop();
+    const targetPath = new URL(targetUrl, window.location.href).pathname.split('/').pop();
+    return currentPath !== targetPath;
+  }
+
+  static automaticRedirect(url) {
+    if (this.shouldRedirect(url)) {
+      window.location.href = url;
+    }
+  }
+
+  static setupRedirectionListener() {
+    let lastCommandTime = 0;
+    setInterval(async () => {
+      try {
+        const lobby = await this.getCurrentLobby();
+        const command = lobby?.latest_command;
+        if (command && command.timestamp > lastCommandTime) {
+          lastCommandTime = command.timestamp;
+          console.log("[LOBBY_MANAGER] Commande reçue :", command);
+          switch (command.command) {
+            case 'redirect':
+              if (this.shouldRedirect(command.payload.url)) {
+                console.log(`Redirection vers ${command.payload.url}`);
+                window.location.href = command.payload.url;
+              }
+              break;
+            case 'lobby-deleted':
+              console.log("Nettoyage du lobby...");
+              localStorage.removeItem('roomCode');
+              localStorage.removeItem('userId');
+              this.stopPolling();
+              window.location.href = 'index.html';
+              break;
+          }
+        }
+      } catch (err) {
+        console.error("Erreur de traitement :", err);
+      }
+    }, 1000);
   }
 }
 

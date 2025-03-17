@@ -1,5 +1,4 @@
 import LobbyManager from './lobby_manager.js';
-import { shouldRedirect } from './lobby_redirection.js';
 
 let isOwner = false;
 const userId = localStorage.getItem('userId');
@@ -101,7 +100,7 @@ function startCountdown(duration) {
     if (counter <= 0) {
       clearInterval(countdownInterval);
       LobbyManager.sendCommandToPlayers('redirect', { url: `index.html?roomCode=${roomCode}` });
-      if (shouldRedirect(`index.html?roomCode=${roomCode}`)) {
+      if (LobbyManager.shouldRedirect(`index.html?roomCode=${roomCode}`)) {
         window.location.href = `index.html?roomCode=${roomCode}`;
       }
     }
@@ -125,7 +124,7 @@ function setupCommandListener() {
             document.getElementById('countdownOverlay').style.display = 'none';
             break;
           case 'redirect':
-            if (shouldRedirect(command.payload.url)) {
+            if (LobbyManager.shouldRedirect(command.payload.url)) {
               window.location.href = command.payload.url;
             }
             break;
