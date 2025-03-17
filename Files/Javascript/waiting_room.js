@@ -56,7 +56,6 @@ function updatePlayersGrid(users, ownerId) {
     if (b.id === ownerId) return 1;
     return a.join_time - b.join_time;
   });
-
   for (let i = 0; i < 8; i++) {
     const playerSlot = document.createElement('div');
     playerSlot.classList.add('player-slot');
@@ -100,7 +99,6 @@ function startCountdown(duration) {
   let counter = duration;
   cancelCountdown.style.display = isOwner ? 'block' : 'none';
   countdownNumber.textContent = counter;
-
   countdownInterval = setInterval(() => {
     counter--;
     countdownNumber.textContent = counter < 0 ? 0 : counter;
@@ -109,14 +107,13 @@ function startCountdown(duration) {
       LobbyManager.sendCommandToPlayers('redirect', {
         url: `index.html?roomCode=${roomCode}`
       });
-      if (LobbyManager.shouldRedirect(`index.html?roomCode=${roomCode}`)) {
+      if (isOwner) {
         window.location.href = `index.html?roomCode=${roomCode}`;
       }
     }
   }, 1000);
 }
 
-// Écoute des événements personnalisés dispatchés par LobbyManager
 document.addEventListener('start-countdown', (e) => {
   const { duration } = e.detail;
   startCountdown(duration);

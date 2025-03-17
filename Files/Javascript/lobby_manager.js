@@ -9,7 +9,6 @@ class LobbyManager {
   static _errorCount = 0;
   static _MAX_ERRORS = 5;
   static init() {
-    console.log("[LOBBY_MANAGER] Initialisation...");
     if (localStorage.getItem('roomCode')) {
       this.startPolling();
     }
@@ -24,13 +23,11 @@ class LobbyManager {
         const data = { userId };
         const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
         navigator.sendBeacon(`/api/lobby/${roomCode}/leave`, blob);
-        console.log("[LOBBY_MANAGER] Envoi de la requête de sortie via Beacon.");
       }
       sessionStorage.removeItem('isRedirecting');
     });
   }
   static async getActivePlayers() {
-    console.log("[LOBBY_MANAGER] Récupération des joueurs actifs...");
     const userId = localStorage.getItem('userId');
     const lobby = await this.getCurrentLobby();
     if (lobby) {
@@ -48,14 +45,12 @@ class LobbyManager {
   }
   static startPolling() {
     if (this._pollTimeout !== null) return;
-    console.log("[LOBBY_MANAGER] Début du polling du lobby.");
     this._pollLobby();
   }
   static stopPolling() {
     if (this._pollTimeout) {
       clearTimeout(this._pollTimeout);
       this._pollTimeout = null;
-      console.log("[LOBBY_MANAGER] Polling arrêté.");
     }
   }
   static addListener(callback) {
@@ -70,15 +65,12 @@ class LobbyManager {
         this._currentPollInterval = this.POLL_INTERVAL;
         this._notifyListeners(lobby);
       } else {
-        console.error("[LOBBY_MANAGER] Lobby introuvable, arrêt du polling.");
         this.stopPolling();
         return;
       }
     } catch (error) {
       this._errorCount++;
-      console.error(`[LOBBY_MANAGER] Erreur lors du polling (${this._errorCount}/${this._MAX_ERRORS}):`, error);
       if (this._errorCount >= this._MAX_ERRORS) {
-        console.error("[LOBBY_MANAGER] Nombre maximum d'erreurs atteint. Arrêt du polling.");
         this.stopPolling();
         return;
       }
@@ -105,7 +97,6 @@ class LobbyManager {
       const response = await fetch(`/api/lobby/${roomCode}`);
       if (!response.ok) {
         if (response.status === 404) {
-          console.error("[LOBBY_MANAGER] Lobby non trouvé (404). Nettoyage des données locales.");
           localStorage.removeItem('roomCode');
           localStorage.removeItem('userId');
           this.stopPolling();
@@ -113,14 +104,12 @@ class LobbyManager {
         return null;
       }
       const data = await response.json();
-      console.log("[LOBBY_MANAGER] Lobby récupéré :", data);
       return {
         ...data,
         isOwner: data.owner === userId,
         currentUser: data.users[userId]
       };
     } catch (error) {
-      console.error("[LOBBY_MANAGER] Erreur lors du fetch du lobby:", error);
       return null;
     }
   }
@@ -133,15 +122,12 @@ class LobbyManager {
     const userId = localStorage.getItem('userId');
     if (roomCode && userId) {
       try {
-        console.log("[LOBBY_MANAGER] Envoi de la requête pour quitter le lobby.");
         await fetch(`/api/lobby/${roomCode}/leave`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId })
         });
-      } catch (error) {
-        console.error("[LOBBY_MANAGER] Erreur lors de la demande de sortie du lobby:", error);
-      }
+      } catch (error) {}
     }
     localStorage.removeItem('roomCode');
     localStorage.removeItem('userId');
@@ -152,7 +138,6 @@ class LobbyManager {
     const lobby = await this.getCurrentLobby();
     if (lobby?.isOwner) {
       try {
-        console.log(`[LOBBY_MANAGER] Envoi de la commande '${command}' avec payload:`, payload);
         await fetch(`/api/lobby/${roomCode}/command`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -163,12 +148,7 @@ class LobbyManager {
             timestamp: Date.now()
           })
         });
-        console.log(`[LOBBY_MANAGER] Commande '${command}' envoyée avec succès.`);
-      } catch (error) {
-        console.error("[LOBBY_MANAGER] Erreur lors de l'envoi de la commande:", error);
-      }
-    } else {
-      console.warn("[LOBBY_MANAGER] Seul l'owner peut envoyer des commandes.");
+      } catch (error) {}
     }
   }
   static async startGame(gameUrl) {
@@ -176,7 +156,6 @@ class LobbyManager {
     const lobby = await this.getCurrentLobby();
     if (lobby?.isOwner) {
       try {
-        console.log("[LOBBY_MANAGER] Lancement de la partie avec l'URL:", gameUrl);
         await fetch(`/api/lobby/${roomCode}/command`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -187,19 +166,7 @@ class LobbyManager {
             timestamp: Date.now()
           })
         });
-      } catch (error) {
-        console.error("[LOBBY_MANAGER] Erreur lors du lancement de la partie:", error);
-      }
-    }
-  }
-  static shouldRedirect(targetUrl) {
-    const currentPath = window.location.pathname.split('/').pop();
-    const targetPath = new URL(targetUrl, window.location.href).pathname.split('/').pop();
-    return currentPath !== targetPath;
-  }
-  static automaticRedirect(url) {
-    if (this.shouldRedirect(url)) {
-      window.location.href = url;
+      } catch (error) {}
     }
   }
   static setupCommandListener() {
@@ -214,9 +181,7 @@ class LobbyManager {
             lobbyCommands[command.command](command.payload, this);
           }
         }
-      } catch (err) {
-        console.error("[LOBBY_MANAGER] Erreur dans setupCommandListener:", err);
-      }
+      } catch (err) {}
     }, 1000);
   }
 }
