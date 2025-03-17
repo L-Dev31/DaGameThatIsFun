@@ -218,6 +218,39 @@ class LobbyManager {
     }
   }
 
+  static setupCommandListener() {
+    let lastCommandTime = 0;
+    setInterval(async () => {
+      try {
+        const lobby = await this.getCurrentLobby();
+        const command = lobby?.latest_command;
+        if (command && command.timestamp > lastCommandTime) {
+          lastCommandTime = command.timestamp;
+          console.log("[LOBBY_MANAGER] Commande reçue via setupCommandListener:", command);
+          switch (command.command) {
+            case 'start-countdown':
+              document.dispatchEvent(new CustomEvent('start-countdown', { detail: command.payload }));
+              break;
+            case 'cancel-countdown':
+              document.dispatchEvent(new Event('cancel-countdown'));
+              break;
+            case 'redirect':
+              if (this.shouldRedirect(command.payload.url)) {
+                window.location.href = command.payload.url;
+              }
+              break;
+            case 'lobby-deleted':
+              alert("Le salon a été supprimé par l'hôte !");
+              window.location.href = '/';
+              break;
+          }
+        }
+      } catch (err) {
+        console.error("[LOBBY_MANAGER] Erreur dans setupCommandListener:", err);
+      }
+    }, 1000);
+  }
+
   static setupRedirectionListener() {
     let lastCommandTime = 0;
     setInterval(async () => {

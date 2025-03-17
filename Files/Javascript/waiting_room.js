@@ -34,11 +34,18 @@ function hideModal() {
 }
 
 leaveButton.addEventListener('click', () => {
-  showModal(isOwner ? "Attention ! En quittant, le salon sera supprimé. Continuer ?" : "Quitter le salon ?", isOwner);
+  showModal(
+    isOwner
+      ? "Attention ! En quittant, le salon sera supprimé. Continuer ?"
+      : "Quitter le salon ?",
+    isOwner
+  );
 });
 
 cancelButton.addEventListener('click', hideModal);
-modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
+modal.addEventListener('click', (e) => {
+  if (e.target === modal) hideModal();
+});
 
 function updatePlayersGrid(users, ownerId) {
   const playersGrid = document.getElementById('playersGrid');
@@ -49,7 +56,7 @@ function updatePlayersGrid(users, ownerId) {
     if (b.id === ownerId) return 1;
     return a.join_time - b.join_time;
   });
-  
+
   for (let i = 0; i < 8; i++) {
     const playerSlot = document.createElement('div');
     playerSlot.classList.add('player-slot');
@@ -93,13 +100,15 @@ function startCountdown(duration) {
   let counter = duration;
   cancelCountdown.style.display = isOwner ? 'block' : 'none';
   countdownNumber.textContent = counter;
-  
+
   countdownInterval = setInterval(() => {
     counter--;
     countdownNumber.textContent = counter < 0 ? 0 : counter;
     if (counter <= 0) {
       clearInterval(countdownInterval);
-      LobbyManager.sendCommandToPlayers('redirect', { url: `index.html?roomCode=${roomCode}` });
+      LobbyManager.sendCommandToPlayers('redirect', {
+        url: `index.html?roomCode=${roomCode}`
+      });
       if (LobbyManager.shouldRedirect(`index.html?roomCode=${roomCode}`)) {
         window.location.href = `index.html?roomCode=${roomCode}`;
       }
@@ -107,38 +116,16 @@ function startCountdown(duration) {
   }, 1000);
 }
 
-function setupCommandListener() {
-  let lastCommandTime = 0;
-  setInterval(async () => {
-    try {
-      const lobby = await LobbyManager.getCurrentLobby();
-      const command = lobby?.latest_command;
-      if (command && command.timestamp > lastCommandTime) {
-        lastCommandTime = command.timestamp;
-        switch (command.command) {
-          case 'start-countdown':
-            startCountdown(command.payload.duration);
-            break;
-          case 'cancel-countdown':
-            clearInterval(countdownInterval);
-            document.getElementById('countdownOverlay').style.display = 'none';
-            break;
-          case 'redirect':
-            if (LobbyManager.shouldRedirect(command.payload.url)) {
-              window.location.href = command.payload.url;
-            }
-            break;
-          case 'lobby-deleted':
-            alert('Le salon a été supprimé par l\'hôte !');
-            window.location.href = '/';
-            break;
-        }
-      }
-    } catch (err) {
-      console.error("[WAITING] Erreur:", err);
-    }
-  }, 1000);
-}
+// Écoute des événements personnalisés dispatchés par LobbyManager
+document.addEventListener('start-countdown', (e) => {
+  const { duration } = e.detail;
+  startCountdown(duration);
+});
+
+document.addEventListener('cancel-countdown', () => {
+  clearInterval(countdownInterval);
+  document.getElementById('countdownOverlay').style.display = 'none';
+});
 
 async function checkOwnerStatus() {
   try {
@@ -158,7 +145,7 @@ async function checkOwnerStatus() {
 document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('roomCode').textContent = roomCode;
   await checkOwnerStatus();
-  setupCommandListener();
+  LobbyManager.setupCommandListener();
   setInterval(checkOwnerStatus, 1000);
   document.getElementById('startButton').addEventListener('click', () => {
     if (isOwner) {
@@ -170,9 +157,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 window.addEventListener('beforeunload', async () => {
   if (isOwner) {
-    navigator.sendBeacon('/api/send-command', JSON.stringify({
-      command: 'redirect',
-      payload: { url: `index.html?roomCode=${roomCode}` }
-    }));
+    navigator.sendBeacon(
+      '/api/send-command',
+      JSON.stringify({
+        command: 'redirect',
+        payload: { url: `index.html?roomCode=${roomCode}` }
+      })
+    );
   }
 });
