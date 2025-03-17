@@ -1,8 +1,6 @@
 import { LobbyManager } from './lobby_manager.js';
-
 document.addEventListener("DOMContentLoaded", async () => {
   const playersContainer = document.getElementById("playersContainer");
-
   async function updatePlayers() {
     const players = await LobbyManager.getActivePlayers();
     if (players.length === 0 && localStorage.getItem('roomCode')) {
@@ -23,10 +21,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     await updatePreviewButtonState();
   }
-
   await updatePlayers();
   setInterval(updatePlayers, 5000);
-
   const introScreen = document.getElementById("introScreen");
   setTimeout(() => {
     introScreen.classList.add("hidden");
@@ -34,14 +30,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       introScreen.style.display = "none";
     }, 1000);
   }, 8000);
-
   const staticSound = document.getElementById("staticSound");
   const staticEffect = document.querySelector(".tv-static");
   const soundToggle = document.getElementById("soundToggle");
   let isMuted = true;
   const audio = new Audio("/static/music/draw-contest.mp3");
   audio.loop = true;
-
   function updateSoundIcon() {
     soundToggle.innerHTML = isMuted ? `
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
@@ -55,7 +49,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
       </svg>`;
   }
-
   soundToggle.addEventListener("click", () => {
     isMuted = !isMuted;
     if (isMuted) audio.pause();
@@ -63,7 +56,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     updateSoundIcon();
   });
   updateSoundIcon();
-
   const games = {
     "draw-contest": {
       title: "Dessine moi un Désastre",
@@ -95,39 +87,30 @@ document.addEventListener("DOMContentLoaded", async () => {
       disabled: true
     }
   };
-
   async function updatePreviewButtonState() {
     const previewButton = document.getElementById('previewButton');
     const roomCode = localStorage.getItem('roomCode');
     const activeGame = document.querySelector('.game-button.active')?.dataset.game;
-    
     if (!roomCode || !activeGame) {
       previewButton.style.display = 'none';
       return;
     }
-  
     try {
       const lobby = await LobbyManager.getCurrentLobby();
       const players = await LobbyManager.getActivePlayers();
       const gameInfo = games[activeGame];
-      
       const minPlayers = parseInt(gameInfo.playerNumber.split('-')[0]);
       const isOwner = lobby?.isOwner;
-      
       const hasEnoughPlayers = players.length >= minPlayers;
       const shouldShowButton = isOwner && roomCode;
-  
       previewButton.style.display = shouldShowButton ? 'flex' : 'none';
       previewButton.disabled = !hasEnoughPlayers;
-  
     } catch (error) {
       console.error('Error updating button state:', error);
       previewButton.style.display = 'none';
     }
   }
-
   setInterval(updatePreviewButtonState, 3000);
-
   function changeGamePreview(gameId) {
     const game = games[gameId];
     if (!game) return;
@@ -148,7 +131,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       staticEffect.classList.remove("show-static");
     }, 200);
   }
-
   document.querySelectorAll('.game-button').forEach(button => {
     button.addEventListener("click", () => {
       if (button.disabled) return;
@@ -157,28 +139,23 @@ document.addEventListener("DOMContentLoaded", async () => {
       button.classList.add("active");
     });
   });
-
   const previewButton = document.querySelector('.preview-button');
   previewButton.addEventListener('click', () => {
     const activeGame = document.querySelector('.game-button.active')?.dataset.game;
     const roomCode = localStorage.getItem('roomCode');
-    
     if (activeGame && roomCode) {
       const gameUrl = `/Games/loading/loading.html?game=${activeGame}&roomCode=${roomCode}`;
       LobbyManager.automaticRedirect(gameUrl);
     }
   });
-
   const currentRoomCode = localStorage.getItem("roomCode");
   if (currentRoomCode) {
     document.getElementById("playersContainer").style.display = "flex";
     const createLobbyLink = document.getElementById("createLobbyLink");
     const joinLobbyLink = document.getElementById("joinLobbyLink");
     const creditsLink = document.getElementById("creditsLink");
-
     const lobby = await LobbyManager.getCurrentLobby();
     const isOwner = lobby?.isOwner || false;
-
     createLobbyLink.innerHTML = `
       <button class="action-button quit-lobby">
         <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -203,34 +180,29 @@ document.addEventListener("DOMContentLoaded", async () => {
         </svg>
         Credits
       </button>`;
-
     createLobbyLink.querySelector('button').addEventListener('click', async () => {
       if (confirm("Êtes-vous sûr de vouloir quitter le lobby ?")) {
         await LobbyManager.leaveLobby();
         window.location.reload();
       }
     });
-
     joinLobbyLink.querySelector('button').addEventListener('click', () => {
       LobbyManager.automaticRedirect('waiting_room.html');
     });
-
     creditsLink.querySelector('button').addEventListener('click', () => {
       LobbyManager.automaticRedirect('credits.html');
     });
   }
-
   if (localStorage.getItem('roomCode')) LobbyManager.startPolling();
 });
-
 window.addEventListener('beforeunload', async () => {
-  const lobby = await LobbyManager.getCurrentLobby();
-  if (lobby?.isOwner) {
-    console.log("[INDEX] Owner quitte la page, nettoyage du lobby");
-    await LobbyManager.leaveLobby();
+  if (!sessionStorage.getItem('isRedirecting')) {
+    const lobby = await LobbyManager.getCurrentLobby();
+    if (lobby?.isOwner) {
+      await LobbyManager.leaveLobby();
+    }
   }
 });
-
 if (!localStorage.getItem('roomCode')) {
   localStorage.removeItem('roomCode');
   localStorage.removeItem('userId');
@@ -238,14 +210,12 @@ if (!localStorage.getItem('roomCode')) {
 } else {
   LobbyManager.init();
 }
-
 async function loadBottomButtons() {
   try {
     const response = await fetch('button_config.json');
     const config = await response.json();
     const bottomActions = document.getElementById('bottomActions');
     const inLobby = localStorage.getItem('roomCode') ? true : false;
-    console.log(`[INDEX] Mode ${inLobby ? "EN LOBBY" : "HORS LOBBY"} – chargement de la configuration des boutons.`);
     const buttons = inLobby ? config.inLobby : config.outLobby;
     bottomActions.innerHTML = '';
     buttons.forEach(btn => {
@@ -259,11 +229,9 @@ async function loadBottomButtons() {
       button.innerHTML = btn.icon + btn.title;
       button.addEventListener('click', async (e) => {
         e.preventDefault();
-        console.log(`[INDEX] Bouton cliqué: ${btn.title}`);
         if (inLobby) {
           if (btn.action === 'quit') {
             if (confirm("Êtes-vous sûr de vouloir quitter le lobby ?")) {
-              console.log("[INDEX] Quitter le lobby demandé.");
               await LobbyManager.leaveLobby();
               localStorage.removeItem('roomCode');
               window.location.href = 'index.html';
@@ -271,24 +239,19 @@ async function loadBottomButtons() {
           } else if (btn.action === 'credits') {
             const lobby = await LobbyManager.getCurrentLobby();
             if (lobby && lobby.isOwner) {
-              console.log("[INDEX] Owner quittant le lobby pour accéder aux Credits.");
               await LobbyManager.sendCommandToPlayers('redirect', { url: `credits.html?roomCode=${localStorage.getItem('roomCode')}` });
               window.location.href = `credits.html?roomCode=${localStorage.getItem('roomCode')}`;
             } else {
-              console.log("[INDEX] Redirection automatique vers Credits pour non-owner.");
               LobbyManager.automaticRedirect(`credits.html?roomCode=${localStorage.getItem('roomCode')}`);
             }
           } else if (btn.action === 'waiting') {
-            console.log("[INDEX] Owner envoie une commande pour que tout le monde aille en salle d'attente.");
             await LobbyManager.sendCommandToPlayers('redirect', { url: `waiting_room.html?roomCode=${localStorage.getItem('roomCode')}` });
             window.location.href = `waiting_room.html?roomCode=${localStorage.getItem('roomCode')}`;
           } else if (btn.link) {
-            console.log(`[INDEX] Redirection vers ${btn.link}`);
             window.location.href = btn.link;
           }
         } else {
           if (btn.link) {
-            console.log(`[INDEX] Redirection vers ${btn.link} (mode hors lobby)`);
             window.location.href = btn.link;
           }
         }
@@ -300,7 +263,6 @@ async function loadBottomButtons() {
     console.error("[INDEX] Erreur lors du chargement des boutons:", error);
   }
 }
-
 document.addEventListener("DOMContentLoaded", function() {
   if (localStorage.getItem('introSeen')) {
     document.getElementById('introScreen').style.display = 'none';
@@ -308,5 +270,4 @@ document.addEventListener("DOMContentLoaded", function() {
     localStorage.setItem('introSeen', 'true');
   }
 });
-
 loadBottomButtons();

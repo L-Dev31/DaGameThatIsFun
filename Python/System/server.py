@@ -55,7 +55,6 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                     client_ip
                 )
                 self.send_json_response(response)
-
             elif self.path == '/api/lobby/join':
                 response = join_lobby(
                     post_data.get('roomCode'),
@@ -65,12 +64,10 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                     client_ip
                 )
                 self.send_json_response(response)
-
             elif self.path.startswith('/api/lobby/') and self.path.endswith('/leave'):
                 room_code = self.path.split('/')[-2]
                 response = leave_lobby(post_data.get('userId'), room_code)
                 self.send_json_response(response)
-
             elif self.path.startswith('/api/lobby/') and self.path.endswith('/command'):
                 room_code = self.path.split('/')[-2]
                 with active_sessions_lock:
@@ -80,7 +77,6 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                     if post_data.get('initiator') != lobby.owner:
                         self.send_error_response("Action non autorisée", 403)
                         return
-
                     command = post_data.get('command')
                     if command == 'start-game':
                         lobby.latest_command = {
@@ -93,7 +89,6 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                             'initiator': lobby.owner
                         }
                     else:
-                        # Mise à jour du status du lobby si un nouveau status est fourni (ex : waiting)
                         if command == 'redirect' and post_data.get('payload') and post_data.get('payload').get('newState'):
                             lobby.state = post_data.get('payload').get('newState')
                         lobby.latest_command = {
@@ -103,7 +98,6 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                             'initiator': lobby.owner
                         }
                 self.send_json_response({'success': True})
-
             else:
                 self.send_error_response("Endpoint non trouvé", 404)
         except Exception as e:
@@ -129,9 +123,14 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json_response({'lobbies': lobbies_data})
             elif base_path.startswith('/api/lobby/') and len(base_path.split('/')) == 4:
                 room_code = base_path.split('/')[-1]
+                from urllib.parse import urlparse, parse_qs
+                query = parse_qs(urlparse(self.path).query)
+                user_id = query.get('userId', [None])[0]
                 with active_sessions_lock:
                     if room_code in active_sessions:
                         lobby = active_sessions[room_code]
+                        if user_id and user_id in lobby.users:
+                            lobby.users[user_id].last_seen = time.time()
                         lobby_data = lobby.to_dict()
                         lobby_data['latest_command'] = getattr(lobby, 'latest_command', None)
                         self.send_json_response(lobby_data)

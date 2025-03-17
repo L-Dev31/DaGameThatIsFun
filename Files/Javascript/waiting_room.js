@@ -1,19 +1,15 @@
 import { LobbyManager } from './lobby_manager.js';
-
 let isOwner = false;
 const userId = localStorage.getItem('userId');
 const roomCode = localStorage.getItem('roomCode');
-
 if (!roomCode || !userId) {
   window.location.href = '/';
 }
-
 const modal = document.getElementById('confirmationModal');
 const leaveButton = document.getElementById('leaveButton');
 const cancelButton = document.getElementById('cancelButton');
 const confirmButton = document.getElementById('confirmButton');
 const modalMessage = document.getElementById('modalMessage');
-
 function showModal(message, ownerLeaving = false) {
   modalMessage.textContent = message;
   modal.style.display = 'flex';
@@ -28,23 +24,16 @@ function showModal(message, ownerLeaving = false) {
     }
   };
 }
-
 function hideModal() {
   modal.style.display = 'none';
 }
-
 leaveButton.addEventListener('click', () => {
-  showModal(
-    isOwner ? "Attention ! En quittant, le salon sera supprimé. Continuer ?" : "Quitter le salon ?",
-    isOwner
-  );
+  showModal(isOwner ? "Attention ! En quittant, le salon sera supprimé. Continuer ?" : "Quitter le salon ?", isOwner);
 });
-
 cancelButton.addEventListener('click', hideModal);
 modal.addEventListener('click', (e) => {
   if (e.target === modal) hideModal();
 });
-
 function updatePlayersGrid(users, ownerId) {
   const playersGrid = document.getElementById('playersGrid');
   playersGrid.innerHTML = '';
@@ -81,13 +70,11 @@ function updatePlayersGrid(users, ownerId) {
     playersGrid.appendChild(playerSlot);
   }
 }
-
 function updateStartButton(userCount, maxPlayers) {
   const startButton = document.getElementById('startButton');
   startButton.textContent = `Lancer la partie (${userCount}/${maxPlayers})`;
   startButton.disabled = !isOwner || userCount < 2;
 }
-
 let countdownInterval;
 function startCountdown(duration) {
   const countdownOverlay = document.getElementById('countdownOverlay');
@@ -102,23 +89,21 @@ function startCountdown(duration) {
     countdownNumber.textContent = counter < 0 ? 0 : counter;
     if (counter <= 0) {
       clearInterval(countdownInterval);
+      sessionStorage.setItem('isRedirecting', 'true');
       LobbyManager.sendCommandToPlayers('redirect', {
         url: `index.html?roomCode=${roomCode}`
       });
     }
   }, 1000);
 }
-
 document.addEventListener('start-countdown', (e) => {
   const { duration } = e.detail;
   startCountdown(duration);
 });
-
 document.addEventListener('cancel-countdown', () => {
   clearInterval(countdownInterval);
   document.getElementById('countdownOverlay').style.display = 'none';
 });
-
 async function checkOwnerStatus() {
   try {
     const lobby = await LobbyManager.getCurrentLobby();
@@ -133,7 +118,6 @@ async function checkOwnerStatus() {
     console.error("[WAITING] Erreur:", error);
   }
 }
-
 document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('roomCode').textContent = roomCode;
   LobbyManager.init();
@@ -141,20 +125,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   setInterval(checkOwnerStatus, 1000);
   document.getElementById('startButton').addEventListener('click', () => {
     if (isOwner) {
+      sessionStorage.setItem('isRedirecting', 'true');
       LobbyManager.sendCommandToPlayers('start-countdown', { duration: 5 });
       startCountdown(5);
     }
   });
 });
-
 window.addEventListener('beforeunload', async () => {
-  if (isOwner) {
-    navigator.sendBeacon(
-      '/api/send-command',
-      JSON.stringify({
-        command: 'redirect',
-        payload: { url: `index.html?roomCode=${roomCode}` }
-      })
-    );
+  if (!sessionStorage.getItem('isRedirecting')) {
+    const roomCode = localStorage.getItem('roomCode');
+    const userId = localStorage.getItem('userId');
+    if (roomCode && userId) {
+      const data = { userId };
+      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      navigator.sendBeacon(`/api/lobby/${roomCode}/leave`, blob);
+    }
   }
 });

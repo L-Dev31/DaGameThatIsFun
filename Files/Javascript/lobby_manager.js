@@ -8,16 +8,13 @@ class LobbyManager {
   static _listeners = new Set();
   static _errorCount = 0;
   static _MAX_ERRORS = 5;
-  
   static init() {
     if (localStorage.getItem('roomCode')) {
       this.startPolling();
-      // Appel automatique du command listener dès qu'on est dans un lobby
       this.setupCommandListener();
     }
     this._setupUnloadListener();
   }
-
   static _setupUnloadListener() {
     window.addEventListener('beforeunload', () => {
       const isRedirecting = sessionStorage.getItem('isRedirecting');
@@ -31,7 +28,6 @@ class LobbyManager {
       sessionStorage.removeItem('isRedirecting');
     });
   }
-
   static async getActivePlayers() {
     const userId = localStorage.getItem('userId');
     const lobby = await this.getCurrentLobby();
@@ -48,24 +44,20 @@ class LobbyManager {
     }
     return [];
   }
-
   static startPolling() {
     if (this._pollTimeout !== null) return;
     this._pollLobby();
   }
-
   static stopPolling() {
     if (this._pollTimeout) {
       clearTimeout(this._pollTimeout);
       this._pollTimeout = null;
     }
   }
-
   static addListener(callback) {
     this._listeners.add(callback);
     return () => this._listeners.delete(callback);
   }
-
   static async _pollLobby() {
     try {
       const lobby = await this.getCurrentLobby();
@@ -93,19 +85,17 @@ class LobbyManager {
       }
     }
   }
-
   static _notifyListeners(lobby) {
     for (const listener of this._listeners) {
       listener(lobby);
     }
   }
-
   static async getCurrentLobby() {
     const roomCode = localStorage.getItem('roomCode');
     const userId = localStorage.getItem('userId');
     if (!roomCode || !userId) return null;
     try {
-      const response = await fetch(`/api/lobby/${roomCode}`);
+      const response = await fetch(`/api/lobby/${roomCode}?userId=${userId}`);
       if (!response.ok) {
         if (response.status === 404) {
           localStorage.removeItem('roomCode');
@@ -124,12 +114,10 @@ class LobbyManager {
       return null;
     }
   }
-
   static async isCurrentUserOwner() {
     const lobby = await this.getCurrentLobby();
     return lobby?.isOwner || false;
   }
-
   static async leaveLobby() {
     const roomCode = localStorage.getItem('roomCode');
     const userId = localStorage.getItem('userId');
@@ -146,7 +134,6 @@ class LobbyManager {
     localStorage.removeItem('userId');
     this.stopPolling();
   }
-
   static async sendCommandToPlayers(command, payload = {}) {
     const roomCode = localStorage.getItem('roomCode');
     const lobby = await this.getCurrentLobby();
@@ -171,7 +158,6 @@ class LobbyManager {
       }
     }
   }
-
   static async startGame(gameUrl) {
     const roomCode = localStorage.getItem('roomCode');
     const lobby = await this.getCurrentLobby();
@@ -190,7 +176,6 @@ class LobbyManager {
       } catch (error) {}
     }
   }
-
   static setupCommandListener() {
     let lastCommandTime = 0;
     setInterval(async () => {

@@ -1,6 +1,7 @@
+# models.py
 from dataclasses import dataclass, field
 from typing import Dict, Optional
-import threading
+import threading, time
 
 @dataclass
 class User:
@@ -9,6 +10,7 @@ class User:
     avatar_index: int
     join_time: float
     ip_address: str
+    last_seen: float = field(default_factory=lambda: time.time())
 
 @dataclass
 class LobbySession:
@@ -34,7 +36,8 @@ class LobbySession:
                     'name': u.name,
                     'avatar_index': u.avatar_index,
                     'join_time': u.join_time,
-                    'ip_address': u.ip_address
+                    'ip_address': u.ip_address,
+                    'last_seen': u.last_seen
                 } for uid, u in self.users.items()},
                 'created_at': self.created_at,
                 'max_players': self.max_players,
