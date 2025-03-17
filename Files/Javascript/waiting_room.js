@@ -35,9 +35,7 @@ function hideModal() {
 
 leaveButton.addEventListener('click', () => {
   showModal(
-    isOwner
-      ? "Attention ! En quittant, le salon sera supprimé. Continuer ?"
-      : "Quitter le salon ?",
+    isOwner ? "Attention ! En quittant, le salon sera supprimé. Continuer ?" : "Quitter le salon ?",
     isOwner
   );
 });

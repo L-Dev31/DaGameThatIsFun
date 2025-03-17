@@ -9,13 +9,12 @@ export const lobbyCommands = {
       document.dispatchEvent(new Event("cancel-countdown"));
       console.log("%c[COMMAND] cancel-countdown exécutée", "color: blue;");
     },
-        "redirect": (payload) => {
-        console.log("%c[COMMAND] redirect appelée avec payload: " + JSON.stringify(payload), "color: green;");
-        sessionStorage.setItem("pendingRedirect", payload.url);
-        console.log("%c[COMMAND] redirect exécutée: redirection vers " + payload.url, "color: blue;");
-        window.location.href = payload.url;
-        },
-
+    "redirect": (payload) => {
+    console.log("%c[COMMAND] redirect appelée avec payload: " + JSON.stringify(payload), "color: green;");
+    sessionStorage.setItem("pendingRedirect", payload.url);
+    console.log("%c[COMMAND] redirect exécutée: redirection vers " + payload.url, "color: blue;");
+    window.location.href = payload.url;
+    },
     "lobby-deleted": (payload, manager) => {
       console.log("%c[COMMAND] lobby-deleted appelée", "color: green;");
       alert("Le salon a été supprimé par l'hôte !");
