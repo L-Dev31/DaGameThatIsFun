@@ -138,17 +138,23 @@ class LobbyManager {
     const lobby = await this.getCurrentLobby();
     if (lobby?.isOwner) {
       try {
+        const commandData = {
+          command,
+          initiator: localStorage.getItem('userId'),
+          payload,
+          timestamp: Date.now()
+        };
         await fetch(`/api/lobby/${roomCode}/command`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            command,
-            initiator: localStorage.getItem('userId'),
-            payload,
-            timestamp: Date.now()
-          })
+          body: JSON.stringify(commandData)
         });
-      } catch (error) {}
+        if (lobbyCommands[command]) {
+          lobbyCommands[command](payload, this);
+        }
+      } catch (error) {
+        console.error("[LOBBY_MANAGER] Erreur lors de l'envoi de la commande:", error);
+      }
     }
   }
   static async startGame(gameUrl) {

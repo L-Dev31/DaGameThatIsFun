@@ -107,9 +107,6 @@ function startCountdown(duration) {
       LobbyManager.sendCommandToPlayers('redirect', {
         url: `index.html?roomCode=${roomCode}`
       });
-      if (isOwner) {
-        window.location.href = `index.html?roomCode=${roomCode}`;
-      }
     }
   }, 1000);
 }
