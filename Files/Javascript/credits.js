@@ -1,23 +1,26 @@
-import LobbyManager from './lobby_manager.js';
-import { shouldRedirect, automaticRedirect } from './lobby_redirection.js';
+import { LobbyManager } from './lobby_manager.js';
 
 const roomCode = new URLSearchParams(window.location.search).get('roomCode');
 const playersContainer = document.getElementById("playersContainer");
 const backButton = document.querySelector('.action-button');
 
+let isOwner = false;
+let lastCommandTime = 0;
+
+function shouldRedirect(url) {
+  return !window.location.href.includes(url);
+}
+
 async function checkLobbyStatus() {
   const lobby = await LobbyManager.getCurrentLobby();
   if (lobby) {
     console.log("[CREDITS] L'utilisateur est dans un lobby: ", lobby);
+    isOwner = lobby.isOwner;
   } else {
     console.log("[CREDITS] L'utilisateur n'est pas dans un lobby.");
     if (playersContainer) playersContainer.style.display = "none";
   }
 }
-checkLobbyStatus();
-
-let isOwner = false;
-let lastCommandTime = 0;
 
 async function updatePlayers() {
   const players = await LobbyManager.getActivePlayers();
@@ -43,7 +46,7 @@ backButton.onclick = async () => {
   const lobby = await LobbyManager.getCurrentLobby();
   if (lobby && lobby.isOwner) {
     console.log("[CREDITS] Owner redirige tout le monde vers l'index.");
-    await LobbyManager.sendCommand('redirect', { url: `index.html?roomCode=${roomCode}` }, { priority: 'high', target: 'all' });
+    await LobbyManager.sendCommandToPlayers('redirect', { url: `index.html?roomCode=${roomCode}` });
   }
   window.location.href = roomCode ? `index.html?roomCode=${roomCode}` : 'index.html';
 };
@@ -63,11 +66,12 @@ function setupCommandListener() {
 
 window.addEventListener('beforeunload', async () => {
   if (isOwner) {
-    await LobbyManager.sendCommand('lobby-deleted');
+    await LobbyManager.sendCommandToPlayers('lobby-deleted');
     await LobbyManager.leaveLobby();
   }
 });
 
+checkLobbyStatus();
 LobbyManager.init();
 setupCommandListener();
 setInterval(updatePlayers, 5000);

@@ -9,7 +9,7 @@ class LobbyManager {
   static _listeners = new Set();
   static _errorCount = 0;
   static _MAX_ERRORS = 5;
-  static _lastProcessedCommand = null; // Cache de la dernière commande traitée
+  static _lastProcessedCommand = null;
 
   static init() {
     if (localStorage.getItem("roomCode")) {
@@ -74,6 +74,7 @@ class LobbyManager {
         this._errorCount = 0;
         this._currentPollInterval = this.POLL_INTERVAL;
         this._notifyListeners(lobby);
+        this.updatePlayers(lobby);
       } else {
         this.stopPolling();
         return;
@@ -193,18 +194,25 @@ class LobbyManager {
         const lobby = await this.getCurrentLobby();
         const command = lobby?.latest_command;
         if (command && command.timestamp !== this._lastProcessedCommand?.timestamp) {
-          this._lastProcessedCommand = command; // Mettre à jour la dernière commande traitée
+          this._lastProcessedCommand = command;
           if (lobbyCommands[command.command]) {
             lobbyCommands[command.command](command.payload, this);
           }
         }
-      } catch (err) {}
+      } catch (err) {
+        console.error("Erreur lors de l'exécution de la commande :", err);
+      }
     }, 1000);
   }
 
   static automaticRedirect(url) {
     sessionStorage.setItem("isRedirecting", "true");
     window.location.href = url;
+  }
+
+  static async updatePlayers(lobby) {
+    const players = await this.getActivePlayers();
+    document.dispatchEvent(new CustomEvent("lobby-players-updated", { detail: players }));
   }
 }
 

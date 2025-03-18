@@ -1,10 +1,12 @@
 import { LobbyManager } from './lobby_manager.js';
 
 document.addEventListener("DOMContentLoaded", async () => {
+  LobbyManager.init();
+
   const playersContainer = document.getElementById("playersContainer");
 
-  async function updatePlayers() {
-    const players = await LobbyManager.getActivePlayers();
+  document.addEventListener("lobby-players-updated", (event) => {
+    const players = event.detail;
     playersContainer.innerHTML = "";
     players.forEach(player => {
       const playerDiv = document.createElement("div");
@@ -15,11 +17,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
       playersContainer.appendChild(playerDiv);
     });
-    await updatePreviewButtonState();
-  }
-
-  await updatePlayers();
-  setInterval(updatePlayers, 5000);
+  });
 
   const introScreen = document.getElementById("introScreen");
   setTimeout(() => {
@@ -207,8 +205,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     }
   }
-
-  if (localStorage.getItem('roomCode')) LobbyManager.startPolling();
 });
 
 window.addEventListener('beforeunload', async () => {
@@ -219,14 +215,6 @@ window.addEventListener('beforeunload', async () => {
     }
   }
 });
-
-if (!localStorage.getItem('roomCode')) {
-  localStorage.removeItem('roomCode');
-  localStorage.removeItem('userId');
-  LobbyManager.stopPolling();
-} else {
-  LobbyManager.init();
-}
 
 async function loadBottomButtons() {
   try {
@@ -266,13 +254,11 @@ async function loadBottomButtons() {
             const lobby = await LobbyManager.getCurrentLobby();
             if (lobby && lobby.isOwner) {
               await LobbyManager.sendCommandToPlayers('redirect', { url: `credits.html?roomCode=${localStorage.getItem('roomCode')}` });
-              window.location.href = `credits.html?roomCode=${localStorage.getItem('roomCode')}`;
             } else {
               LobbyManager.automaticRedirect(`credits.html?roomCode=${localStorage.getItem('roomCode')}`);
             }
           } else if (btn.action === 'waiting') {
             await LobbyManager.sendCommandToPlayers('redirect', { url: `waiting_room.html?roomCode=${localStorage.getItem('roomCode')}` });
-            window.location.href = `waiting_room.html?roomCode=${localStorage.getItem('roomCode')}`;
           } else if (btn.link) {
             window.location.href = btn.link;
           }
