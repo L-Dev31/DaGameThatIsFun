@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.addEventListener("lobby-players-updated", (event) => {
     const players = event.detail;
-    LobbyManager.renderPlayers(players); // Rendu des joueurs via LobbyManager
+    LobbyManager.renderPlayers(players); 
   });
 
   const backButton = document.querySelector('.action-button');

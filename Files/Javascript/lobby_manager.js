@@ -12,77 +12,54 @@ class LobbyManager {
   static _lastProcessedCommand = null;
 
   static init() {
-    console.log("[DEBUG] Initialisation de LobbyManager...");
-    this.checkLobbyStatusAndHandleUI(); 
-    const roomCode = localStorage.getItem("roomCode");
-    if (roomCode) {
-      console.log("[DEBUG] roomCode trouvé. Lancement des services...");
+    if (localStorage.getItem("roomCode")) {
       this.startPolling();
       this.setupCommandListener();
-    } else {
-      console.log("[DEBUG] Aucun roomCode trouvé.");
     }
     this._setupUnloadListener();
+    this.checkLobbyStatusAndHandleUI();
+    this.setupListeners();
   }
 
   static async checkLobbyStatusAndHandleUI() {
     const lobby = await this.getCurrentLobby();
     const playersContainer = document.getElementById("playersContainer");
-
     if (!lobby) {
-      console.log("[LOBBY_MANAGER] L'utilisateur n'est pas dans un lobby.");
-      if (playersContainer) {
-        playersContainer.style.display = "none"; // Masque le conteneur des joueurs
+      if (playersContainer) playersContainer.style.display = "none";
+      localStorage.removeItem('roomCode');
+      localStorage.removeItem('userId');
+      if (!window.location.pathname.includes('index.html')) {
+        window.location.href = 'index.html';
       }
     } else {
-      console.log("[LOBBY_MANAGER] L'utilisateur est dans un lobby: ", lobby);
-      if (playersContainer) {
-        playersContainer.style.display = "flex"; // Affiche le conteneur des joueurs
-      }
+      if (playersContainer) playersContainer.style.display = "flex";
     }
   }
 
-  static _setupUnloadListener() {
-    window.addEventListener('beforeunload', async () => {
-      try {
-        const isRedirecting = sessionStorage.getItem("isRedirecting");
-        const roomCode = localStorage.getItem("roomCode");
-        const userId = localStorage.getItem("userId");
-
-        if (!isRedirecting && roomCode && userId) {
-          const data = { userId };
-          const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-          navigator.sendBeacon(`/api/lobby/${roomCode}/leave`, blob);
-        }
-
-        sessionStorage.removeItem("isRedirecting");
-
-        const isOwner = await this.isCurrentUserOwner();
-        if (isOwner) {
-          await this.sendCommandToPlayers('lobby-deleted');
-          await this.leaveLobby();
-        }
-      } catch (error) {
-        console.error("[LOBBY_MANAGER] Erreur lors de la fermeture de la fenêtre :", error);
-      }
-    });
-  }
-
-  static async getActivePlayers() {
+  static async getCurrentLobby() {
+    const roomCode = localStorage.getItem("roomCode");
     const userId = localStorage.getItem("userId");
-    const lobby = await this.getCurrentLobby();
-    if (lobby) {
-      return Object.values(lobby.users)
-        .sort((a, b) => a.join_time - b.join_time)
-        .map((user) => ({
-          id: user.id,
-          name: user.name,
-          avatar: `/static/images/avatar/${user.avatar_index + 1}.png`,
-          isOwner: user.id === lobby.owner,
-          isCurrentUser: user.id === userId
-        }));
+    if (!roomCode || !userId) return null;
+    try {
+      const response = await fetch(`/api/lobby/${roomCode}?userId=${userId}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          localStorage.removeItem("roomCode");
+          localStorage.removeItem("userId");
+          this.stopPolling();
+          this.showLobbyDeletedAlert();
+        }
+        return null;
+      }
+      const data = await response.json();
+      return {
+        ...data,
+        isOwner: data.owner === userId,
+        currentUser: data.users[userId]
+      };
+    } catch (error) {
+      return null;
     }
-    return [];
   }
 
   static startPolling() {
@@ -111,7 +88,16 @@ class LobbyManager {
         this._notifyListeners(lobby);
         this.updatePlayers(lobby);
       } else {
+        localStorage.removeItem("roomCode");
+        localStorage.removeItem("userId");
         this.stopPolling();
+        
+        this.showLobbyDeletedAlert();
+        
+        document.dispatchEvent(new CustomEvent("lobby-status", { 
+          detail: { inLobby: false } 
+        }));
+        
         return;
       }
     } catch (error) {
@@ -134,32 +120,9 @@ class LobbyManager {
     }
   }
 
-  static async getCurrentLobby() {
-    const roomCode = localStorage.getItem("roomCode");
-    const userId = localStorage.getItem("userId");
-    if (!roomCode || !userId) return null;
-    try {
-      const response = await fetch(`/api/lobby/${roomCode}?userId=${userId}`);
-      console.log("[DEBUG] Fetch response:", response);
-      if (!response.ok) {
-        if (response.status === 404) {
-          localStorage.removeItem("roomCode");
-          localStorage.removeItem("userId");
-          this.stopPolling();
-        }
-        return null;
-      }
-      const data = await response.json();
-      console.log("[DEBUG] Lobby data:", data);
-      return {
-        ...data,
-        isOwner: data.owner === userId,
-        currentUser: data.users[userId]
-      };
-    } catch (error) {
-      console.error("[DEBUG] Erreur dans getCurrentLobby:", error);
-      return null;
-    }
+  static showLobbyDeletedAlert() {
+    alert("Le lobby n'existe plus. Vous allez être redirigé vers la page d'accueil.");
+    window.location.href = "index.html";
   }
 
   static async isCurrentUserOwner() {
@@ -218,14 +181,21 @@ class LobbyManager {
             lobbyCommands[command.command](command.payload, this);
           }
         }
-      } catch (err) {
-        console.error("Erreur lors de l'exécution de la commande :", err);
-      }
+      } catch (err) {}
     }, 1000);
   }
 
   static async updatePlayers(lobby) {
-    const players = await this.getActivePlayers();
+    const players = Object.values(lobby.users)
+      .sort((a, b) => a.join_time - b.join_time)
+      .map((user) => ({
+        id: user.id,
+        name: user.name,
+        avatar: `/static/images/avatar/${user.avatar_index + 1}.png`,
+        isOwner: user.id === lobby.owner,
+        isCurrentUser: user.id === localStorage.getItem("userId")
+      }));
+    
     document.dispatchEvent(new CustomEvent("lobby-players-updated", { detail: players }));
     this.renderPlayers(players);
   }
@@ -235,9 +205,9 @@ class LobbyManager {
     if (!playersContainer) return;
 
     if (players.length === 0 && localStorage.getItem("roomCode")) {
-      localStorage.removeItem("roomCode");
-      localStorage.removeItem("userId");
-      window.location.reload();
+      document.dispatchEvent(new CustomEvent("lobby-status", { 
+        detail: { inLobby: false } 
+      }));
       return;
     }
 
@@ -250,6 +220,63 @@ class LobbyManager {
         <span class="player-name">${player.name}${player.isCurrentUser ? ' (Vous)' : ''}${player.isOwner ? ' 👑' : ''}</span>
       `;
       playersContainer.appendChild(playerDiv);
+    });
+  }
+
+  static async getActivePlayers() {
+    const userId = localStorage.getItem("userId");
+    const lobby = await this.getCurrentLobby();
+    if (lobby) {
+      return Object.values(lobby.users)
+        .sort((a, b) => a.join_time - b.join_time)
+        .map((user) => ({
+          id: user.id,
+          name: user.name,
+          avatar: `/static/images/avatar/${user.avatar_index + 1}.png`,
+          isOwner: user.id === lobby.owner,
+          isCurrentUser: user.id === userId
+        }));
+    }
+    return [];
+  }
+
+  static _setupUnloadListener() {
+    window.addEventListener('beforeunload', async () => {
+      try {
+        const isRedirecting = sessionStorage.getItem("isRedirecting");
+        const roomCode = localStorage.getItem("roomCode");
+        const userId = localStorage.getItem("userId");
+
+        if (!isRedirecting && roomCode && userId) {
+          const data = { userId };
+          const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+          navigator.sendBeacon(`/api/lobby/${roomCode}/leave`, blob);
+        }
+
+        sessionStorage.removeItem("isRedirecting");
+
+        const isOwner = await this.isCurrentUserOwner();
+        if (isOwner) {
+          await this.sendCommandToPlayers('lobby-deleted');
+          await this.leaveLobby();
+        }
+      } catch (error) {}
+    });
+  }
+
+  static automaticRedirect(url) {
+    sessionStorage.setItem('isRedirecting', 'true');
+    window.location.href = url;
+  }
+
+  static setupListeners() {
+    document.addEventListener("lobby-status", (event) => {
+      const { inLobby } = event.detail;
+      if (!inLobby) {
+        localStorage.removeItem("roomCode");
+        localStorage.removeItem("userId");
+        this.showLobbyDeletedAlert();
+      }
     });
   }
 }

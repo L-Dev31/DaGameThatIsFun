@@ -1,13 +1,12 @@
 import { LobbyManager } from './lobby_manager.js';
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // Initialisation du LobbyManager
   LobbyManager.init();
 
   // Gestion des événements personnalisés pour mettre à jour l'interface utilisateur
   document.addEventListener("lobby-players-updated", (event) => {
     const players = event.detail;
-    LobbyManager.renderPlayers(players); // Rendu des joueurs via LobbyManager
+    LobbyManager.renderPlayers(players);
   });
 
   // Gestion de l'écran d'introduction
@@ -95,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     },
   };
 
-  // Mise à jour du bouton de prévisualisation
+  // Mise à jour du bouton de lancement de jeux
   async function updatePreviewButtonState() {
     const previewButton = document.getElementById("previewButton");
     const roomCode = localStorage.getItem("roomCode");
