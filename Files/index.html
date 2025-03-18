@@ -55,14 +55,14 @@
     <div class="grid">
       <div>
         <div class="game-buttons">
-          <button class="game-button active" data-game="draw-contest">
-            <img src="/static/images/logo/draw-contest.png" alt="Draw Contest" class="game-logo">
-          </button>
-          <button class="game-button" data-game="pictionary">
-            <img src="/static/images/logo/pictionary.png" alt="Pictionary" class="game-logo">
-          </button>
           <button class="game-button" data-game="quiz-rush">
             <img src="/static/images/logo/quiz-rush.png" alt="Quiz Rush" class="game-logo">
+          </button>
+          <button class="game-button active" data-game="draw-contest" disabled>
+            <img src="/static/images/logo/draw-contest-disabled.png" alt="Draw Contest" class="game-logo">
+          </button>
+          <button class="game-button" data-game="pictionary" disabled>
+            <img src="/static/images/logo/pictionary-disabled.png" alt="Pictionary" class="game-logo">
           </button>
           <button class="game-button" data-game="object-tales" disabled>
             <img src="/static/images/logo/object-tales-disabled.png" alt="Object Tales" class="game-logo">
@@ -71,13 +71,13 @@
       </div>
       <div class="preview-card">
         <div class="tv-static"></div>
-        <img src="/static/images/preview/draw-contest.png" alt="Game Preview" class="preview-image" id="previewImage">
+        <img src="/static/images/preview/quiz-rush.png" alt="Game Preview" class="preview-image" id="previewImage">
         <div class="preview-content">
-          <h3 class="preview-title" id="previewTitle">Dessine moi un Désastre</h3>
+          <h3 class="preview-title" id="previewTitle">Quiz Rush</h3>
           <p class="preview-description" id="previewDescription">
-            Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence !
+            Pensez vite ! Répondez à des questions originales dans ce quiz effréné.
           </p>
-          <p class="preview-player-number" id="previewPlayerNumber">4-8 Joueurs</p>
+          <p class="preview-player-number" id="previewPlayerNumber">2-8 Joueurs</p>
           <button class="preview-button" id="previewButton" style="display: none;" disabled>
             Lancer le jeu !
           </button>
