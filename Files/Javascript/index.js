@@ -3,12 +3,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const playersContainer = document.getElementById("playersContainer");
   async function updatePlayers() {
     const players = await LobbyManager.getActivePlayers();
-    if (players.length === 0 && localStorage.getItem('roomCode')) {
-      localStorage.removeItem('roomCode');
-      localStorage.removeItem('userId');
-      window.location.reload();
-      return;
-    }
     playersContainer.innerHTML = "";
     players.forEach(player => {
       const playerDiv = document.createElement("div");
@@ -106,7 +100,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       previewButton.style.display = shouldShowButton ? 'flex' : 'none';
       previewButton.disabled = !hasEnoughPlayers;
     } catch (error) {
-      console.error('Error updating button state:', error);
       previewButton.style.display = 'none';
     }
   }

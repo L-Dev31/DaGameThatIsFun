@@ -1,4 +1,5 @@
-import { lobbyCommands } from "./lobby_commands.js";
+import { lobbyCommands } from './lobby_commands.js';
+
 class LobbyManager {
   static POLL_INTERVAL = 1000;
   static MAX_POLL_INTERVAL = 30000;
@@ -8,6 +9,8 @@ class LobbyManager {
   static _listeners = new Set();
   static _errorCount = 0;
   static _MAX_ERRORS = 5;
+  static _lastProcessedCommand = null; // Cache de la dernière commande traitée
+
   static init() {
     if (localStorage.getItem("roomCode")) {
       this.startPolling();
@@ -15,6 +18,7 @@ class LobbyManager {
     }
     this._setupUnloadListener();
   }
+
   static _setupUnloadListener() {
     window.addEventListener("beforeunload", () => {
       const isRedirecting = sessionStorage.getItem("isRedirecting");
@@ -28,6 +32,7 @@ class LobbyManager {
       sessionStorage.removeItem("isRedirecting");
     });
   }
+
   static async getActivePlayers() {
     const userId = localStorage.getItem("userId");
     const lobby = await this.getCurrentLobby();
@@ -44,20 +49,24 @@ class LobbyManager {
     }
     return [];
   }
+
   static startPolling() {
     if (this._pollTimeout !== null) return;
     this._pollLobby();
   }
+
   static stopPolling() {
     if (this._pollTimeout) {
       clearTimeout(this._pollTimeout);
       this._pollTimeout = null;
     }
   }
+
   static addListener(callback) {
     this._listeners.add(callback);
     return () => this._listeners.delete(callback);
   }
+
   static async _pollLobby() {
     try {
       const lobby = await this.getCurrentLobby();
@@ -82,11 +91,13 @@ class LobbyManager {
       }
     }
   }
+
   static _notifyListeners(lobby) {
     for (const listener of this._listeners) {
       listener(lobby);
     }
   }
+
   static async getCurrentLobby() {
     const roomCode = localStorage.getItem("roomCode");
     const userId = localStorage.getItem("userId");
@@ -111,10 +122,12 @@ class LobbyManager {
       return null;
     }
   }
+
   static async isCurrentUserOwner() {
     const lobby = await this.getCurrentLobby();
     return lobby?.isOwner || false;
   }
+
   static async leaveLobby() {
     const roomCode = localStorage.getItem("roomCode");
     const userId = localStorage.getItem("userId");
@@ -131,6 +144,7 @@ class LobbyManager {
     localStorage.removeItem("userId");
     this.stopPolling();
   }
+
   static async sendCommandToPlayers(command, payload = {}) {
     const roomCode = localStorage.getItem("roomCode");
     const lobby = await this.getCurrentLobby();
@@ -153,6 +167,7 @@ class LobbyManager {
       } catch (error) {}
     }
   }
+
   static async startGame(gameUrl) {
     const roomCode = localStorage.getItem("roomCode");
     const lobby = await this.getCurrentLobby();
@@ -171,14 +186,14 @@ class LobbyManager {
       } catch (error) {}
     }
   }
+
   static setupCommandListener() {
-    let lastCommandTime = 0;
     setInterval(async () => {
       try {
         const lobby = await this.getCurrentLobby();
         const command = lobby?.latest_command;
-        if (command && command.timestamp > lastCommandTime) {
-          lastCommandTime = command.timestamp;
+        if (command && command.timestamp !== this._lastProcessedCommand?.timestamp) {
+          this._lastProcessedCommand = command; // Mettre à jour la dernière commande traitée
           if (lobbyCommands[command.command]) {
             lobbyCommands[command.command](command.payload, this);
           }
@@ -186,9 +201,11 @@ class LobbyManager {
       } catch (err) {}
     }, 1000);
   }
+
   static automaticRedirect(url) {
     sessionStorage.setItem("isRedirecting", "true");
     window.location.href = url;
   }
 }
+
 export { LobbyManager };
