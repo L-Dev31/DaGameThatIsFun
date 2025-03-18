@@ -22,12 +22,22 @@ class LobbyManager {
   }
 
   static async checkLobbyStatusAndHandleUI() {
+    const roomCode = localStorage.getItem("roomCode");
+  
+    if (!roomCode) {
+      const playersContainer = document.getElementById("playersContainer");
+      if (playersContainer) playersContainer.style.display = "none";
+      return;
+    }
+  
     const lobby = await this.getCurrentLobby();
     const playersContainer = document.getElementById("playersContainer");
+  
     if (!lobby) {
       if (playersContainer) playersContainer.style.display = "none";
       localStorage.removeItem('roomCode');
       localStorage.removeItem('userId');
+  
       if (!window.location.pathname.includes('index.html')) {
         window.location.href = 'index.html';
       }
