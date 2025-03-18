@@ -4,57 +4,62 @@ from urllib.parse import unquote
 
 def clean_path(path):
     """
-    Clean and normalize a file path.
-    Handles 'file:///' prefixes and spaces in paths.
+    Nettoie et normalise un chemin de fichier.
+    Gère les préfixes 'file:///' et les espaces dans les chemins.
     """
-    # Remove 'file:///' prefix if present
+    # Supprimer le préfixe 'file:///' s'il est présent
     if path.startswith("file:///"):
-        path = path[8:]  # Strip "file:///"
-    # Decode URL-encoded characters (e.g., %20 for spaces)
+        path = path[8:]  # On enlève "file:///"
+    # Décoder les caractères encodés en URL (par exemple, %20 pour les espaces)
     path = unquote(path)
-    # Normalize path separators for cross-platform compatibility
+    # Normaliser les séparateurs de chemin pour une compatibilité multiplateforme
     path = os.path.normpath(path)
     return path
 
 def process_files(file_paths):
     """
-    Process a list of file paths and write their content to prompt.txt.
+    Traite une liste de chemins de fichiers et écrit leur contenu dans le fichier prompt.txt.
     """
+    # Ouvre le fichier 'prompt.txt' en mode ajout
     with open('prompt.txt', 'a', encoding='utf-8') as prompt_file:
         for file_path in file_paths:
+            # Nettoyer le chemin du fichier
             file_path = clean_path(file_path.strip())
             
+            # Vérifier si le fichier existe
             if not os.path.exists(file_path):
-                print(f"Error: File '{file_path}' not found.")
+                print(f"Erreur : Le fichier '{file_path}' n'a pas été trouvé.")
                 continue
             
             try:
+                # Ouvrir le fichier en mode lecture et lire son contenu
                 with open(file_path, 'r', encoding='utf-8') as file:
                     content = file.read()
             except Exception as e:
-                print(f"Error reading {file_path}: {str(e)}")
+                print(f"Erreur lors de la lecture de {file_path}: {str(e)}")
                 continue
             
+            # Écrire le contenu du fichier dans prompt.txt
             prompt_file.write(f"[{file_path}]\n{content}\n\n")
-            print(f"Added: {file_path}")
+            print(f"Ajouté : {file_path}")
 
 def main():
-    print("Drag and drop files here or type 'stop' to finish.")
+    print("Glissez-déposez des fichiers ici ou tapez 'stop' pour terminer.")
 
     if len(sys.argv) > 1:
-        # Files were dragged and dropped onto the script
+        # Les fichiers ont été glissés-déposés sur le script
         file_paths = sys.argv[1:]
         process_files(file_paths)
-        print("All files processed. Check prompt.txt for results.")
+        print("Tous les fichiers ont été traités. Consultez prompt.txt pour les résultats.")
     else:
-        # Interactive mode if no files are dragged
+        # Mode interactif si aucun fichier n'est glissé
         while True:
-            user_input = input("File path(s) (or type 'stop'): ").strip()
+            user_input = input("Chemin(s) de fichier (ou tapez 'stop'): ").strip()
             if user_input.lower() == 'stop':
-                print("Process stopped. Check prompt.txt for results.")
+                print("Processus arrêté. Consultez prompt.txt pour les résultats.")
                 break
             
-            # Split multiple file paths separated by spaces
+            # Séparer les chemins de fichiers multiples par des espaces
             file_paths = user_input.split()
             process_files(file_paths)
 
