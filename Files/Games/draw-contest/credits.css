@@ -84,12 +84,24 @@
     overflow: hidden;
 }
 
-.leaderboard-player span, p{
+.rank-1 p, .rank-1 span {
+    color: gold!important; 
+}
+
+.rank-2 p, .rank-2 span {
+    color: silver!important; 
+}
+
+.rank-3 p, .rank-3 span {
+    color: #CD7F32!important; 
+}
+
+.leaderboard-player span, .leaderboard-player p{
     margin: 2.5px;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 1.2em;
     font-weight: bolder;
-    color: #2c3e50;
+    color: #2c3e50!important;
 }
 
 .leaderboard-player img {
@@ -105,8 +117,7 @@
     0 0 0 5px gold,
     0 0 0 10px goldenrod,
     0 0 0 15px gold,
-    0 0 50px #ffd700; 
-    color: gold!important; 
+    0 0 40px #ffd700; 
 }
 
 .rank-2 { 
@@ -114,8 +125,7 @@
     0 0 0 5px silver,
     0 0 0 10px #999,
     0 0 0 15px silver,
-    0 0 50px #c0c0c0; 
-    color: silver!important; 
+    0 0 40px #c0c0c0; 
 }
 
 .rank-3 { 
@@ -123,8 +133,7 @@
     0 0 0 5px #CD7F32,
     0 0 0 10px #925920,
     0 0 0 15px #CD7F32,
-    0 0 50px #CD7F32; 
-    color: #CD7F32!important; 
+    0 0 40px #CD7F32; 
 }
 
 /* Indication de sortie */
