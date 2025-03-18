@@ -564,6 +564,7 @@ input:checked + .slider:before {
     display: flex;
     flex-direction: column;
     gap: 3rem;
+    margin-bottom: 3em;
 }
 
 .credits-category {
