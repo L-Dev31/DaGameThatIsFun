@@ -1,6 +1,8 @@
 import { LobbyManager } from './lobby_manager.js';
+
 document.addEventListener("DOMContentLoaded", async () => {
   const playersContainer = document.getElementById("playersContainer");
+
   async function updatePlayers() {
     const players = await LobbyManager.getActivePlayers();
     playersContainer.innerHTML = "";
@@ -15,8 +17,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     await updatePreviewButtonState();
   }
+
   await updatePlayers();
   setInterval(updatePlayers, 5000);
+
   const introScreen = document.getElementById("introScreen");
   setTimeout(() => {
     introScreen.classList.add("hidden");
@@ -24,12 +28,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       introScreen.style.display = "none";
     }, 1000);
   }, 8000);
+
   const staticSound = document.getElementById("staticSound");
   const staticEffect = document.querySelector(".tv-static");
   const soundToggle = document.getElementById("soundToggle");
   let isMuted = true;
   const audio = new Audio("/static/music/draw-contest.mp3");
   audio.loop = true;
+
   function updateSoundIcon() {
     soundToggle.innerHTML = isMuted ? `
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
@@ -43,13 +49,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
       </svg>`;
   }
+
   soundToggle.addEventListener("click", () => {
     isMuted = !isMuted;
     if (isMuted) audio.pause();
     else audio.play().catch(console.error);
     updateSoundIcon();
   });
+
   updateSoundIcon();
+
   const games = {
     "draw-contest": {
       title: "Dessine moi un Désastre",
@@ -81,6 +90,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       disabled: true
     }
   };
+
   async function updatePreviewButtonState() {
     const previewButton = document.getElementById('previewButton');
     const roomCode = localStorage.getItem('roomCode');
@@ -103,7 +113,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       previewButton.style.display = 'none';
     }
   }
+
   setInterval(updatePreviewButtonState, 3000);
+
   function changeGamePreview(gameId) {
     const game = games[gameId];
     if (!game) return;
@@ -124,6 +136,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       staticEffect.classList.remove("show-static");
     }, 200);
   }
+
   document.querySelectorAll('.game-button').forEach(button => {
     button.addEventListener("click", () => {
       if (button.disabled) return;
@@ -132,6 +145,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       button.classList.add("active");
     });
   });
+
   const previewButton = document.querySelector('.preview-button');
   previewButton.addEventListener('click', () => {
     const activeGame = document.querySelector('.game-button.active')?.dataset.game;
@@ -141,6 +155,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       LobbyManager.automaticRedirect(gameUrl);
     }
   });
+
   const currentRoomCode = localStorage.getItem("roomCode");
   if (currentRoomCode) {
     document.getElementById("playersContainer").style.display = "flex";
@@ -149,45 +164,53 @@ document.addEventListener("DOMContentLoaded", async () => {
     const creditsLink = document.getElementById("creditsLink");
     const lobby = await LobbyManager.getCurrentLobby();
     const isOwner = lobby?.isOwner || false;
-    createLobbyLink.innerHTML = `
-      <button class="action-button quit-lobby">
-        <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M16 17l5-5-5-5"/>
-          <line x1="21" y1="12" x2="9" y2="12"/>
-        </svg>
-        Quitter
-      </button>`;
-    joinLobbyLink.innerHTML = `
-      <button class="action-button add-players" ${!isOwner ? 'disabled' : ''}>
-        <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Ajouter Joueurs
-      </button>`;
-    creditsLink.innerHTML = `
-      <button class="action-button credits">
-        <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="8" r="7"></circle>
-          <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-        </svg>
-        Credits
-      </button>`;
-    createLobbyLink.querySelector('button').addEventListener('click', async () => {
-      if (confirm("Êtes-vous sûr de vouloir quitter le lobby ?")) {
-        await LobbyManager.leaveLobby();
-        window.location.reload();
-      }
-    });
-    joinLobbyLink.querySelector('button').addEventListener('click', () => {
-      LobbyManager.automaticRedirect('waiting_room.html');
-    });
-    creditsLink.querySelector('button').addEventListener('click', () => {
-      LobbyManager.automaticRedirect('credits.html');
-    });
+
+    if (createLobbyLink && joinLobbyLink && creditsLink) {
+      createLobbyLink.innerHTML = `
+        <button class="action-button quit-lobby">
+          <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 17l5-5-5-5"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Quitter
+        </button>`;
+      joinLobbyLink.innerHTML = `
+        <button class="action-button add-players" ${!isOwner ? 'disabled' : ''}>
+          <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Ajouter Joueurs
+        </button>`;
+      creditsLink.innerHTML = `
+        <button class="action-button credits">
+          <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="7"></circle>
+            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+          </svg>
+          Credits
+        </button>`;
+
+      createLobbyLink.querySelector('button').addEventListener('click', async () => {
+        if (confirm("Êtes-vous sûr de vouloir quitter le lobby ?")) {
+          await LobbyManager.leaveLobby();
+          window.location.reload();
+        }
+      });
+
+      joinLobbyLink.querySelector('button').addEventListener('click', () => {
+        LobbyManager.automaticRedirect('waiting_room.html');
+      });
+
+      creditsLink.querySelector('button').addEventListener('click', () => {
+        LobbyManager.automaticRedirect('credits.html');
+      });
+    }
   }
+
   if (localStorage.getItem('roomCode')) LobbyManager.startPolling();
 });
+
 window.addEventListener('beforeunload', async () => {
   if (!sessionStorage.getItem('isRedirecting')) {
     const lobby = await LobbyManager.getCurrentLobby();
@@ -196,6 +219,7 @@ window.addEventListener('beforeunload', async () => {
     }
   }
 });
+
 if (!localStorage.getItem('roomCode')) {
   localStorage.removeItem('roomCode');
   localStorage.removeItem('userId');
@@ -203,14 +227,22 @@ if (!localStorage.getItem('roomCode')) {
 } else {
   LobbyManager.init();
 }
+
 async function loadBottomButtons() {
   try {
     const response = await fetch('button_config.json');
     const config = await response.json();
     const bottomActions = document.getElementById('bottomActions');
+
+    if (!bottomActions) {
+      console.error("L'élément 'bottomActions' est introuvable dans le DOM.");
+      return;
+    }
+
     const inLobby = localStorage.getItem('roomCode') ? true : false;
     const buttons = inLobby ? config.inLobby : config.outLobby;
     bottomActions.innerHTML = '';
+
     buttons.forEach(btn => {
       const a = document.createElement('a');
       if (btn.link) {
@@ -220,6 +252,7 @@ async function loadBottomButtons() {
       button.className = 'action-button';
       if (btn.action) button.classList.add(btn.action);
       button.innerHTML = btn.icon + btn.title;
+
       button.addEventListener('click', async (e) => {
         e.preventDefault();
         if (inLobby) {
@@ -249,6 +282,7 @@ async function loadBottomButtons() {
           }
         }
       });
+
       a.appendChild(button);
       bottomActions.appendChild(a);
     });
@@ -256,11 +290,12 @@ async function loadBottomButtons() {
     console.error("[INDEX] Erreur lors du chargement des boutons:", error);
   }
 }
+
 document.addEventListener("DOMContentLoaded", function() {
   if (localStorage.getItem('introSeen')) {
     document.getElementById('introScreen').style.display = 'none';
   } else {
     localStorage.setItem('introSeen', 'true');
   }
+  loadBottomButtons();
 });
-loadBottomButtons();
