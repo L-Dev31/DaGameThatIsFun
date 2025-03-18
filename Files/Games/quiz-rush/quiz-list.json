@@ -406,5 +406,631 @@
         ],
         "correct": "Il allait chercher des pizzas sans autorisation."
     }
+ ],
+ "Geographie": [
+  {
+    "question": "Quel est le plus grand désert du monde ?",
+    "answers": [
+      "Ton frigo",
+      "Le désert de Gobi",
+      "L'Antarctique",
+      "Un désert de chocolat"
+    ],
+    "correct": "L'Antarctique"
+  },
+  {
+    "question": "Quelle est la capitale du Canada ?",
+    "answers": [
+      "Toronto",
+      "Ottawa",
+      "Paris",
+      "Le pôle Nord"
+    ],
+    "correct": "Ottawa"
+  },
+  {
+    "question": "Où se trouve le pays de l'attaque de la pieuvre géante ?",
+    "answers": [
+      "Japon",
+      "Grèce",
+      "Islande",
+      "Sous mon canapé"
+    ],
+    "correct": "Japon"
+  },
+  {
+    "question": "Quelle ville est célèbre pour son fromage et ses canaux ?",
+    "answers": [
+      "Paris",
+      "Amsterdam",
+      "Rome",
+      "Fromageland"
+    ],
+    "correct": "Amsterdam"
+  },
+  {
+    "question": "Quel pays possède une ville appelée 'Boring' (ennuyeuse) ?",
+    "answers": [
+      "États-Unis",
+      "Norvège",
+      "Belgique",
+      "La Terre des Bisous"
+    ],
+    "correct": "États-Unis"
+  },
+  {
+    "question": "Où se trouve la statue du Christ Rédempteur ?",
+    "answers": [
+      "Brésil",
+      "Argentine",
+      "Chili",
+      "Sur un autre planètee"
+    ],
+    "correct": "Brésil"
+  },
+  {
+    "question": "Quel pays possède une plage appelée 'Plage du Pipi' ?",
+    "answers": [
+      "Italie",
+      "Espagne",
+      "Australie",
+      "Mon jardin secret"
+    ],
+    "correct": "Italie"
+  },
+  {
+    "question": "Quel est le pays le plus long au monde ?",
+    "answers": [
+      "Chili",
+      "Russie",
+      "Brésil",
+      "Le pays de la longueur infinie"
+    ],
+    "correct": "Chili"
+  },
+  {
+    "question": "Quel est le plus grand volcan actif du monde ?",
+    "answers": [
+      "Mont Vésuve",
+      "Mont Fuji",
+      "Kilauea",
+      "Le volcano éruptio"
+    ],
+    "correct": "Kilauea"
+  },
+  {
+    "question": "Quel pays possède la plus grande quantité de chocolat par habitant ?",
+    "answers": [
+      "Suisse",
+      "Belgique",
+      "Italie",
+      "Le pays des diabétiques"
+    ],
+    "correct": "Suisse"
+  },
+  {
+    "question": "Quel est l'archipel le plus connu pour ses plages et ses tortues géantes ?",
+    "answers": [
+      "Les Maldives",
+      "Les Seychelles",
+      "Les Galápagos",
+      "L'île des Tortues ninja"
+    ],
+    "correct": "Les Galápagos"
+  },
+  {
+    "question": "Où se trouve le plus grand carnaval du monde ?",
+    "answers": [
+      "Brésil",
+      "France",
+      "Italie",
+      "Afghanistan"
+    ],
+    "correct": "Brésil"
+  },
+  {
+    "question": "Dans quel pays peut-on trouver le lac le plus salé du monde ?",
+    "answers": [
+      "Bolivie",
+      "Turquie",
+      "Chili",
+      "Lac de sel de caramel"
+    ],
+    "correct": "Bolivie"
+  },
+  {
+    "question": "Dans quel pays peut-on trouver des poissons portent des lunettes de soleil ?",
+    "answers": [
+      "Australie",
+      "Bora Bora",
+      "Maldives",
+      "Le pays des poissons mafia"
+    ],
+    "correct": "Maldives"
+  },
+  {
+    "question": "Quel pays possède une montagne où l'on dit que des licornes vont faire leur yoga ?",
+    "answers": [
+      "Inde",
+      "Tibet",
+      "Suisse",
+      "Le pays des créatures zen"
+    ],
+    "correct": "Tibet"
+  },
+  {
+    "question": "Dans quel pays peut-on trouver une ville où les arbres poussent à l'envers ?",
+    "answers": [
+      "Australie",
+      "Canada",
+      "Chili",
+      "La forêt insolente"
+    ],
+    "correct": "Australie"
+  },
+  {
+    "question": "Quel est le pays où des nuages peuvent former des formes de dragons juste avant un orage ?",
+    "answers": [
+      "Japon",
+      "Chine",
+      "Inde",
+      "Le pays des nuages créatif "
+    ],
+    "correct": "Chine"
+  },
+  {
+    "question": "Dans quel pays les pyramides sont-elles tellement grandes qu'elles touchent la Lune ?",
+    "answers": [
+      "France",
+      "Mexique",
+      "Grèce",
+      "Égypte"
+    ],
+    "correct": "Égypte"
+  },
+  {
+    "question": "Quel pays possède un lac où, la nuit, des étoiles filantes font des spectacles privés pour les grenouilles ?",
+    "answers": [
+      "Suisse",
+      "Finlande",
+      "Norvège",
+      "Le pays des concerts pour amphibiens"
+    ],
+    "correct": "Finlande"
+  },
+  {
+    "question": "Où se trouve la ville où les bâtiments flottent sur des nuages et les taxis sont pilotés par des pigeons ?",
+    "answers": [
+      "New York",
+      "Tokyo",
+      "Venise",
+      "Le pays mystique"
+    ],
+    "correct": "Venise"
+  },
+  {
+    "question": "Quel pays est célèbre pour ses montagnes où l'on dit que les chèvres pratiquent des sports extrêmes ?",
+    "answers": [
+      "Suisse",
+      "Autriche",
+      "France",
+      "Le pays des chèvres olympiques"
+    ],
+    "correct": "Suisse"
+  },
+  {
+    "question": "Dans quel pays peut-on trouver des plages où les vagues dansent sur des airs de jazz ?",
+    "answers": [
+      "Brésil",
+      "Jamaïque",
+      "Hawaï",
+      "Le pays des vagues musiciennes"
+    ],
+    "correct": "Jamaïque"
+  },
+  {
+    "question": "Où se trouve la plus grande forêt où les arbres ont des conversations philosophiques la nuit ?",
+    "answers": [
+      "Canada",
+      "Brésil",
+      "Suède",
+      "Le pays des arbres penseurs"
+    ],
+    "correct": "Canada"
+  }
+],
+"Animaux et Nature": [
+  {
+    "question": "Quel animal est tellement rapide qu’il pourrait battre un avion à réaction dans une course ?",
+    "answers": [
+      "Tortue",
+      "Rat",
+      "Guépard",
+      "Lapin"
+    ],
+    "correct": "Guépard"
+  },
+  {
+    "question": "Quel arbre est si vieux qu'il a vu les dinosaures jouer au football ?",
+    "answers": [
+      "Séquoia",
+      "Baobab",
+      "Chêne",
+      "L'arbre préhistoriques ultime"
+    ],
+    "correct": "Séquoia"
+  },
+  {
+    "question": "Quel animal est si malin qu'il pourrait probablement résoudre un Rubik's Cube tout en jonglant ?",
+    "answers": [
+      "Dauphin",
+      "Chimpanzé",
+      "Corbeau",
+      "L'éléphant ingénieur"
+    ],
+    "correct": "Chimpanzé"
+  },
+  {
+    "question": "Quel insecte porte des lunettes de soleil et écoute du jazz sous un palmier ?",
+    "answers": [
+      "Mouche",
+      "Moustique",
+      "Cigale",
+      "Le scarabée hipster"
+    ],
+    "correct": "Cigale"
+  },
+  {
+    "question": "Quel est l'animal qui organise des concours de plongeon au fond de l'océan ?",
+    "answers": [
+      "Otter",
+      "Dauphin",
+      "Poisson-clown",
+      "Le homard olympique"
+    ],
+    "correct": "Dauphin"
+  },
+  {
+    "question": "Quel est l'animal qui pourrait faire une course de formule 1, mais il préfère dormir ?",
+    "answers": [
+      "Escargot",
+      "Koala",
+      "Ours",
+      "Paresseux"
+    ],
+    "correct": "Paresseux"
+  },
+  {
+    "question": "Quel oiseau vole si vite qu'il pourrait livrer des pizzas en 30 secondes ?",
+    "answers": [
+      "Colibri",
+      "Aigle",
+      "Hirondelle",
+      "Le pigeon livreur"
+    ],
+    "correct": "Colibri"
+  },
+  {
+    "question": "Quel animal a une mémoire tellement incroyable qu'il pourrait te rappeler où tu as perdu tes clés ?",
+    "answers": [
+      "Pie",
+      "Dauphin",
+      "Éléphant",
+      "Le hamster détective"
+    ],
+    "correct": "Éléphant"
+  },
+  {
+    "question": "Quel est l'animal qui a une capacité secrète pour créer de la pluie en dansant ?",
+    "answers": [
+      "Grenouille",
+      "Cicada",
+      "Héron",
+      "L'Homme"
+    ],
+    "correct": "Grenouille"
+  },
+  {
+    "question": "Quel animal est capable de chanter du rock'n'roll tout en faisant du skate ?",
+    "answers": [
+      "Ours",
+      "Cacatoès",
+      "Hérisson",
+      "Le kangourou guitariste"
+    ],
+    "correct": "Cacatoès"
+  },
+  {
+    "question": "Dans quelle forêt les arbres ont-ils des moustaches et aiment jouer aux cartes ?",
+    "answers": [
+      "Forêt amazonienne",
+      "Forêt de Sherwood",
+      "Forêt de la moustache magique",
+      "Forêt de l'anormal"
+    ],
+    "correct": "Forêt de la moustache magique"
+  },
+  {
+    "question": "Quel est l'animal qui aurait pu jouer dans un film de super-héros ?",
+    "answers": [
+      "Panda",
+      "Loup",
+      "Chat",
+      "Le gorille mutant"
+    ],
+    "correct": "Panda"
+  },
+  {
+    "question": "Quel insecte a la capacité de faire un moonwalk sur l'eau pendant qu'il porte un chapeau de cowboy ?",
+    "answers": [
+      "Cigale",
+      "Libellule",
+      "Le Moustique Jackson",
+      "Le scarabée danseur"
+    ],
+    "correct": "Libellule"
+  },
+  {
+    "question": "Quel animal est tellement gros qu'il pourrait presque faire une compétition de sumo avec un camion ?",
+    "answers": [
+      "Éléphant",
+      "Baleine",
+      "Hippopotame",
+      "Le rhinocéros"
+    ],
+    "correct": "Éléphant"
+  },
+  {
+    "question": "Quel oiseau a une passion secrète pour le basket ?",
+    "answers": [
+      "Corbeau",
+      "Autruche",
+      "Flamant rose",
+      "Le pélican dunker"
+    ],
+    "correct": "Corbeau"
+  },
+  {
+    "question": "Quel animal porte des lunettes de soleil ?",
+    "answers": [
+      "Panda",
+      "La Loup dragueur",
+      "Koala",
+      "Le lama super fashion"
+    ],
+    "correct": "Koala"
+  },
+  {
+    "question": "Quel arbre est si ancien qu'il aurait été témoin de la première blague racontée par un dinosaure ?",
+    "answers": [
+      "Séquoia",
+      "Baobab",
+      "Cèdre",
+      "Le Chêne"
+    ],
+    "correct": "Séquoia"
+  },
+  {
+    "question": "Quel animal a la capacité de téléporter des objets, mais préfère cacher des chaussettes sous les lits ?",
+    "answers": [
+      "chien",
+      "Lapin",
+      "chat",
+      "hamster"
+    ],
+    "correct": "Chat"
+  },
+  {
+    "question": "Quel est l'animal qui organise des concours de danse où les jurys sont des escargots en tuxedo ?",
+    "answers": [
+      "Serpent",
+      "Koala",
+      "Pélican",
+      "Hérisson"
+    ],
+    "correct": "Serpent"
+  }
+],
+"Sport": [
+  {
+    "question": "Quel sport consiste à courir après un ballon tout en faisant des pirouettes et des sauts ?",
+    "answers": [
+      "Football",
+      "Basketball",
+      "Gymnastique",
+      "Le sport des kangourous"
+    ],
+    "correct": "Football"
+  },
+  {
+    "question": "Dans quel sport les joueurs portent des capes et des collants ?",
+    "answers": [
+      "Lutte",
+      "Football américain",
+      "Natation",
+      "Boxe"
+    ],
+    "correct": "Football américain"
+  },
+  {
+    "question": "Quel sport consiste à courir après une balle tout en étant constamment distrait par des oiseaux ?",
+    "answers": [
+      "Tennis",
+      "Football",
+      "Basketball",
+      "Baseball"
+    ],
+    "correct": "Tennis"
+  },
+  {
+    "question": "Quel est le sport où les joueurs doivent lancer une pastèque sur un but ?",
+    "answers": [
+      "Cricket",
+      "Handball",
+      "Football",
+      "Athlétisme"
+    ],
+    "correct": "Football"
+  },
+  {
+    "question": "Quel sport consiste à faire du ski tout en jonglant avec des oranges et des bananes ?",
+    "answers": [
+      "Ski alpin",
+      "Snowboard",
+      "Patinage artistique",
+      "Surf"
+    ],
+    "correct": "Ski alpin"
+  },
+  {
+    "question": "Quel sport est souvent joué par des gens qui pensent qu'ils sont des lions ?",
+    "answers": [
+      "La chasse",
+      "Football",
+      "Handball",
+      "Rugby"
+    ],
+    "correct": "Rugby"
+  },
+  {
+    "question": "Dans quel sport les joueurs utilisent des raquettes tellement grandes qu'elles peuvent aussi servir de parachutes ?",
+    "answers": [
+      "Tennis",
+      "Badminton",
+      "Squash",
+      "Le sport du raquette géante"
+    ],
+    "correct": "Tennis"
+  },
+  {
+    "question": "Quel sport consiste à lancer une boule géante à travers un cercle magique tout en dansant sur de la musique disco ?",
+    "answers": [
+      "Bowling",
+      "Golf",
+      "Curling",
+      "Le sport des boules de disco"
+    ],
+    "correct": "Bowling"
+  },
+  {
+    "question": "Quel sport est pratiqué par des personnes qui essaient de voler tout en faisant des roulades sur un terrain ?",
+    "answers": [
+      "Rugby",
+      "Basketball",
+      "Football",
+      "Le sport des acrobates aériens"
+    ],
+    "correct": "Football"
+  },
+  {
+    "question": "Dans quel sport les joueurs doivent sauter à travers des cerceaux en feu tout en chantant l'hymne national ?",
+    "answers": [
+      "Basketball",
+      "Saut à l'élastique",
+      "Gymnastique",
+      "Kayak"
+    ],
+    "correct": "Gymnastique"
+  },
+  {
+    "question": "Quel sport consiste à sauter très haut pour tenter de toucher un ballon tout en pensant qu'on est un super-héros ?",
+    "answers": [
+      "Football",
+      "Basketball",
+      "Le sport des licornes",
+      "Course de pingouins"
+    ],
+    "correct": "Basketball"
+  },
+  {
+    "question": "Dans quel sport les joueurs doivent-ils porter des gants et courir après une balle géante en faisant des pirouettes ?",
+    "answers": [
+      "Le sport des super-héros invisibles",
+      "Football américain",
+      "La chasse au ballon volant",
+      "Handball"
+    ],
+    "correct": "Football américain"
+  },
+  {
+    "question": "Quel est le sport où les joueurs utilisent des bâtons pour taper une boule et espèrent qu'elle n'atteindra jamais une autre personne ?",
+    "answers": [
+      "Hockey",
+      "Le sport des balles sauvages",
+      "Golf",
+      "Curling"
+    ],
+    "correct": "Golf"
+  },
+  {
+    "question": "Dans quel sport les joueurs essayent-ils de marquer des points tout en étant distraits par des oiseaux qui leur font des clins d'œil ?",
+    "answers": [
+      "Le sport des oiseaux espion",
+      "Tennis",
+      "Basketball",
+      "Football"
+    ],
+    "correct": "Tennis"
+  },
+  {
+    "question": "Quel sport consiste à lancer une grande boule en essayant de la faire rouler dans un cercle magique ?",
+    "answers": [
+      "Le sport des boules de feu",
+      "Bowling",
+      "Curling",
+      "Rugby"
+    ],
+    "correct": "Curling"
+  },
+  {
+    "question": "Quel sport est joué sur un terrain aussi grand qu'une plage, mais avec des joueurs qui pensent qu'ils sont des requins ?",
+    "answers": [
+      "Le sport des requins en herbe",
+      "Rugby",
+      "Tennis",
+      "Football"
+    ],
+    "correct": "Football"
+  },
+  {
+    "question": "Quel sport consiste à courir après une balle en espérant ne pas se prendre les pieds dans le tapis ?",
+    "answers": [
+      "Le sport des pieds fâchés",
+      "Basketball",
+      "Football",
+      "Handball"
+    ],
+    "correct": "Football"
+  },
+  {
+    "question": "Quel sport implique des acrobaties aériennes tout en glissant sur des surfaces glacées, mais les joueurs essaient aussi de jongler avec des oranges ?",
+    "answers": [
+      "Snowboard",
+      "Le sport des oranges volantes",
+      "Ski alpin",
+      "Patinage artistique"
+    ],
+    "correct": "Patinage artistique"
+  },
+  {
+    "question": "Quel sport consiste à sauter par-dessus des obstacles tout en portant un costume de super-héros et en criant des slogans ?",
+    "answers": [
+      "Le sport des sauteurs déguisés",
+      "Basketball",
+      "Saut en hauteur",
+      "Course d'obstacles"
+    ],
+    "correct": "Course d'obstacles"
+  },
+  {
+    "question": "Quel sport consiste à courir avec une raquette pour frapper un petit ballon, tout en mangeant des frites ?",
+    "answers": [
+      "Tennis",
+      "Le sport des raquettes gourmandes",
+      "Squash",
+      "Badminton"
+    ],
+    "correct": "Tennis"
+  }
 ]
 }
