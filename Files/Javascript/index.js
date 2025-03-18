@@ -180,17 +180,16 @@ async function loadBottomButtons() {
     const response = await fetch("button_config.json");
     const config = await response.json();
     const bottomActions = document.getElementById("bottomActions");
-
     if (!bottomActions) {
       console.error("L'élément 'bottomActions' est introuvable dans le DOM.");
       return;
     }
 
-    const inLobby = localStorage.getItem("roomCode") ? true : false;
+    const inLobby = !!localStorage.getItem("roomCode");
+    const isOwner = inLobby ? await LobbyManager.isCurrentUserOwner() : false; // Vérifie si l'utilisateur est propriétaire
     const buttons = inLobby ? config.inLobby : config.outLobby;
 
     bottomActions.innerHTML = "";
-
     buttons.forEach((btn) => {
       const a = document.createElement("a");
       if (btn.link) {
@@ -199,9 +198,13 @@ async function loadBottomButtons() {
 
       const button = document.createElement("button");
       button.className = "action-button";
-
       if (btn.action) button.classList.add(btn.action);
       button.innerHTML = btn.icon + btn.title;
+
+      // Désactive les boutons spécifiques pour les non-propriétaires
+      if (inLobby && ["credits", "waiting"].includes(btn.action)) {
+        button.disabled = !isOwner;
+      }
 
       button.addEventListener("click", async (e) => {
         e.preventDefault();
