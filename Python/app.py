@@ -8,7 +8,7 @@ from System.server import run_server
 from System.utils import cleanup_inactive_lobbies
 from System.lobby import active_sessions
 
-# Initialiser colorama pour les couleurs dans le terminal
+# initialiser colorama pour les couleurs dans le terminal
 init(autoreset=True)
 
 # Définir le répertoire où les fichiers statiques seront stocké

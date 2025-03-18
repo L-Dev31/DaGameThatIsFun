@@ -1,3 +1,4 @@
+#Permet de voir les lobby present (utile pour les devs)
 import requests
 import time
 import os
@@ -5,33 +6,33 @@ from colorama import Fore, Style
 
 def clear_screen():
     """
-    Cette fonction permet de nettoyer l'écran.
-    Elle utilise 'cls' pour Windows et 'clear' pour les systèmes Unix (Linux/Mac).
+    Permet de nettoyer l'écran.
+    Utilise 'cls' pour Windows et 'clear' pour les systèmes Unix (Linux/Mac).
     """
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def get_lobbys():
     """
-    Cette fonction récupère les données des lobbies via une requête HTTP.
-    Elle envoie une requête GET à l'URL spécifiée et retourne les données sous forme de dictionnaire.
+    Récupère les données des lobbies via une requête HTTP.
+    Envoie une requête GET à l'URL spécifiée et retourne les données sous forme de dictionnaire.
     """
     try:
         response = requests.get('http://127.0.0.1:8080/api/lobbies')
         if response.status_code == 200:
-            # Si la réponse est réussie, on retourne le contenu en format JSON
+            # Si la réponse est réussie, retourne le contenu en format JSON
             return response.json()
         else:
             # Si la réponse n'est pas 200, on retourne un dictionnaire vide
             return {}
     except Exception as e:
-        # En cas d'erreur de connexion, on affiche un message d'erreur
+        # En cas d'erreur de connexion, affiche un message d'erreur
         print(f"Erreur lors de la récupération des lobbies : {e}")
         return {}
 
 def show_lobbys():
     """
-    Cette fonction affiche en boucle les lobbies disponibles, en mettant à jour l'écran toutes les 3 secondes.
-    Elle appelle la fonction get_lobbys() pour obtenir la liste des lobbies et les afficher à l'écran.
+    Affiche en boucle les lobbies disponibles, en mettant à jour l'écran toutes les 3 secondes.
+    Appelle la fonction get_lobbys() pour obtenir la liste des lobbies et les afficher à l'écran.
     """
     while True:
         # Récupérer les lobbies via la fonction get_lobbys()
@@ -61,7 +62,7 @@ def show_lobbys():
                 
                 print()
         else:
-            # Si aucun lobby n'est disponible, afficher un message d'erreur en rouge
+            # Si aucun lobby n'est disponible afficher un message d'erreur en rouge
             print(Fore.RED + "Aucun lobby disponible pour le moment.\n")
 
         # Réinitialiser les couleurs

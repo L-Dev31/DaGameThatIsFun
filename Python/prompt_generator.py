@@ -7,12 +7,12 @@ def clean_path(path):
     Nettoie et normalise un chemin de fichier.
     Gère les préfixes 'file:///' et les espaces dans les chemins.
     """
-    # Supprimer le préfixe 'file:///' s'il est présent
+    # Supprimer le préfixe ( file:/// ) si il est présent
     if path.startswith("file:///"):
-        path = path[8:]  # On enlève "file:///"
-    # Décoder les caractères encodés en URL (par exemple, %20 pour les espaces)
+        path = path[8:]  # On enlève ( file:/// )
+    # Décoder les caractères encodés en URL 
     path = unquote(path)
-    # Normaliser les séparateurs de chemin pour une compatibilité multiplateforme
+    # Uniformise les slach "/" pour assurer la compatibilité multiplateforme.
     path = os.path.normpath(path)
     return path
 
