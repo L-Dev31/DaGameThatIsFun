@@ -15,21 +15,34 @@ class LobbyManager {
     if (localStorage.getItem("roomCode")) {
       this.startPolling();
       this.setupCommandListener();
+      this.checkLobbyStatus(); 
     }
     this._setupUnloadListener();
   }
 
   static _setupUnloadListener() {
-    window.addEventListener("beforeunload", () => {
-      const isRedirecting = sessionStorage.getItem("isRedirecting");
-      const roomCode = localStorage.getItem("roomCode");
-      const userId = localStorage.getItem("userId");
-      if (!isRedirecting && roomCode && userId) {
-        const data = { userId };
-        const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-        navigator.sendBeacon(`/api/lobby/${roomCode}/leave`, blob);
+    window.addEventListener('beforeunload', async () => {
+      try {
+        const isRedirecting = sessionStorage.getItem("isRedirecting");
+        const roomCode = localStorage.getItem("roomCode");
+        const userId = localStorage.getItem("userId");
+
+        if (!isRedirecting && roomCode && userId) {
+          const data = { userId };
+          const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+          navigator.sendBeacon(`/api/lobby/${roomCode}/leave`, blob);
+        }
+
+        sessionStorage.removeItem("isRedirecting");
+
+        const isOwner = await this.isCurrentUserOwner();
+        if (isOwner) {
+          await this.sendCommandToPlayers('lobby-deleted');
+          await this.leaveLobby();
+        }
+      } catch (error) {
+        console.error("[LOBBY_MANAGER] Erreur lors de la fermeture de la fenêtre :", error);
       }
-      sessionStorage.removeItem("isRedirecting");
     });
   }
 
@@ -74,7 +87,7 @@ class LobbyManager {
         this._errorCount = 0;
         this._currentPollInterval = this.POLL_INTERVAL;
         this._notifyListeners(lobby);
-        this.updatePlayers(lobby);
+        this.updatePlayers(lobby); // Met à jour les joueurs automatiquement
       } else {
         this.stopPolling();
         return;
@@ -169,25 +182,6 @@ class LobbyManager {
     }
   }
 
-  static async startGame(gameUrl) {
-    const roomCode = localStorage.getItem("roomCode");
-    const lobby = await this.getCurrentLobby();
-    if (lobby?.isOwner) {
-      try {
-        await fetch(`/api/lobby/${roomCode}/command`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            command: "start-game",
-            initiator: localStorage.getItem("userId"),
-            payload: { gameUrl },
-            timestamp: Date.now()
-          })
-        });
-      } catch (error) {}
-    }
-  }
-
   static setupCommandListener() {
     setInterval(async () => {
       try {
@@ -205,14 +199,44 @@ class LobbyManager {
     }, 1000);
   }
 
-  static automaticRedirect(url) {
-    sessionStorage.setItem("isRedirecting", "true");
-    window.location.href = url;
-  }
-
   static async updatePlayers(lobby) {
     const players = await this.getActivePlayers();
     document.dispatchEvent(new CustomEvent("lobby-players-updated", { detail: players }));
+    this.renderPlayers(players); 
+  }
+
+  static renderPlayers(players) {
+    const playersContainer = document.getElementById("playersContainer");
+    if (!playersContainer) return;
+
+    if (players.length === 0 && localStorage.getItem('roomCode')) {
+      localStorage.removeItem('roomCode');
+      localStorage.removeItem('userId');
+      window.location.reload();
+      return;
+    }
+
+    playersContainer.innerHTML = "";
+    players.forEach(player => {
+      const playerDiv = document.createElement("div");
+      playerDiv.classList.add("player");
+      playerDiv.innerHTML = `
+        <img src="${player.avatar}" alt="${player.name}" class="player-avatar">
+        <span class="player-name">${player.name}${player.isCurrentUser ? ' (Vous)' : ''}${player.isOwner ? ' 👑' : ''}</span>
+      `;
+      playersContainer.appendChild(playerDiv);
+    });
+  }
+
+  static async checkLobbyStatus() {
+    const lobby = await this.getCurrentLobby();
+    if (!lobby) {
+      console.log("[LOBBY_MANAGER] L'utilisateur n'est pas dans un lobby.");
+      document.dispatchEvent(new CustomEvent("lobby-status", { detail: { inLobby: false } }));
+    } else {
+      console.log("[LOBBY_MANAGER] L'utilisateur est dans un lobby: ", lobby);
+      document.dispatchEvent(new CustomEvent("lobby-status", { detail: { inLobby: true, isOwner: lobby.isOwner } }));
+    }
   }
 }
 

@@ -27,13 +27,17 @@ function showModal(message, ownerLeaving = false) {
 function hideModal() {
   modal.style.display = 'none';
 }
+
 leaveButton.addEventListener('click', () => {
   showModal(isOwner ? "Attention ! En quittant, le salon sera supprimé. Continuer ?" : "Quitter le salon ?", isOwner);
 });
+
 cancelButton.addEventListener('click', hideModal);
+
 modal.addEventListener('click', (e) => {
   if (e.target === modal) hideModal();
 });
+
 function updatePlayersGrid(users, ownerId) {
   const playersGrid = document.getElementById('playersGrid');
   playersGrid.innerHTML = '';
@@ -130,15 +134,4 @@ document.addEventListener('DOMContentLoaded', async () => {
       startCountdown(5);
     }
   });
-});
-window.addEventListener('beforeunload', async () => {
-  if (!sessionStorage.getItem('isRedirecting')) {
-    const roomCode = localStorage.getItem('roomCode');
-    const userId = localStorage.getItem('userId');
-    if (roomCode && userId) {
-      const data = { userId };
-      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-      navigator.sendBeacon(`/api/lobby/${roomCode}/leave`, blob);
-    }
-  }
 });
