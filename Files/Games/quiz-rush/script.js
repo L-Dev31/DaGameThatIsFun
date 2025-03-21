@@ -1,14 +1,43 @@
 import { preloadCurtains } from '/Games/general/credits.js';
 import { showEndGameCurtains } from '/Games/general/credits.js';
 import { players } from '/Games/general/players.js'; 
+import { LobbyManager } from '/Javascript/lobby_manager.js';
  
 document.addEventListener("DOMContentLoaded", () => {
+    // Initialiser le LobbyManager
+    LobbyManager.init();
+    
     const startButton = document.getElementById('start-button');
     const backgroundMusic = document.getElementById('background-music');
     const playersContainer = document.getElementById('players-container');
     let playersClicked = 0;
     
-    startButton.addEventListener('click', () => {
+    // Vérifier si l'utilisateur est propriétaire du lobby
+    async function checkOwnerStatus() {
+        const isOwner = await LobbyManager.isCurrentUserOwner();
+        if (!isOwner) {
+            startButton.disabled = true;
+            startButton.textContent = "En attente de l'hôte...";
+        }
+    }
+    
+    checkOwnerStatus();
+    
+    // Écouter les commandes du lobby
+    document.addEventListener("start-countdown", (event) => {
+        startGame();
+    });
+    
+    startButton.addEventListener('click', async () => {
+        const isOwner = await LobbyManager.isCurrentUserOwner();
+        if (isOwner) {
+            // Envoyer une commande pour démarrer le compte à rebours pour tous les joueurs
+            await LobbyManager.sendCommandToPlayers('start-countdown');
+            startGame();
+        }
+    });
+    
+    function startGame() {
         startButton.disabled = true;
         addPlayerToContainer(0);
         playersClicked++;
@@ -45,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }, (i * (Math.random() * 1000 + 1000)));
         }
-    });
+    }
 });
 
 function addPlayerToContainer(playerIndex) {

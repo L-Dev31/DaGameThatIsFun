@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "draw-contest": {
       title: "Dessine moi un Désastre",
       description:
-        "Une phrase loufoque, des dessins absurdes, et un vote pour élire l’œuvre la plus iconique. À vos pinceaux, le massacre commence ! 4 à 8 Joueurs",
+        "Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence ! 4 à 8 Joueurs",
       preview: "/static/images/preview/draw-contest.png",
       music: "/static/music/draw-contest.mp3",
       playerNumber: "3-8",
@@ -166,7 +166,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (activeGame && roomCode) {
       const gameUrl = `/Games/loading/loading.html?game=${activeGame}&roomCode=${roomCode}`;
-      LobbyManager.automaticRedirect(gameUrl);
+      LobbyManager.sendCommandToPlayers('redirect', {
+        url: gameUrl
+      });
     }
   });
 
@@ -218,20 +220,14 @@ async function loadBottomButtons() {
             }
           } else if (btn.action === "credits") {
             const lobby = await LobbyManager.getCurrentLobby();
-            if (lobby && lobby.isOwner) {
               await LobbyManager.sendCommandToPlayers("redirect", {
                 url: `credits.html?roomCode=${localStorage.getItem("roomCode")}`,
               });
-            } else {
-              LobbyManager.automaticRedirect(`credits.html?roomCode=${localStorage.getItem("roomCode")}`);
-            }
           } else if (btn.action === "waiting") {
             await LobbyManager.sendCommandToPlayers("redirect", {
               url: `waiting_room.html?roomCode=${localStorage.getItem("roomCode")}`,
             });
-          } else if (btn.link) {
-            window.location.href = btn.link;
-          }
+          } 
         } else {
           if (btn.link) {
             window.location.href = btn.link;

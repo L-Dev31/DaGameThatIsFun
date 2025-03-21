@@ -1,7 +1,7 @@
 export const lobbyCommands = {
   "redirect": (payload, manager) => {
     if (!window.location.href.includes(payload.url)) {
-      sessionStorage.setItem("isRedirecting", "true");
+      sessionStorage.setItem('isRedirecting', 'true');
       window.location.href = payload.url;
     }
   },
@@ -18,7 +18,7 @@ export const lobbyCommands = {
     if (manager) manager.stopPolling();
     window.location.href = "/";
   },
-  "start-game": (payload, manager) => {
-    // Logique pour démarrer le jeu
+  "show-video": (payload, manager) => {
+        document.dispatchEvent(new Event('show-video-popup'));
   }
 };
