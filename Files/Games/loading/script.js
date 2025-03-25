@@ -17,35 +17,39 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     LobbyManager.init();
-
     const inLobby = !!localStorage.getItem("roomCode");
     const isOwner = inLobby ? await LobbyManager.isCurrentUserOwner() : false;
 
-    if (isOwner) {
-        setTimeout(() => {
-            LobbyManager.sendCommandToPlayers('show-video', {
-                ownerId: localStorage.getItem("userId"),
-                game: game
-            });
-        }, 100);
+    if (!isOwner) {
+        yesButton.disabled = true;
+        noButton.disabled = true;
     }
 
-    yesButton.addEventListener("click", async function() {
-        videoPopup.style.display = "none";
-        introVideo.style.display = "flex";
+    if (isOwner) {
+        videoPopup.style.display = "flex";
+        yesButton.addEventListener("click", async function() {
+            videoPopup.style.display = "none";
+            LobbyManager.sendCommandToPlayers('show-video', { game: game });
+            playVideo();
+        });
+        noButton.addEventListener("click", async function() {
+            videoPopup.style.display = "none";
+            await LobbyManager.sendCommandToPlayers('redirect', { url: `../${game}/${game}.html` });
+        });
+    }
+
+    document.addEventListener("show-video-popup", () => {
+        playVideo();
+    });
+
+    function playVideo() {
+        introVideo.style.display = "block";
+        introVideo.style.width = "100%";
+        introVideo.style.height = "auto";
         introVideo.muted = false;
         introVideo.play();
         introVideo.onended = async () => {
-            await LobbyManager.sendCommandToPlayers('redirect', {
-                url: `../${game}/${game}.html`
-            });
+            await LobbyManager.sendCommandToPlayers('redirect', { url: `../${game}/${game}.html` });
         };
-    });
-
-    noButton.addEventListener("click", async function() {
-        videoPopup.style.display = "none";
-        await LobbyManager.sendCommandToPlayers('redirect', {
-            url: `../${game}/${game}.html`
-        });
-    });
+    }
 });

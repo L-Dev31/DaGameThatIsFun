@@ -18,7 +18,6 @@ class LobbyManager {
     }
     this._setupUnloadListener();
     this.checkLobbyStatusAndHandleUI();
-    this.setupListeners();
   }
 
   static async checkLobbyStatusAndHandleUI() {
@@ -277,17 +276,6 @@ class LobbyManager {
   static automaticRedirect(url) {
     sessionStorage.setItem('isRedirecting', 'true');
     window.location.href = url;
-  }
-
-  static setupListeners() {
-    document.addEventListener("lobby-status", (event) => {
-      const { inLobby } = event.detail;
-      if (!inLobby) {
-        localStorage.removeItem("roomCode");
-        localStorage.removeItem("userId");
-        this.showLobbyDeletedAlert();
-      }
-    });
   }
 }
 

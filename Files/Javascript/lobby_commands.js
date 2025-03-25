@@ -19,6 +19,6 @@ export const lobbyCommands = {
     window.location.href = "/";
   },
   "show-video": (payload, manager) => {
-        document.dispatchEvent(new Event('show-video-popup'));
+    document.dispatchEvent(new Event('show-video-popup'));
   }
 };

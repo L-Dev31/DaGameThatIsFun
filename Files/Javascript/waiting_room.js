@@ -95,7 +95,7 @@ function startCountdown(duration) {
       clearInterval(countdownInterval);
       sessionStorage.setItem('isRedirecting', 'true');
       LobbyManager.sendCommandToPlayers('redirect', {
-        url: `index.html?roomCode=${roomCode}`
+        url: `/Games/loading/loading.html?game=quiz-rush`
       });
     }
   }, 1000);
