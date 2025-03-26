@@ -11,12 +11,12 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Soyez le plus rapide et le plus malin pour remporter la victoire !
 
-# **Dessine moi un Désastre**
+# **Dessine moi un Désastre [A VENIR !]**
    - **Description** : Une phrase loufoque, des dessins absurdes, et un vote pour élire l'œuvre la plus iconique. À vos pinceaux, le massacre commence !
    - **Nombre de joueurs** : 3 à 8
    - **Objectif** : Dessinez ce qui vous est demandé et votez pour le meilleur (ou le pire) dessin !
 
-# **Gribouilles & Embrouilles**
+# **Gribouilles & Embrouilles [A VENIR !]**
    - **Description** : Montrez vos talents artistiques ! Un joueur dessine pendant que les autres se dépêchent de deviner le mot. Votre chef-d'œuvre sera-t-il compris ou hilaramment mal interprété ?
    - **Nombre de joueurs** : 2 à 8
    - **Objectif** : Devinez le mot le plus vite possible ou soyez celui qui fait rire tout le monde avec vos dessins !
