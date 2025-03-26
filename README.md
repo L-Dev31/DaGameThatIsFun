@@ -29,18 +29,17 @@ Plongez dans un univers de jeux multijoueurs locaux où **l'interaction et la cr
 ---
 
 ## 📱 **Comment Jouer ?**
-
-1. **Créez ou Rejoignez un Lobby** :
-   - Le joueur qui host le jeux sur son PC envoie un QR-Code ou bien un URL pour faire rejoindre tout les autres joueurs, ensuite les joueurs peuvent creer leurs lobbies ou bien en rejoindre.
+1. **Lancer le jeux** :
+   - Un joueur hôte muni d'un Ordinateur, d'une connexion suffisamment rapide et ayant installé Python dans le PATH ainsi que les dépendances dans ``requirements.txt`` lance ``launcher.bat`` qui verifiera la présence de Python ainsi que des dépendances, si ceci sont vérifiés alors la page d'accueuil s'ouvrira.
+   - Pour faire rejoindre d'autres utilisateur, le joueur hôte devra appuyer sur le boutton [PARTAGER] Situé en haut a gauche de l'écran. Ceci affichera une popup avec le lien vers la page DaGameThatIsFun ainsi qu'un QR Code renvoyant également vers cette même page.
+   - Les utilisateurs clients disposerons également du boutton [PARTAGER] afin de faire venir de leur sort d'autres utilisateurs.
    
-2. **Choisissez un Mode de Jeu** :
-   - Sélectionnez l'un des modes de jeu disponibles et laissez-vous guider par les instructions à l'écran.
+2. **Créez ou Rejoignez un Lobby** :
+   - Les utilisateurs ayant rejoint le jeux via l'ordinateur hôte pourront librement créer et rejoindre des lobbies (serveurs).
+   
+3. **Choisissez un Mode de Jeu** :
+   - Après avoir lancer la partie depuis la salle d'attente du lobby, les joueurs se retrouveront a nouveaux dans la page d'accueil ou l'hôte (le créateur) du lobby pourra lancer une partie depuis les mini jeux disponibles.
 
-3. **Amusez-vous !** :
+4. **Amusez-vous !** :
    - Chaque joueur utilise son propre appareil pour participer aux défis, dessiner, répondre aux questions ou inventer des histoires.
 
----
-
-## ⚠️ **Avertissement**
-
-Ce jeu peut contenir du contenu humoristique et parfois absurde qui ne conviendra peut être pas à tout le monde, ce jeu est conçu pour faire rire et s'amuser. Si vous êtes prêt à passer un bon moment, cessez donc de lire et lancez vous p**ain ! 
