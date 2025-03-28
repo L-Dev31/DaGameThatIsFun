@@ -168,12 +168,17 @@ export const lobbyCommands = {
         window.usedQuestions.push(payload.usedQuestionIndex);
       }
       
-      // Afficher la question - utiliser window.displayQuestion pour accéder à la fonction globale
+      // S'assurer que tous les joueurs voient la même question
       if (typeof window.displayQuestion === 'function') {
         window.displayQuestion(window.quizData);
       } else {
         console.error("[ERROR] La fonction displayQuestion n'est pas disponible globalement");
       }
+      
+      // Déclencher un événement pour informer le reste de l'application
+      document.dispatchEvent(new CustomEvent('question-received', { 
+        detail: window.quizData 
+      }));
     } catch (error) {
       console.error("[ERROR] Erreur send-question:", error);
     }
@@ -211,10 +216,12 @@ export const lobbyCommands = {
         const playerIndex = payload.playerIndex;
         
         if (playerIndex !== -1 && window.players && window.players[playerIndex]) {
+          // Supprimer tous les marqueurs existants pour ce joueur sur toutes les réponses
           document.querySelectorAll(`.player-marker[data-player-index="${playerIndex}"]`).forEach(marker => {
             marker.remove();
           });
           
+          // Créer un nouveau marqueur avec l'avatar du joueur
           let marker = document.createElement('img');
           marker.src = window.players[playerIndex].avatar || `/static/images/avatar/${playerIndex + 1}.png`;
           marker.className = 'player-marker';
@@ -223,19 +230,44 @@ export const lobbyCommands = {
           marker.dataset.responseTime = payload.responseTime.toString();
           answerElement.appendChild(marker);
           
+          // Jouer un son lors de la sélection
           const selectSound = new Audio('/static/music/pop.mp3');
           selectSound.play().catch(error => {});
           
+          // Mettre à jour la position des marqueurs
           if (typeof window.updateMarkerPositions === 'function') {
             window.updateMarkerPositions(answerElement);
           } else if (typeof updateMarkerPositions === 'function') {
             updateMarkerPositions(answerElement);
           }
           
+          // Si c'est le joueur actuel, marquer la réponse comme sélectionnée
           const userId = localStorage.getItem("userId");
           if (payload.playerId === userId) {
             document.querySelectorAll('.answer').forEach(a => a.classList.remove('selected'));
             answerElement.classList.add('selected');
+          }
+          
+          // Déclencher un événement personnalisé pour informer le reste de l'application
+          document.dispatchEvent(new CustomEvent('player-answer-updated', { 
+            detail: { 
+              playerId: payload.playerId,
+              playerIndex: playerIndex,
+              answerIndex: payload.answerIndex,
+              responseTime: payload.responseTime
+            } 
+          }));
+          
+          // Forcer la mise à jour des scores pour tous les joueurs
+          if (typeof window.validateAnswers === 'function' && window.quizData && window.quizData.question && window.quizData.question.correct) {
+            if (answerElement.textContent.trim() === window.quizData.question.correct.trim()) {
+              // Mettre à jour les scores immédiatement si c'est la bonne réponse
+              if (typeof window.updateScores === 'function') {
+                setTimeout(() => {
+                  window.updateScores();
+                }, 500);
+              }
+            }
           }
         }
       }
@@ -247,7 +279,12 @@ export const lobbyCommands = {
   "update-scores": (payload) => {
     lobbyCommands._logCommand("update-scores", payload);
     try {
-      // Mettre à jour les scores dans l'objet players
+      // Mettre à jour les scores dans l'objet players global
+      if (!window.players) {
+        console.error("[ERROR] window.players n'est pas défini");
+        return;
+      }
+      
       payload.players.forEach(playerScore => {
         const playerIndex = window.players.findIndex(p => p.id === playerScore.id);
         if (playerIndex !== -1) {
@@ -257,23 +294,30 @@ export const lobbyCommands = {
           
           // Mettre à jour l'élément de score dans le DOM
           const playerContainers = document.querySelectorAll('#players-container .player');
-          if (playerIndex < playerContainers.length) {
-            const container = playerContainers[playerIndex];
-            const scoreElement = container.querySelector('.player-score');
-            if (scoreElement) {
-              scoreElement.textContent = playerScore.score;
-              
-              // Ajouter une animation si le score a augmenté
-              if (playerScore.score > oldScore) {
-                scoreElement.classList.add('score-updated');
-                setTimeout(() => {
-                  scoreElement.classList.remove('score-updated');
-                }, 1500);
+          playerContainers.forEach(container => {
+            const playerId = container.dataset.playerId;
+            if (playerId === playerScore.id) {
+              const scoreElement = container.querySelector('.player-score');
+              if (scoreElement) {
+                scoreElement.textContent = playerScore.score;
+                
+                // Ajouter une animation si le score a augmenté
+                if (playerScore.score > oldScore) {
+                  scoreElement.classList.add('score-updated');
+                  setTimeout(() => {
+                    scoreElement.classList.remove('score-updated');
+                  }, 1500);
+                }
               }
             }
-          }
+          });
         }
       });
+      
+      // Déclencher un événement pour informer le reste de l'application
+      document.dispatchEvent(new CustomEvent('scores-updated', { 
+        detail: { players: payload.players } 
+      }));
     } catch (error) {
       console.error("[ERROR] Erreur update-scores:", error);
     }
@@ -281,16 +325,50 @@ export const lobbyCommands = {
 
   "next-question": (payload) => {
     lobbyCommands._logCommand("next-question", payload);
-    window.currentQuestionIndex = payload.currentQuestionIndex;
+    try {
+      window.currentQuestionIndex = payload.currentQuestionIndex;
+      
+      // Appliquer le style correct/incorrect aux réponses pour tous les joueurs
+      if (window.quizData && window.quizData.question && window.quizData.question.correct) {
+        const correctAnswer = window.quizData.question.correct;
+        
+        document.querySelectorAll('.answer').forEach(answer => {
+          if (answer.textContent.trim() === correctAnswer.trim()) {
+            answer.classList.add('correct');
+            answer.style.backgroundColor = 'gold';
+            answer.style.opacity = '1';
+          } else {
+            answer.classList.add('wrong');
+          }
+        });
+      }
+    } catch (error) {
+      console.error("[ERROR] Erreur next-question:", error);
+    }
   },
 
   "show-credits": (payload) => {
     lobbyCommands._logCommand("show-credits", payload);
-    if (typeof window.preloadCurtains === 'function') {
+    try {
+      // Vérifier si les crédits sont déjà affichés pour éviter la superposition
+      if (document.getElementById('credits-container')) {
+        console.error("[ERROR] Les crédits sont déjà affichés, ignoré pour éviter la superposition");
+        return;
+      }
+      
+      // Nettoyer tout affichage précédent
+      const existingCurtains = document.querySelectorAll('#left-curtain, #right-curtain');
+      existingCurtains.forEach(curtain => curtain.remove());
+      
+      // Précharger et afficher les crédits avec un délai synchronisé
       window.preloadCurtains();
-      window.showEndGameCurtains(payload.players);
-    } else {
-      console.error("[ERROR] Les fonctions preloadCurtains et showEndGameCurtains ne sont pas disponibles");
+      
+      // Utiliser setTimeout pour synchroniser l'affichage des crédits entre tous les joueurs
+      setTimeout(() => {
+        window.showEndGameCurtains(payload.players);
+      }, 500);
+    } catch (error) {
+      console.error("[ERROR] Erreur lors de l'affichage des crédits:", error);
     }
   },
 

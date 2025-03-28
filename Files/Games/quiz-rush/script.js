@@ -1,4 +1,5 @@
 import { LobbyManager } from '/Javascript/lobby_manager.js'; 
+import { preloadCurtains, showEndGameCurtains } from '/Games/general/credits.js';
  
 document.addEventListener("DOMContentLoaded", async () => {
     const startButton = document.getElementById('start-button');
@@ -8,6 +9,41 @@ document.addEventListener("DOMContentLoaded", async () => {
     let playersClicked = 0;
     let isOwner = false;
     let readyPlayers = [];
+    
+    // Écouteur pour l'événement player-answer-updated
+    document.addEventListener('player-answer-updated', (event) => {
+        const { playerId, playerIndex, answerIndex } = event.detail;
+        const answers = document.querySelectorAll('.answer');
+        if (answerIndex >= 0 && answerIndex < answers.length) {
+            // Mettre à jour l'interface pour refléter la réponse du joueur
+            const answerElement = answers[answerIndex];
+            // Ne pas envoyer de nouvelle commande, juste mettre à jour l'interface
+            if (playerIndex !== -1 && window.players && window.players[playerIndex]) {
+                // Supprimer tous les marqueurs existants pour ce joueur
+                document.querySelectorAll(`.player-marker[data-player-index="${playerIndex}"]`).forEach(marker => {
+                    marker.remove();
+                });
+                
+                // Vérifier si le marqueur existe déjà sur cette réponse
+                let existingMarker = answerElement.querySelector(`.player-marker[data-player-index="${playerIndex}"]`);
+                if (!existingMarker) {
+                    // Créer un nouveau marqueur avec l'avatar du joueur
+                    let marker = document.createElement('img');
+                    marker.src = window.players[playerIndex].avatar;
+                    marker.className = 'player-marker';
+                    marker.dataset.playerIndex = playerIndex;
+                    marker.dataset.playerId = window.players[playerIndex].id;
+                    marker.dataset.responseTime = event.detail.responseTime.toString();
+                    answerElement.appendChild(marker);
+                    
+                    // Mettre à jour la position des marqueurs
+                    if (typeof window.updateMarkerPositions === 'function') {
+                        window.updateMarkerPositions(answerElement);
+                    }
+                }
+            }
+        }
+    });
     
     sessionStorage.setItem('currentPage', 'quiz-rush');
     
@@ -249,6 +285,20 @@ function renderPlayers() {
     console.log("[QUIZ RUSH] Joueurs rendus avec opacité normale");
 }
 
+function updateScores() {
+    const playerContainers = document.querySelectorAll('#players-container .player');
+    playerContainers.forEach((container, index) => {
+        const scoreElement = container.querySelector('.player-score');
+        if (index < players.length) {
+            scoreElement.textContent = players[index].score;
+        }
+    });
+    
+    LobbyManager.sendCommandToPlayers('update-scores', {
+        players: players
+    });
+}
+
 function updateMarkerPositions(answerElement) {
     const markers = answerElement.querySelectorAll('.player-marker');
     markers.forEach((marker, index) => {
@@ -257,17 +307,20 @@ function updateMarkerPositions(answerElement) {
 }
 
 function addPlayerMarker(answerElement, playerIndex) {
-    let existing = answerElement.querySelector(`.player-marker[data-player-index="${playerIndex}"]`);
-    if (!existing) {
-        let marker = document.createElement('img');
-        marker.src = players[playerIndex].avatar;
-        marker.className = 'player-marker';
-        marker.dataset.playerIndex = playerIndex;
-        marker.dataset.responseTime = ((Date.now() - questionStartTime) / 1000).toString();
-        answerElement.appendChild(marker);
-        playPopSound();
-        console.log(`[QUIZ RUSH] Marqueur ajouté pour le joueur ${playerIndex}, temps: ${marker.dataset.responseTime}s`);
-    }
+    // Supprimer tous les marqueurs existants pour ce joueur sur toutes les réponses
+    document.querySelectorAll(`.player-marker[data-player-index="${playerIndex}"]`).forEach(marker => {
+        marker.remove();
+    });
+    
+    // Créer un nouveau marqueur
+    let marker = document.createElement('img');
+    marker.src = players[playerIndex].avatar;
+    marker.className = 'player-marker';
+    marker.dataset.playerIndex = playerIndex;
+    marker.dataset.responseTime = ((Date.now() - questionStartTime) / 1000).toString();
+    answerElement.appendChild(marker);
+    playPopSound();
+    
     updateMarkerPositions(answerElement);
     
     // Tous les joueurs envoient leur réponse à tous les autres joueurs
@@ -279,14 +332,11 @@ function addPlayerMarker(answerElement, playerIndex) {
         answerIndex: answerIndex,
         responseTime: responseTime
     });
-    console.log(`[COMMAND] Réponse envoyée - Joueur: ${playerIndex}, Réponse: ${answerIndex}, Temps: ${responseTime}s`);
 }
 
 function userSelectAnswer(answerElement) {
     if (selectedAnswer && selectedAnswer !== answerElement) {
         selectedAnswer.classList.remove('selected');
-        let existingMarker = selectedAnswer.querySelector(`.player-marker[data-player-index="0"]`);
-        if (existingMarker) existingMarker.remove();
     }
     selectedAnswer = answerElement;
     answerElement.classList.add('selected');
@@ -295,7 +345,34 @@ function userSelectAnswer(answerElement) {
     const playerIndex = players.findIndex(p => p.id === userId);
     
     if (playerIndex !== -1) {
-        addPlayerMarker(answerElement, playerIndex);
+        // Supprimer tous les marqueurs existants pour ce joueur sur toutes les réponses
+        document.querySelectorAll(`.player-marker[data-player-index="${playerIndex}"]`).forEach(marker => {
+            marker.remove();
+        });
+        
+        // Créer un nouveau marqueur localement immédiatement
+        let marker = document.createElement('img');
+        marker.src = players[playerIndex].avatar;
+        marker.className = 'player-marker';
+        marker.dataset.playerIndex = playerIndex;
+        marker.dataset.responseTime = ((Date.now() - questionStartTime) / 1000).toString();
+        answerElement.appendChild(marker);
+        
+        // Mettre à jour la position des marqueurs localement
+        updateMarkerPositions(answerElement);
+        
+        // Jouer le son
+        playPopSound();
+        
+        // Envoyer la réponse à tous les joueurs
+        const answerIndex = Array.from(document.querySelectorAll('.answer')).indexOf(answerElement);
+        const responseTime = (Date.now() - questionStartTime) / 1000;
+        LobbyManager.sendCommandToPlayers('player-answer', {
+            playerId: players[playerIndex].id,
+            playerIndex: playerIndex,
+            answerIndex: answerIndex,
+            responseTime: responseTime
+        });
     }
 }
 
@@ -349,12 +426,9 @@ function preloadImage(url) {
 
 async function initQuiz() {
     if (currentQuestionIndex >= 5) {
-        preloadCurtains();
-        showEndGameCurtains(players);
-        
         if (window.isOwner) {
             LobbyManager.sendCommandToPlayers('show-credits', {
-                players: players
+                players: window.players
             });
             
             document.addEventListener('keydown', function spaceHandler(event) {
@@ -377,6 +451,7 @@ async function initQuiz() {
                 return;
             }
             
+            // L'owner envoie la question à tous les joueurs
             LobbyManager.sendCommandToPlayers('send-question', {
                 question: quizData.question,
                 category: quizData.category,
@@ -384,11 +459,18 @@ async function initQuiz() {
                 usedQuestionIndex: quizData.usedQuestionIndex
             });
             
-            displayQuestion(quizData);
+            // L'owner n'a pas besoin d'appeler displayQuestion ici car il recevra aussi la commande send-question
         } catch (error) {
             console.error("[ERROR] Erreur lors de l'initialisation du quiz:", error);
         }
     }
+    
+    // Écouter l'événement question-received pour s'assurer que tous les joueurs sont synchronisés
+    document.addEventListener('question-received', (event) => {
+        if (event.detail) {
+            displayQuestion(event.detail);
+        }
+    });
 }
 
 function displayQuestion(quizData) {
@@ -446,159 +528,65 @@ function displayQuestion(quizData) {
             timerBar.style.transition = 'transform 20s linear';
             timerBar.style.transform = 'scaleX(1)';
             
-            // Seul l'owner envoie les mises à jour du timer pour éviter les conflits
-            if (window.isOwner) {
-                if (timerSyncInterval) {
-                    clearInterval(timerSyncInterval);
-                }
-                
-                const startTime = Date.now();
-                timerSyncInterval = setInterval(() => {
-                    const elapsed = (Date.now() - startTime) / 20000;
-                    LobbyManager.sendCommandToPlayers('timer-sync', { progress: elapsed });
-                    
-                    if (elapsed >= 1) {
-                        clearInterval(timerSyncInterval);
-                        timerSyncInterval = null;
-                        console.log("[QUIZ RUSH] Timer terminé, validation des réponses");
-                        validateAnswers(quizData.question.correct);
-                    }
-                }, 200); // Mise à jour plus fréquente pour une meilleure synchronisation
-                
-                console.log("[QUIZ RUSH] Synchronisation du timer démarrée");
-            }
-            
-            // Backup timer pour l'owner au cas où le timer principal échoue
+            // Tous les joueurs valident les réponses localement après 20 secondes
             setTimeout(() => {
-                if (window.isOwner) {
-                    if (timerSyncInterval) {
-                        clearInterval(timerSyncInterval);
-                        timerSyncInterval = null;
-                    }
-                    console.log("[QUIZ RUSH] Fin du délai de 20s, validation des réponses");
+                console.log("[QUIZ RUSH] Fin du délai de 20s, validation des réponses");
+                if (quizData && quizData.question) {
                     validateAnswers(quizData.question.correct);
                 }
             }, 20000);
+            
+            // Seul l'owner passe à la question suivante après 25 secondes
+            if (window.isOwner) {
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    LobbyManager.sendCommandToPlayers('next-question', { 
+                        currentQuestionIndex: currentQuestionIndex 
+                    });
+                    initQuiz();
+                }, 25000);
+            }
         }, 4000);
     } catch (error) {
         console.error("[ERROR] Erreur lors de l'affichage de la question:", error);
     }
 }
 
-function preloadCurtains() {
-    const curtainImages = [
-        'images/curtain-left.png',
-        'images/curtain-right.png',
-        'images/curtain-top.png',
-        'images/curtain-bottom.png'
-    ];
-    
-    curtainImages.forEach(url => preloadImage(url));
-}
-
-function showEndGameCurtains(finalPlayers) {
-    const gameContainer = document.getElementById('quiz-content');
-    gameContainer.innerHTML = '';
-    gameContainer.style.background = '#000';
-    
-    const creditsContainer = document.createElement('div');
-    creditsContainer.id = 'credits-container';
-    creditsContainer.style.position = 'absolute';
-    creditsContainer.style.top = '0';
-    creditsContainer.style.left = '0';
-    creditsContainer.style.width = '100%';
-    creditsContainer.style.height = '100%';
-    creditsContainer.style.display = 'flex';
-    creditsContainer.style.flexDirection = 'column';
-    creditsContainer.style.justifyContent = 'center';
-    creditsContainer.style.alignItems = 'center';
-    creditsContainer.style.color = 'white';
-    creditsContainer.style.textAlign = 'center';
-    
-    const title = document.createElement('h1');
-    title.textContent = 'Fin du Quiz!';
-    title.style.fontSize = '3em';
-    title.style.marginBottom = '30px';
-    
-    const subtitle = document.createElement('h2');
-    subtitle.textContent = 'Classement:';
-    subtitle.style.fontSize = '2em';
-    subtitle.style.marginBottom = '20px';
-    
-    const rankingList = document.createElement('div');
-    rankingList.style.fontSize = '1.5em';
-    rankingList.style.marginBottom = '40px';
-    
-    const sortedPlayers = [...finalPlayers].sort((a, b) => b.score - a.score);
-    
-    sortedPlayers.forEach((player, index) => {
-        const playerRank = document.createElement('div');
-        playerRank.style.margin = '10px 0';
-        playerRank.innerHTML = `${index + 1}. <strong>${player.name}</strong> - ${player.score} points`;
-        rankingList.appendChild(playerRank);
-    });
-    
-    const exitText = document.createElement('p');
-    if (window.isOwner) {
-        exitText.textContent = 'Appuyez sur ESPACE pour revenir au menu principal';
-    } else {
-        exitText.textContent = 'En attente que l\'hôte termine la partie...';
-    }
-    exitText.style.marginTop = '30px';
-    exitText.style.opacity = '0.7';
-    
-    creditsContainer.appendChild(title);
-    creditsContainer.appendChild(subtitle);
-    creditsContainer.appendChild(rankingList);
-    creditsContainer.appendChild(exitText);
-    
-    gameContainer.appendChild(creditsContainer);
-    
-    document.addEventListener('keydown', (event) => {
-        if (event.code === 'Space' && window.isOwner) {
-            LobbyManager.sendCommandToPlayers('exit-credits', {
-                redirect: '/index.html'
-            });
-        }
-    });
-}
+// Les fonctions preloadCurtains et showEndGameCurtains sont importées depuis /Games/general/credits.js
 
 window.displayQuestion = displayQuestion;
 window.initQuiz = initQuiz;
 window.preloadCurtains = preloadCurtains;
 window.showEndGameCurtains = showEndGameCurtains;
+window.updateMarkerPositions = updateMarkerPositions;
+window.addPlayerMarker = addPlayerMarker;
 
 function validateAnswers(correctAnswer) {
-    console.log(`[QUIZ RUSH] Validation des réponses, réponse correcte: "${correctAnswer}"`);
     try {
+        // Appliquer le style correct/incorrect à toutes les réponses
         document.querySelectorAll('.answer').forEach(answer => {
             if (answer.textContent.trim() === correctAnswer.trim()) {
                 answer.classList.add('correct');
-                console.log(`[QUIZ RUSH] Réponse correcte: "${answer.textContent}"`);
+                answer.style.backgroundColor = 'gold';
+                answer.style.opacity = '1';
                 const markers = answer.querySelectorAll('.player-marker');
-                console.log(`[QUIZ RUSH] ${markers.length} joueurs ont la bonne réponse`);
                 
+                // Mettre à jour les scores pour tous les joueurs qui ont la bonne réponse
                 markers.forEach((marker, index) => {
                     let playerIndex = parseInt(marker.dataset.playerIndex, 10);
-                    let responseTime = parseFloat(marker.dataset.responseTime);
-                    if (isNaN(responseTime)) {
-                        responseTime = (Date.now() - questionStartTime) / 1000;
-                    }
                     // Système de points simplifié : 1 point par bonne réponse
                     let points = 1;
                     players[playerIndex].score += points;
-                    console.log(`[QUIZ RUSH] Joueur ${playerIndex} gagne ${points} points (temps: ${responseTime}s)`);
                     
                     setTimeout(() => {
                         showPlusOne(playerIndex);
                     }, index * 300);
                 });
-                setTimeout(() => {
-                    updateScores();
-                }, markers.length * 300);
+                
+                // Envoyer immédiatement les scores mis à jour à tous les joueurs
+                updateScores();
             } else {
                 answer.classList.add('wrong');
-                console.log(`[QUIZ RUSH] Réponse incorrecte: "${answer.textContent}"`);
             }
         });
         
@@ -606,11 +594,9 @@ function validateAnswers(correctAnswer) {
         if (window.isOwner) {
             setTimeout(() => {
                 currentQuestionIndex++;
-                console.log(`[QUIZ RUSH] Passage à la question suivante (${currentQuestionIndex})`);
                 LobbyManager.sendCommandToPlayers('next-question', { 
                     currentQuestionIndex: currentQuestionIndex 
                 });
-                console.log(`[COMMAND] Commande next-question envoyée (index: ${currentQuestionIndex})`);
                 initQuiz();
             }, 5000);
         }
@@ -619,12 +605,7 @@ function validateAnswers(correctAnswer) {
     }
 }
 
-function updateScores() {
-    // Tous les joueurs peuvent envoyer la mise à jour des scores
-    LobbyManager.sendCommandToPlayers('update-scores', {
-        players: players
-    });
-}
+
 
 function showPlusOne(playerIndex) {
     try {
