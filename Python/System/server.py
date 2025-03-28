@@ -68,15 +68,50 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                 room_code = self.path.split('/')[-2]
                 response = leave_lobby(post_data.get('userId'), room_code)
                 self.send_json_response(response)
+            elif self.path.startswith('/api/lobby/') and self.path.endswith('/notify'):
+                room_code = self.path.split('/')[-2]
+                with active_sessions_lock:
+                    if room_code not in active_sessions:
+                        raise ValueError("Salon introuvable")
+                    lobby = active_sessions[room_code]
+                    
+                    sender_id = post_data.get('senderId')
+                    if sender_id not in lobby.users:
+                        self.send_error_response("Joueur non trouvé", 404)
+                        return
+                    
+                    owner_id = lobby.owner
+                    
+                    command = post_data.get('command')
+                    payload = post_data.get('payload')
+                    
+                    if not hasattr(lobby, 'notifications'):
+                        lobby.notifications = []
+                    
+                    lobby.notifications.append({
+                        'command': command,
+                        'payload': payload,
+                        'senderId': sender_id,
+                        'timestamp': time.time()
+                    })
+                    
+                    if len(lobby.notifications) > 100:
+                        lobby.notifications = lobby.notifications[-50:]
+                    
+                self.send_json_response({'success': True})
             elif self.path.startswith('/api/lobby/') and self.path.endswith('/command'):
                 room_code = self.path.split('/')[-2]
                 with active_sessions_lock:
                     if room_code not in active_sessions:
                         raise ValueError("Salon introuvable")
                     lobby = active_sessions[room_code]
-                    if post_data.get('initiator') != lobby.owner:
-                        self.send_error_response("Action non autorisée", 403)
+                    
+                    # Permettre à tous les joueurs d'envoyer des commandes, pas seulement l'owner
+                    initiator_id = post_data.get('initiator')
+                    if initiator_id not in lobby.users:
+                        self.send_error_response("Joueur non trouvé", 404)
                         return
+                    
                     command = post_data.get('command')
                     if command == 'start-game':
                         lobby.latest_command = {
@@ -86,7 +121,7 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                                 'force': True
                             },
                             'timestamp': time.time(),
-                            'initiator': lobby.owner
+                            'initiator': initiator_id
                         }
                     else:
                         if command == 'redirect' and post_data.get('payload') and post_data.get('payload').get('newState'):
@@ -95,7 +130,7 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                             'command': command,
                             'payload': post_data.get('payload'),
                             'timestamp': time.time(),
-                            'initiator': lobby.owner
+                            'initiator': initiator_id
                         }
                 self.send_json_response({'success': True})
             else:
@@ -121,6 +156,27 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                         lobby_data['latest_command'] = getattr(session, 'latest_command', None)
                         lobbies_data.append(lobby_data)
                 self.send_json_response({'lobbies': lobbies_data})
+            elif base_path.startswith('/api/lobby/') and base_path.endswith('/notifications'):
+                room_code = base_path.split('/')[-2]
+                from urllib.parse import urlparse, parse_qs
+                query = parse_qs(urlparse(self.path).query)
+                user_id = query.get('userId', [None])[0]
+                
+                with active_sessions_lock:
+                    if room_code in active_sessions:
+                        lobby = active_sessions[room_code]
+                        
+                        if user_id != lobby.owner:
+                            self.send_error_response("Action non autorisée", 403)
+                            return
+                        
+                        notifications = getattr(lobby, 'notifications', [])
+                        
+                        lobby.notifications = []
+                        
+                        self.send_json_response({'notifications': notifications})
+                    else:
+                        self.send_error_response("Salon non trouvé", 404)
             elif base_path.startswith('/api/lobby/') and len(base_path.split('/')) == 4:
                 room_code = base_path.split('/')[-1]
                 from urllib.parse import urlparse, parse_qs
@@ -137,9 +193,39 @@ class LobbyHandler(http.server.SimpleHTTPRequestHandler):
                     else:
                         self.send_error_response("Salon non trouvé", 404)
             else:
-                super().do_GET()
+                try:
+                    super().do_GET()
+                except ConnectionResetError:
+                    # Ignorer les erreurs de connexion réinitialisée
+                    print(f"[INFO] Connexion réinitialisée lors de l'accès à {self.path}")
+                    pass
+                except ConnectionAbortedError:
+                    # Ignorer les erreurs de connexion abandonnée
+                    print(f"[INFO] Connexion abandonnée lors de l'accès à {self.path}")
+                    pass
+                except BrokenPipeError:
+                    # Ignorer les erreurs de pipe brisé
+                    print(f"[INFO] Pipe brisé lors de l'accès à {self.path}")
+                    pass
+        except ConnectionResetError:
+            # Ignorer les erreurs de connexion réinitialisée
+            print(f"[INFO] Connexion réinitialisée lors de l'accès à {self.path}")
+            pass
+        except ConnectionAbortedError:
+            # Ignorer les erreurs de connexion abandonnée
+            print(f"[INFO] Connexion abandonnée lors de l'accès à {self.path}")
+            pass
+        except BrokenPipeError:
+            # Ignorer les erreurs de pipe brisé
+            print(f"[INFO] Pipe brisé lors de l'accès à {self.path}")
+            pass
         except Exception as e:
-            self.send_error_response(str(e))
+            try:
+                self.send_error_response(str(e))
+            except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
+                # Ignorer les erreurs de connexion lors de l'envoi de la réponse d'erreur
+                print(f"[INFO] Erreur de connexion lors de l'envoi de la réponse d'erreur pour {self.path}")
+                pass
 
     def do_DELETE(self):
         if self.path.startswith('/api/lobby/delete/'):

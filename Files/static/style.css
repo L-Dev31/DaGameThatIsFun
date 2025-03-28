@@ -1037,7 +1037,6 @@ input:checked + .slider:before {
 
 .intro-logo {
     width: 500px;
-    height: 125px;
     margin-bottom: 40px;
 }
 
@@ -1053,6 +1052,14 @@ input:checked + .slider:before {
     margin-top: 20px;
     opacity: 0;
     animation: fadeIn 3s ease-in-out 2s forwards;
+}
+
+.security-text a {
+    color: #a855f7;
+    text-decoration: underline;
+}
+.security-text a:hover {
+    color: #f43f5e;
 }
 
 /* Fade out the entire intro */
