@@ -95,7 +95,7 @@ function startCountdown(duration) {
       clearInterval(countdownInterval);
       sessionStorage.setItem('isRedirecting', 'true');
       LobbyManager.sendCommandToPlayers('redirect', {
-        url: `/Games/loading/loading.html?game=quiz-rush`
+        url: `/Games/loading/loading.html?game=quiz-rush&roomCode=${roomCode}`
       });
     }
   }, 1000);
@@ -112,7 +112,7 @@ async function checkOwnerStatus() {
   try {
     const lobby = await LobbyManager.getCurrentLobby();
     if (!lobby) {
-      window.location.href = 'index.html';
+      window.location.href = '/index.html';
       return;
     }
     isOwner = lobby.isOwner;

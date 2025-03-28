@@ -12,6 +12,12 @@ export const lobbyCommands = {
     
     // Extraire le nom de base des chemins (sans extension ni slash)
     const getCurrentBasePath = (path) => {
+      // Vérifier si path est une chaîne valide
+      if (!path || typeof path !== 'string') {
+        console.error("[ERROR] Path invalide:", path);
+        return '';
+      }
+      
       // Supprimer les slashes au début et à la fin
       let cleanPath = path.replace(/^\/|\/$/g, '');
       // Supprimer l'extension .html si présente
@@ -213,21 +219,27 @@ export const lobbyCommands = {
       const answers = document.querySelectorAll('.answer');
       if (payload.answerIndex >= 0 && payload.answerIndex < answers.length) {
         const answerElement = answers[payload.answerIndex];
-        const playerIndex = payload.playerIndex;
         
-        if (playerIndex !== -1 && window.players && window.players[playerIndex]) {
+        // Trouver le joueur soit par playerIndex soit par playerId
+        let player = null;
+        if (payload.playerIndex !== undefined && window.players && window.players[payload.playerIndex]) {
+          player = window.players[payload.playerIndex];
+        } else if (payload.playerId && window.players) {
+          player = window.players.find(p => p.id === payload.playerId);
+        }
+        
+        if (player) {
           // Supprimer tous les marqueurs existants pour ce joueur sur toutes les réponses
-          document.querySelectorAll(`.player-marker[data-player-index="${playerIndex}"]`).forEach(marker => {
+          document.querySelectorAll(`.player-marker[data-player-id="${player.id}"]`).forEach(marker => {
             marker.remove();
           });
           
           // Créer un nouveau marqueur avec l'avatar du joueur
           let marker = document.createElement('img');
-          marker.src = window.players[playerIndex].avatar || `/static/images/avatar/${playerIndex + 1}.png`;
+          marker.src = player.avatar || `/static/images/avatar/${payload.playerIndex + 1}.png`;
           marker.className = 'player-marker';
-          marker.dataset.playerIndex = playerIndex;
-          marker.dataset.playerId = window.players[playerIndex].id;
-          marker.dataset.responseTime = payload.responseTime.toString();
+          marker.dataset.playerId = player.id;
+          marker.dataset.responseTime = payload.responseTime ? payload.responseTime.toString() : "0";
           answerElement.appendChild(marker);
           
           // Jouer un son lors de la sélection
@@ -243,7 +255,7 @@ export const lobbyCommands = {
           
           // Si c'est le joueur actuel, marquer la réponse comme sélectionnée
           const userId = localStorage.getItem("userId");
-          if (payload.playerId === userId) {
+          if (player.id === userId) {
             document.querySelectorAll('.answer').forEach(a => a.classList.remove('selected'));
             answerElement.classList.add('selected');
           }
@@ -251,24 +263,12 @@ export const lobbyCommands = {
           // Déclencher un événement personnalisé pour informer le reste de l'application
           document.dispatchEvent(new CustomEvent('player-answer-updated', { 
             detail: { 
-              playerId: payload.playerId,
-              playerIndex: playerIndex,
+              playerId: player.id,
+              playerIndex: payload.playerIndex,
               answerIndex: payload.answerIndex,
               responseTime: payload.responseTime
             } 
           }));
-          
-          // Forcer la mise à jour des scores pour tous les joueurs
-          if (typeof window.validateAnswers === 'function' && window.quizData && window.quizData.question && window.quizData.question.correct) {
-            if (answerElement.textContent.trim() === window.quizData.question.correct.trim()) {
-              // Mettre à jour les scores immédiatement si c'est la bonne réponse
-              if (typeof window.updateScores === 'function') {
-                setTimeout(() => {
-                  window.updateScores();
-                }, 500);
-              }
-            }
-          }
         }
       }
     } catch (error) {

@@ -8,15 +8,14 @@ let questionStartTime = null;
 let players = [];
 let isOwner = false;
 let readyPlayers = [];
+let scoredPlayers = new Set(); // Pour suivre les joueurs qui ont déjà reçu des points pour la question actuelle
 
 document.addEventListener("DOMContentLoaded", async () => {
-    // Initialisation
     sessionStorage.setItem('currentPage', 'quiz-rush');
     await LobbyManager.init();
     isOwner = await LobbyManager.isCurrentUserOwner();
     window.isOwner = isOwner;
 
-    // Chargement des joueurs
     const realPlayers = await LobbyManager.getActivePlayers();
     players = realPlayers.map(player => ({
         id: player.id,
@@ -28,23 +27,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     }));
     window.players = players;
 
-    // Gestion des événements
     setupEventListeners();
     renderPlayersWithReducedOpacity();
     preloadCurtains();
 });
 
 function setupEventListeners() {
-    // Réponses des joueurs
     document.addEventListener('player-answer-updated', (event) => {
-        const { playerIndex, answerIndex } = event.detail;
+        const { playerId, answerIndex } = event.detail;
         const answerElement = document.querySelectorAll('.answer')[answerIndex];
         if (answerElement) {
-            updatePlayerMarker(playerIndex, answerElement);
+            updatePlayerMarker(playerId, answerElement);
         }
     });
 
-    // Mise à jour des joueurs
     document.addEventListener('lobby-players-updated', (event) => {
         players = event.detail.map(p => ({
             ...p,
@@ -54,18 +50,14 @@ function setupEventListeners() {
         renderPlayersWithReducedOpacity();
     });
 
-    // Joueurs prêts
     document.addEventListener('player-ready', (event) => {
         if (!readyPlayers.includes(event.detail.playerId)) {
             readyPlayers.push(event.detail.playerId);
             renderPlayersWithReducedOpacity();
-            if (readyPlayers.length === players.length) {
-                startGameCountdown();
-            }
+            if (readyPlayers.length === players.length) startGameCountdown();
         }
     });
 
-    // Bouton de démarrage
     const startButton = document.getElementById('start-button');
     if (startButton) {
         startButton.addEventListener('click', () => {
@@ -79,30 +71,31 @@ function setupEventListeners() {
     }
 }
 
-function updatePlayerMarker(playerIndex, answerElement) {
-    // Supprimer les anciens marqueurs
-    document.querySelectorAll(`.player-marker[data-player-index="${playerIndex}"]`).forEach(m => m.remove());
+function updatePlayerMarker(playerId, answerElement) {
+    document.querySelectorAll(`.player-marker[data-player-id="${playerId}"]`).forEach(m => m.remove());
     
-    // Ajouter le nouveau marqueur
+    const player = players.find(p => p.id === playerId);
+    if (!player) return;
+
     const marker = document.createElement('img');
-    marker.src = players[playerIndex].avatar;
+    marker.src = player.avatar;
     marker.className = 'player-marker';
-    marker.dataset.playerIndex = playerIndex;
+    marker.dataset.playerId = playerId;
     answerElement.appendChild(marker);
     updateMarkerPositions(answerElement);
 }
 
 function renderPlayersWithReducedOpacity() {
     const container = document.getElementById('players-container');
-    container.innerHTML = players.map(player => `
-        <div class="player" data-player-id="${player.id}" style="opacity:${readyPlayers.includes(player.id) ? 1 : 0.25}">
+    container.innerHTML = players.map(player => 
+        `<div class="player" data-player-id="${player.id}" style="opacity:${readyPlayers.includes(player.id) ? 1 : 0.25}">
             <img src="${player.avatar}" alt="${player.name}">
             <div class="player-info">
                 <span class="player-name">${player.isOwner ? '👑 ' : ''}${player.name}${player.isCurrentUser ? ' (Vous)' : ''}</span>
                 <span class="player-score">${player.score}</span>
             </div>
-        </div>
-    `).join('');
+        </div>`
+    ).join('');
 }
 
 function startGameCountdown() {
@@ -144,6 +137,9 @@ async function initQuiz() {
     if (isOwner) {
         const quizData = await loadQuiz();
         if (quizData) {
+            // Réinitialiser le suivi des joueurs qui ont marqué des points pour la nouvelle question
+            scoredPlayers.clear();
+            
             LobbyManager.sendCommandToPlayers('send-question', {
                 ...quizData,
                 questionIndex: currentQuestionIndex
@@ -175,12 +171,25 @@ async function loadQuiz() {
 }
 
 function displayQuestion(quizData) {
-    // Réinitialisation de l'interface
     const titleContainer = document.getElementById('title-container');
     const blackOverlay = document.getElementById('black-overlay');
     const answersContainer = document.getElementById('answers-container');
+    const timerBar = document.getElementById('timer-bar');
     
-    // Réinitialiser les animations
+    // Réinitialiser complètement le timer
+    timerBar.style.transition = 'none';
+    timerBar.style.transform = 'scaleX(0)';
+    void timerBar.offsetHeight; // Force recalcul
+    
+    // Réinitialiser les classes des réponses précédentes
+    document.querySelectorAll('.answer').forEach(answer => {
+        answer.classList.remove('correct', 'wrong', 'selected');
+        answer.style.backgroundColor = '';
+    });
+
+    // Réinitialiser le suivi des joueurs qui ont marqué des points
+    scoredPlayers.clear();
+
     titleContainer.classList.remove('moved');
     blackOverlay.style.opacity = '1';
     answersContainer.style.opacity = '0';
@@ -189,7 +198,6 @@ function displayQuestion(quizData) {
     document.getElementById('category').textContent = `Catégorie : ${quizData.category}`;
     document.getElementById('category-overlay').style.backgroundImage = `url('images/${quizData.category}BG.png'), url('images/ErrorBG.png')`;
 
-    // Création des réponses
     answersContainer.innerHTML = '';
     quizData.question.answers.forEach(answer => {
         const answerElement = document.createElement('div');
@@ -199,16 +207,28 @@ function displayQuestion(quizData) {
         answersContainer.appendChild(answerElement);
     });
 
-    // Animation d'entrée
     setTimeout(() => {
-        questionStartTime = Date.now();
+        const backgroundMusic = document.getElementById('background-music');
+        if (backgroundMusic) {
+            backgroundMusic.currentTime = 0; // Réinitialiser la position de lecture
+            backgroundMusic.play().catch(error => {
+                console.error("Erreur lors de la lecture de la musique :", error);
+            });
+        } else {
+            const bgMusic = new Audio('./music/BG.mp3');
+            bgMusic.id = 'background-music';
+            bgMusic.loop = true;
+            document.body.appendChild(bgMusic);
+            bgMusic.play().catch(error => {
+                console.error("Erreur lors de la lecture de BG.mp3 :", error);
+            });
+        }
         
-        // Activer l'animation "moved"
+        questionStartTime = Date.now(); // Réinitialiser le temps de début
         titleContainer.classList.add('moved');
         blackOverlay.style.opacity = '0';
         answersContainer.style.opacity = '1';
         
-        // Animation des réponses
         document.querySelectorAll('.answer').forEach((answer, index) => {
             setTimeout(() => {
                 answer.style.opacity = '1';
@@ -216,50 +236,78 @@ function displayQuestion(quizData) {
             }, 200 * index);
         });
 
-        // Barre de temps
-        document.getElementById('timer-bar').style.transition = 'transform 20s linear';
-        document.getElementById('timer-bar').style.transform = 'scaleX(1)';
+        // Réinitialiser et démarrer le timer
+        timerBar.style.transition = 'transform 20s linear';
+        timerBar.style.transform = 'scaleX(1)';
 
-        // Validation automatique après 20s
         setTimeout(() => validateAnswers(quizData.question.correct), 20000);
     }, 4000);
 }
 
 function userSelectAnswer(answerElement) {
     const userId = localStorage.getItem("userId");
-    const playerIndex = players.findIndex(p => p.id === userId);
-    if (playerIndex === -1) return;
+    const player = players.find(p => p.id === userId);
+    if (!player) return;
 
-    // Mise à jour de l'interface
     document.querySelectorAll('.answer').forEach(a => a.classList.remove('selected'));
     answerElement.classList.add('selected');
-    updatePlayerMarker(playerIndex, answerElement);
+    
+    // Mettre à jour le marqueur localement
+    updatePlayerMarker(userId, answerElement);
 
-    // Envoi de la réponse
+    // Envoyer la réponse à tous les joueurs
     const answerIndex = Array.from(document.querySelectorAll('.answer')).indexOf(answerElement);
+    const playerIndex = players.findIndex(p => p.id === userId);
+    
     LobbyManager.sendCommandToPlayers('player-answer', {
         playerId: userId,
-        playerIndex,
+        playerIndex: playerIndex,
         answerIndex,
         responseTime: (Date.now() - questionStartTime) / 1000
     });
 }
 
 function validateAnswers(correctAnswer) {
+    const userId = localStorage.getItem("userId");
+    
     document.querySelectorAll('.answer').forEach(answer => {
         const isCorrect = answer.textContent.trim() === correctAnswer.trim();
         answer.classList.add(isCorrect ? 'correct' : 'wrong');
         
         if (isCorrect) {
+            // Vérifier les marqueurs des joueurs sur cette réponse
             answer.querySelectorAll('.player-marker').forEach(marker => {
-                const playerIndex = marker.dataset.playerIndex;
-                players[playerIndex].score += 1;
-                showPlusOne(playerIndex);
+                const playerId = marker.dataset.playerId;
+                
+                // Ne mettre à jour le score que si le joueur n'a pas déjà reçu des points pour cette question
+                if (playerId && !scoredPlayers.has(playerId)) {
+                    // Seul l'hôte met à jour les scores pour tous les joueurs
+                    if (isOwner) {
+                        const player = players.find(p => p.id === playerId);
+                        if (player) {
+                            player.score += 1;
+                            scoredPlayers.add(playerId);
+                            showPlusOne(player.id);
+                        }
+                    }
+                    // Si c'est le joueur actuel et qu'il a la bonne réponse, marquer qu'il a gagné un point
+                    else if (playerId === userId) {
+                        const player = players.find(p => p.id === playerId);
+                        if (player) {
+                            player.score += 1;
+                            scoredPlayers.add(playerId);
+                            showPlusOne(player.id);
+                        }
+                    }
+                }
             });
         }
     });
-
-    updateScores();
+    
+    // Uniquement l'hôte envoie la mise à jour des scores à tous les joueurs
+    if (isOwner) {
+        updateScores();
+    }
 
     if (isOwner) {
         currentQuestionIndex++;
@@ -277,12 +325,19 @@ function updateScores() {
     });
 }
 
-function showPlusOne(playerIndex) {
-    const playerElement = document.querySelector(`.player[data-player-id="${players[playerIndex].id}"] .player-score`);
+function showPlusOne(playerId) {
+    const playerElement = document.querySelector(`.player[data-player-id="${playerId}"] .player-score`);
     if (playerElement) {
         playerElement.classList.add('score-updated');
         setTimeout(() => playerElement.classList.remove('score-updated'), 1500);
     }
+}
+
+function playPopSound() {
+    const selectSound = new Audio('/static/music/pop.mp3');
+    selectSound.play().catch(error => {
+        console.error("Erreur lors de la lecture du son pop :", error);
+    });
 }
 
 window.updateMarkerPositions = (answerElement) => {

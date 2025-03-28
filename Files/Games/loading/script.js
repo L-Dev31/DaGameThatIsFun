@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         introVideo.muted = false;
         introVideo.play();
         introVideo.onended = async () => {
-            await LobbyManager.sendCommandToPlayers('redirect', { url: `../${game}/${game}.html` });
+            await LobbyManager.sendCommandToPlayers('redirect', { url: `../${game}/${game}.html&roomCode=${roomCode}` });
         };
     }
 });

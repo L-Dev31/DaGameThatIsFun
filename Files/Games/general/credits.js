@@ -54,13 +54,13 @@ function showEndGameCurtains(players) {
                         console.log("[CREDITS] Redirection automatique vers l'index (owner)");
                         import('/Games/general/lobby_manager.js').then(module => {
                             const LobbyManager = module.LobbyManager;
-                            LobbyManager.sendCommandToPlayers('exit-credits', {
-                                redirect: '/index.html'
-                            });
+                            LobbyManager.sendCommandToPlayers("redirect", {
+                                url: `/waiting_room.html`,
+                              });
                             console.log("[COMMAND] Commande exit-credits envoyée");
                         });
                     }
-                    window.location.href = '/index.html';
+                    window.location.href = '/waiting_room.html';
                 };
             }, 5000);
         }, 100);
