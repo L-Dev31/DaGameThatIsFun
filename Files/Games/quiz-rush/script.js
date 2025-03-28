@@ -127,7 +127,9 @@ async function initQuiz() {
             document.addEventListener('keydown', function spaceHandler(event) {
                 if (event.code === 'Space') {
                     document.removeEventListener('keydown', spaceHandler);
-                    LobbyManager.sendCommandToPlayers('redirect', { url: '/index.html' });
+                    LobbyManager.sendCommandToPlayers('redirect', { 
+                        url: `/waiting_room.html`
+                     });
                 }
             });
         }
