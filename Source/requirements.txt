@@ -1,0 +1,4 @@
+colorama
+ujson
+qrcode
+Pillow

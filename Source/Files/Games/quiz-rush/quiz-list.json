@@ -1,0 +1,1338 @@
+{
+  "Histoire": [
+    {
+      "question": "Comment le roi Alexandre Ier de Grèce est-il mort ?",
+      "answers": [
+        "D'une morsure au testicule par un macaque",
+        "En tombant dans un tonneau de vin",
+        "En se coinçant la tête dans une porte",
+        "En essayant de jongler avec des grenades"
+      ],
+      "correct": "D'une morsure au testicule par un macaque"
+    },
+    {
+      "question": "Pour quel raison l'empereur Qin Shi Huang est mort ?",
+      "answers": [
+        "Il a ingéré du mercure en pensant que c'était un élixir d'immortalité",
+        "Il a mangé un poisson-globe sans antidote",
+        "Il s'est étouffé avec un grain de riz",
+        "Il a été renversé par son propre char royal"
+      ],
+      "correct": "Il a ingéré du mercure en pensant que c'était un élixir d'immortalité"
+    },
+    {
+      "question": "Quel est le destin surprenant de l'amiral Edward Vernon après sa mort ?",
+      "answers": [
+        "Son cadavre a été conservé dans du rhum pour le transport",
+        "Il a été dévoré par des crabes lors de son enterrement en mer",
+        "Il a été momifié par accident lors d'un rituel local",
+        "On a utilisé son corps comme appât pour la pêche"
+      ],
+      "correct": "Son cadavre a été conservé dans du rhum pour le transport"
+    },
+    {
+      "question": "Comment Frane Selak, connu comme l'homme le plus chanceux du monde, a-t-il survécu ?",
+      "answers": [
+        "Il a survécu à sept accidents mortels, y compris un crash d'avion",
+        "Il a été frappé par la foudre dix fois",
+        "Il a été coincé sous une avalanche pendant une semaine",
+        "Il a nagé dans un lac infesté de crocodiles pendant trois jours"
+      ],
+      "correct": "Il a survécu à sept accidents mortels, y compris un crash d'avion"
+    },
+    {
+      "question": "Quel est le détail bizarre entourant la mort de l'écrivain Tennessee Williams ?",
+      "answers": [
+        "Il s'est étouffé avec un bouchon de flacon nasal",
+        "Il a glissé sur une peau de banane",
+        "Il a été frappé par une machine à écrire tombée d'une fenêtre",
+        "Il a été attaqué par une bande de chats sauvages"
+      ],
+      "correct": "Il s'est étouffé avec un bouchon de flacon nasal"
+    },
+    {
+      "question": "Pourquoi l'astronome Tycho Brahe est-il mort de manière absurde ?",
+      "answers": [
+        "Il s'est retenu d'uriner lors d'un banquet",
+        "Il a été électrocuté par son télescope",
+        "Il a été empoisonné par une comète radioactive",
+        "Il s'est blessé en tombant d'une échelle"
+      ],
+      "correct": "Il s'est retenu d'uriner lors d'un banquet"
+    },
+    {
+      "question": "De quel manière étrange est mort le philosophe Empédocle ?",
+      "answers": [
+        "Il aurait sauté dans un volcan pour prouver sa divinité",
+        "Il s'est fait écraser par une charrette remplie de livres",
+        "Il s'est asphyxié avec une couronne de fleurs",
+        "Il a été emporté par un troupeau de moutons"
+      ],
+      "correct": "Il aurait sauté dans un volcan pour prouver sa divinité"
+    },
+    {
+      "question": "Comment est mort l'inventeur Franz Reichelt ?",
+      "answers": [
+        "Il a sauté de la tour Eiffel pour tester son parachute",
+        "Il a été étranglé par son propre brevet",
+        "Il a été écrasé par une de ses inventions",
+        "Il a glissé sur un plan incliné lors d'une démonstration"
+      ],
+      "correct": "Il a sauté de la tour Eiffel pour tester son parachute"
+    },
+    {
+      "question": "Pourquoi le roi Charles II d'Angleterre a-t-il pris des remèdes bizarres ?",
+      "answers": [
+        "Il croyait au pouvoir magique de la poudre de crâne humain",
+        "Il pensait que les pets de grenouille étaient curatifs",
+        "Il obligeait ses médecins à boire du thé fait avec de l'or fondu",
+        "Il faisait élever des abeilles pour des piqûres thérapeutiques"
+      ],
+      "correct": "Il croyait au pouvoir magique de la poudre de crâne humain"
+    },
+    {
+      "question": "Lequels de ces fait est réel à propos du pirate Bartholomew Roberts ?",
+      "answers": [
+        "Il portait toujours une robe rose lors des batailles",
+        "Il buvait du thé avec ses prisonniers avant de les égorgers",
+        "Il exigeait que son équipage chante des hymnes religieux",
+        "Il a été tué par une flèche tirée par un perroquet"
+      ],
+      "correct": "Il exigeait que son équipage chante des hymnes religieux"
+    },
+    {
+      "question": "Comment est mort Sigurd Eysteinsson, comte des Orcades ?",
+      "answers": [
+        "Il a été tué par la tête décapitée de son ennemi",
+        "Il a trébuché sur son épée lors d'une célébration",
+        "Il a mangé un poisson empoisonné offert par un rival",
+        "Il a été écrasé par un trône mal fixé"
+      ],
+      "correct": "Il a été tué par la tête décapitée de son ennemi"
+    },
+    {
+      "question": "Comment le général japonais Uesugi Kenshin est-il mort ?",
+      "answers": [
+        "Assassiné par un ninja caché dans ses toilettes",
+        "Empoisonné par un repas offert par un allié",
+        "Tué par la chute d'une armure décorative",
+        "Foudroyé lors d'une bataille en montagne"
+      ],
+      "correct": "Assassiné par un ninja caché dans ses toilettes"
+    },
+    {
+      "question": "Pourquoi l'empereur romain Caracalla est-il mort en urinant ?",
+      "answers": [
+        "Un garde du corps a été soudoyé pour le poignarder",
+        "Il a été piqué par une guêpe mortelle",
+        "Un citoyen en colère l'a frappé avec une pierre",
+        "Il a glissé sur une flaque et s'est brisé la nuque"
+      ],
+      "correct": "Un garde du corps a été soudoyé pour le poignarder"
+    },
+    {
+      "question": "De quel manière l'écrivain Ésope est-il supposé avoir trouvé la mort ?",
+      "answers": [
+        "Jeté d'une falaise par des habitants en colère",
+        "Tué par un troupeau de chèvres sauvages",
+        "Empoisonné après un pari perdu",
+        "Enterré vivant par accident"
+      ],
+      "correct": "Jeté d'une falaise par des habitants en colère"
+    },
+    {
+      "question": "Quelle étrange habitude avait le roi Goujian de Yue pour se motiver ?",
+      "answers": [
+        "Il goûtait à la bile d'un ennemi chaque matin",
+        "Il marchait pieds nus sur des épines avant chaque repas",
+        "Il s'asseyait sur des braises pour réfléchir",
+        "Il dormait dans une cage pour simuler la prison"
+      ],
+      "correct": "Il goûtait à la bile d'un ennemi chaque matin"
+    },
+    {
+      "question": "Comment le roi Henri IV testait-il ses nouveaux serviteurs ?",
+      "answers": [
+        "Il se cachait sous leur lit pour les surprendre",
+        "Il leur faisait manger des œufs pourris",
+        "Il leur faisait porter ses vêtements",
+        "Il leur faisait croire qu'ils étaient invisibles"
+      ],
+      "correct": "Il se cachait sous leur lit pour les surprendre"
+    },
+    {
+      "question": "Comment le président William Henry Harrison est-il mort ?",
+      "answers": [
+        "D'une pneumonie après un discours sous la pluie",
+        "En s'étouffant avec un os de poulet",
+        "En tombant de son cheval",
+        "En se cognant contre un lustre"
+      ],
+      "correct": "D'une pneumonie après un discours sous la pluie"
+    },
+    {
+      "question": "Quelle était la phobie étrange de Napoléon Bonaparte ?",
+      "answers": [
+        "Il avait une peur panique des chats",
+        "Il craignait les pommes de terre",
+        "Il avait peur des miroirs",
+        "Il était terrifié par les perruques"
+      ],
+      "correct": "Il avait une peur panique des chats"
+    },
+    {
+      "question": "Pourquoi le pape Léon X a-t-il été critiqué ?",
+      "answers": [
+        "Il avait un éléphant blanc comme animal de compagnie",
+        "Il organisait des courses de tortues au Vatican",
+        "Il dormait dans un lit rempli de pièces d'or",
+        "Il se déguisait en paysan pour sortir"
+      ],
+      "correct": "Il avait un éléphant blanc comme animal de compagnie"
+    },
+    {
+      "question": "Comment le roi de Prusse recrutait-il son armée ?",
+      "answers": [
+        "Il kidnappait les hommes très grands",
+        "Il organisait des concours de buveurs de bière",
+        "Il choisissait des hommes qui jouaient de la flûte",
+        "Il recrutait seulement des jumeaux"
+      ],
+      "correct": "Il kidnappait les hommes très grands"
+    },
+    {
+      "question": "Comment l'empereur Commode aimait-il se divertir ?",
+      "answers": [
+        "Il combattait comme gladiateur contre des handicapés",
+        "Il organisait des courses de chiens",
+        "Il peignait avec de la nourriture",
+        "Il collectionnait les ongles de ses serviteurs"
+      ],
+      "correct": "Il combattait comme gladiateur contre des handicapés"
+    },
+    {
+      "question": "Quelle était la particularité du roi Louis XIV ?",
+      "answers": [
+        "Il n'a pris que trois bains dans toute sa vie",
+        "Il se lavait uniquement avec du lait de chèvre",
+        "Il changeait de perruque toutes les heures",
+        "Il se brossait les dents avec du miel"
+      ],
+      "correct": "Il n'a pris que trois bains dans toute sa vie"
+    },
+    {
+      "question": "Quelle habitude bizarre avait le président Johnson ?",
+      "answers": [
+        "Il menait des réunions depuis ses toilettes",
+        "Il portait un chapeau différent pour chaque sujet",
+        "Il parlait à travers une marionnette",
+        "Il exigeait que tout le monde se tienne sur un pied"
+      ],
+      "correct": "Il menait des réunions depuis ses toilettes"
+    },
+    {
+      "question": "Comment le roi suédois Adolphe Frédéric est-il mort ?",
+      "answers": [
+        "D'indigestion après trop de desserts",
+        "Noyé en pêchant à mains nues",
+        "Écrasé par sa collection de globes",
+        "En tombant d'un arbre"
+      ],
+      "correct": "D'indigestion après trop de desserts"
+    },
+    {
+      "question": "Comment Pierre le Grand modernisait-il la Russie ?",
+      "answers": [
+        "Il taxait les barbes et les coupait lui-même",
+        "Il obligeait les aristocrates à nager",
+        "Il interdisait la lettre 'K'",
+        "Il forçait les nobles à porter des vêtements à l'envers"
+      ],
+      "correct": "Il taxait les barbes et les coupait lui-même"
+    },
+    {
+      "question": "Quelle était la passion bizarre de l'empereur Néron ?",
+      "answers": [
+        "Il participait à des concours de chant qu'il gagnait toujours",
+        "Il collectionnait les mouches mortes",
+        "Il se déguisait en loup pour effrayer les citoyens",
+        "Il peignait avec ses pieds"
+      ],
+      "correct": "Il participait à des concours de chant qu'il gagnait toujours"
+    },
+    {
+      "question": "Comment le président Garfield testait-il son intelligence ?",
+      "answers": [
+        "Il écrivait en latin d'une main et en grec de l'autre",
+        "Il mémorisait l'annuaire téléphonique",
+        "Il résolvait des équations en jonglant",
+        "Il récitait la constitution à l'envers"
+      ],
+      "correct": "Il écrivait en latin d'une main et en grec de l'autre"
+    },
+    {
+      "question": "Comment le roi Charles VI se rafraîchissait-il en été ?",
+      "answers": [
+        "Il s'enfermait dans des murs de glace",
+        "Il se faisait éventer par 100 serviteurs",
+        "Il dormait avec des grenouilles sur le front",
+        "Il buvait uniquement de l'eau de pluie d'orage"
+      ],
+      "correct": "Il s'enfermait dans des murs de glace"
+    },
+    {
+      "question": "Quelle superstition avait l'empereur Auguste ?",
+      "answers": [
+        "Il ne sortait pas s'il voyait un homme chauve",
+        "Il portait une patte de lapin à sa sandale",
+        "Il évitait de prendre des décisions les jours pairs",
+        "Il consultait un poulet avant chaque bataille"
+      ],
+      "correct": "Il ne sortait pas s'il voyait un homme chauve"
+    },
+    {
+      "question": "Comment Diogène a-t-il répondu à Alexandre le Grand ?",
+      "answers": [
+        "Il lui a demandé de s'écarter car il lui faisait de l'ombre",
+        "Il lui a offert une pomme pourrie",
+        "Il a fait semblant de ne pas l'entendre",
+        "Il lui a demandé de lui laver les pieds"
+      ],
+      "correct": "Il lui a demandé de s'écarter car il lui faisait de l'ombre"
+    },
+    {
+      "question": "Quelle habitude étrange avait le président Coolidge ?",
+      "answers": [
+        "Il se mettait du beurre sur la tête",
+        "Il cachait des animaux dans ses poches",
+        "Il communiquait uniquement par notes écrites",
+        "Il portait des chaussettes dépareillées"
+      ],
+      "correct": "Il se mettait du beurre sur la tête"
+    },
+    {
+      "question": "Comment le roi George Ier communiquait-il avec ses ministres ?",
+      "answers": [
+        "Il utilisait le latin car il ne parlait pas anglais",
+        "Il communiquait par dessins",
+        "Il utilisait un système de sifflets codés",
+        "Il faisait traduire par son chien dressé"
+      ],
+      "correct": "Il utilisait le latin car il ne parlait pas anglais"
+    },
+    {
+      "question": "Comment le roi Henri III choisissait-il ses favoris ?",
+      "answers": [
+        "Il organisait des concours de beauté masculins",
+        "Il les sélectionnait selon leur cri d'animal",
+        "Il les choisissait selon la forme de leur nez",
+        "Il testait leur résistance au chatouillement"
+      ],
+      "correct": "Il organisait des concours de beauté masculins"
+    },
+    {
+      "question": "Quelle passion étrange avait le roi George IV ?",
+      "answers": [
+        "Il collectionnait des uniformes qu'il ne pouvait pas porter",
+        "Il habillait des grenouilles avec des costumes",
+        "Il composait des chansons sur les légumes",
+        "Il se déguisait en statue dans les jardins"
+      ],
+      "correct": "Il collectionnait des uniformes qu'il ne pouvait pas porter"
+    },
+    {
+      "question": "Comment l'empereur Basile Ier est-il arrivé au pouvoir ?",
+      "answers": [
+        "Il a commencé comme palefrenier et séduit l'empereur",
+        "Il a gagné le trône lors d'un concours de devinettes",
+        "Il s'est fait passer pour le fils perdu de l'empereur",
+        "Il prétendait avoir des visions divines"
+      ],
+      "correct": "Il a commencé comme palefrenier et séduit l'empereur"
+    },
+    {
+      "question": "Comment Frédéric le Grand réveillait-il ses serviteurs ?",
+      "answers": [
+        "Il jouait de la flûte à côté de leur oreille",
+        "Il lâchait ses chiens dans leurs chambres",
+        "Il tirait un coup de canon dans la cour",
+        "Il versait de l'eau froide sur leur visage"
+      ],
+      "correct": "Il jouait de la flûte à côté de leur oreille"
+    },
+    {
+      "question": "Comment Hannibal a-t-il surpris les Romains ?",
+      "answers": [
+        "Il a attaché des torches aux cornes de bœufs",
+        "Il a peint ses soldats en bleu",
+        "Il a utilisé des singes déguisés en soldats",
+        "Il a fait semblant d'être mort"
+      ],
+      "correct": "Il a attaché des torches aux cornes de bœufs"
+    },
+    {
+      "question": "Quelle habitude étrange avait le président Nixon ?",
+      "answers": [
+        "Il mangeait du ketchup sur ses céréales",
+        "Il portait trois montres différentes",
+        "Il parlait aux portraits des anciens présidents",
+        "Il collectionnait les chaussures de ses rivaux"
+      ],
+      "correct": "Il mangeait du ketchup sur ses céréales"
+    },
+    {
+      "question": "Comment le roi Louis XI testait-il ses conseillers ?",
+      "answers": [
+        "Il leur racontait des secrets différents",
+        "Il les faisait dormir avec des serpents",
+        "Il leur servait des repas empoisonnés avec l'antidote",
+        "Il les enfermait avec un lion apprivoisé"
+      ],
+      "correct": "Il leur racontait des secrets différents"
+    },
+    {
+      "question": "Comment le roi Charles XII restait-il éveillé ?",
+      "answers": [
+        "Il se faisait tirer les oreilles chaque heure",
+        "Il dormait avec un hérisson",
+        "Il buvait un mélange de café et de vin",
+        "Il portait des bottes remplies d'eau froide"
+      ],
+      "correct": "Il se faisait tirer les oreilles chaque heure"
+    },
+    {
+      "question": "Comment Caligula a-t-il montré son mépris pour le Sénat ?",
+      "answers": [
+        "Il a nommé son cheval consul",
+        "Il a fait porter des robes aux sénateurs",
+        "Il a remplacé leurs sièges par des toilettes",
+        "Il parlait uniquement à leur reflet"
+      ],
+      "correct": "Il a nommé son cheval consul"
+    },
+    {
+      "question": "Quelle passion bizarre avait le roi Louis XVI ?",
+      "answers": [
+        "Il fabriquait des serrures comme passe-temps",
+        "Il collectionnait les dents de lait",
+        "Il élevait des escargots de course",
+        "Il peignait des portraits de poulets"
+      ],
+      "correct": "Il fabriquait des serrures comme passe-temps"
+    },
+    {
+      "question": "Comment le général romain Crassus est-il mort ?",
+      "answers": [
+        "Les Parthes lui ont versé de l'or fondu dans la gorge",
+        "Il s'est étouffé avec une pièce d'or",
+        "Il est tombé dans un puits",
+        "Il a été écrasé par sa propre statue"
+      ],
+      "correct": "Les Parthes lui ont versé de l'or fondu dans la gorge"
+    },
+    {
+      "question": "Quelle habitude avait l'impératrice Catherine II ?",
+      "answers": [
+        "Elle se lavait le visage avec du champagne",
+        "Elle dormait sur un matelas de pommes",
+        "Elle faisait porter des masques d'animaux à ses ministres",
+        "Elle écrivait des lettres d'amour à ses chevaux"
+      ],
+      "correct": "Elle se lavait le visage avec du champagne"
+    },
+    {
+      "question": "Comment le roi Mithridate VI évitait-il d'être empoisonné ?",
+      "answers": [
+        "Il prenait de petites doses de poison chaque jour",
+        "Il employait 100 goûteurs",
+        "Il ne mangeait que des aliments transparents",
+        "Il se nourrissait exclusivement de miel"
+      ],
+      "correct": "Il prenait de petites doses de poison chaque jour"
+    },
+    {
+      "question": "Quel loisir bizarre avait le roi Édouard II ?",
+      "answers": [
+        "Il aimait creuser des fossés avec des ouvriers",
+        "Il organisait des concours de grimaces",
+        "Il se déguisait en fantôme",
+        "Il collectionnait les chaussures de ses ennemis"
+      ],
+      "correct": "Il aimait creuser des fossés avec des ouvriers"
+    },
+    {
+      "question": "Comment le philosophe Chrysippe serait-il mort ?",
+      "answers": [
+        "De rire en voyant un âne manger des figues",
+        "Étouffé avec une olive pendant un débat",
+        "Tombé dans un puits en observant les étoiles",
+        "Tué par un livre tombé de sa bibliothèque"
+      ],
+      "correct": "De rire en voyant un âne manger des figues"
+    },
+    {
+      "question": "Quelle passion étrange avait le roi Charles X ?",
+      "answers": [
+        "Il chassait les papillons en tenue de cérémonie",
+        "Il écrivait des poèmes aux statues",
+        "Il collectionnait les perruques de ses prédécesseurs",
+        "Il organisait des concours de rot"
+      ],
+      "correct": "Il chassait les papillons en tenue de cérémonie"
+    },
+    {
+      "question": "Comment le roi Pyrrhus d'Épire est-il mort ?",
+      "answers": [
+        "Tué par une tuile jetée par une vieille femme",
+        "Écrasé par son éléphant qui a glissé",
+        "Empoisonné par son dentiste",
+        "Noyé dans une flaque d'eau"
+      ],
+      "correct": "Tué par une tuile jetée par une vieille femme"
+    },
+    {
+      "question": "Quelle habitude étrange avait le président Jackson ?",
+      "answers": [
+        "Il organisait des combats de coqs à la Maison Blanche",
+        "Il portait les vêtements de sa femme quand il était seul",
+        "Il dormait suspendu comme une chauve-souris",
+        "Il parlait en rimes pendant les réunions"
+      ],
+      "correct": "Il organisait des combats de coqs à la Maison Blanche"
+    },
+    {
+      "question": "Comment le roi Gustave III a-t-il testé le café ?",
+      "answers": [
+        "Il a condamné des jumeaux à boire du thé ou du café",
+        "Il a remplacé l'eau des fontaines par du café",
+        "Il a vendu le café comme médicament à prix d'or",
+        "Il a forcé son frère à boire 50 tasses par jour"
+      ],
+      "correct": "Il a condamné des jumeaux à boire du thé ou du café"
+    },
+    {
+      "question": "Comment le général Alcibiade a-t-il attiré l'attention ?",
+      "answers": [
+        "Il a coupé la queue de son chien de race coûteux",
+        "Il s'est teint les cheveux en bleu vif",
+        "Il a parlé à l'envers pendant trois jours",
+        "Il a porté des vêtements persans en plein Athènes"
+      ],
+      "correct": "Il a coupé la queue de son chien de race coûteux"
+    }
+  ],
+  "Cinéma": [
+    {
+      "question": "Pourquoi un acteur a-t-il été viré après avoir volé un pot de mayonnaise ?",
+      "answers": [
+        "Il pensait que c'était une œuvre d'art.",
+        "Il voulait faire une blague à son chien.",
+        "Il le mangeait à la cuillère entre les scènes.",
+        "Il croyait que c'était son cachet pour le film."
+      ],
+      "correct": "Il le mangeait à la cuillère entre les scènes."
+    },
+    {
+      "question": "Quel film a blessé un acteur avec un vibromasseur oublié ?",
+      "answers": [
+        "50 nuances de Grey",
+        "Pulp Fiction",
+        "Le Loup de Wall Street",
+        "Basic Instinct"
+      ],
+      "correct": "Le Loup de Wall Street"
+    },
+    {
+      "question": "Quel réalisateur a été arrêté pour avoir utilisé de la vraie drogue ?",
+      "answers": [
+        "Martin Scorsese",
+        "Quentin Tarantino",
+        "Seth Rogen",
+        "David Fincher"
+      ],
+      "correct": "Quentin Tarantino"
+    },
+    {
+      "question": "Quel film a failli être interdit à cause d'un figurant nu ?",
+      "answers": [
+        "Very Bad Trip",
+        "Borat",
+        "Superbad",
+        "Sausage Party"
+      ],
+      "correct": "Borat"
+    },
+    {
+      "question": "Pourquoi une scène de combat a-t-elle été coupée ?",
+      "answers": [
+        "Les acteurs se battaient pour un burrito.",
+        "Le réalisateur a oublié de filmer.",
+        "Un figurant portait un t-shirt Pokémon.",
+        "Ils ont détruit la caméra avec un coup de pied."
+      ],
+      "correct": "Les acteurs se battaient pour un burrito."
+    },
+    {
+      "question": "Quel acteur a avalé un cafard vivant en plein tournage ?",
+      "answers": [
+        "Will Smith",
+        "Anthony Hopkins",
+        "Gary Oldman",
+        "Nicolas Cage"
+      ],
+      "correct": "Nicolas Cage"
+    },
+    {
+      "question": "Quel film a failli être classé X pour un robot trop réaliste ?",
+      "answers": [
+        "Ex Machina",
+        "Blade Runner 2049",
+        "Transformers",
+        "WALL-E"
+      ],
+      "correct": "Ex Machina"
+    },
+    {
+      "question": "Quel acteur a accidentellement envoyé des nudes au casting ?",
+      "answers": [
+        "Chris Evans",
+        "Jason Momoa",
+        "Ryan Reynolds",
+        "Jonah Hill"
+      ],
+      "correct": "Chris Evans"
+    },
+    {
+      "question": "Pourquoi une cascade a-t-elle été annulée ?",
+      "answers": [
+        "Le cascadeur était en gueule de bois.",
+        "Le réalisateur a oublié de crier 'Action !'.",
+        "Un vrai requin est apparu.",
+        "La voiture n'était pas assurée."
+      ],
+      "correct": "Un vrai requin est apparu."
+    },
+    {
+      "question": "Quel acteur a dormi dans un cercueil pour préparer un rôle ?",
+      "answers": [
+        "Jared Leto",
+        "Daniel Day-Lewis",
+        "Nicolas Cage",
+        "Robert Pattinson"
+      ],
+      "correct": "Jared Leto"
+    },
+    {
+      "question": "Quel film contient une scène improvisée par un acteur ivre ?",
+      "answers": [
+        "Pirates des Caraïbes",
+        "Iron Man",
+        "Le Grand Lebowski",
+        "Wolf of Wall Street"
+      ],
+      "correct": "Le Grand Lebowski"
+    },
+    {
+      "question": "Quel réalisateur a cassé trois caméras pour filmer un melon ?",
+      "answers": [
+        "Michael Bay",
+        "Christopher Nolan",
+        "James Cameron",
+        "Ridley Scott"
+      ],
+      "correct": "Michael Bay"
+    },
+    {
+      "question": "Pourquoi un tournage a-t-il été stoppé trois jours ?",
+      "answers": [
+        "Un acteur était allergique aux chats.",
+        "Le scénariste a mangé le script.",
+        "Un figurant a été poursuivi par une oie.",
+        "Un acteur est passé au restaurant Méxicain"
+      ],
+      "correct": "Un figurant a été poursuivi par une oie."
+    },
+    {
+      "question": "Quel film d'horreur a utilisé de vrais os humains ?",
+      "answers": [
+        "Massacre à la tronçonneuse",
+        "Saw",
+        "Shining",
+        "L'Exorciste"
+      ],
+      "correct": "Massacre à la tronçonneuse"
+    },
+    {
+      "question": "Quel acteur a été suspendu pour avoir perdu un pari ?",
+      "answers": [
+        "Tom Hardy",
+        "Brad Pitt",
+        "Channing Tatum",
+        "Chris Hemsworth"
+      ],
+      "correct": "Tom Hardy"
+    },
+    {
+      "question": "Pourquoi un réalisateur a-t-il été hospitalisé sur un tournage ?",
+      "answers": [
+        "Il a mangé du plastique.",
+        "Un singe l'a mordu.",
+        "Il a glissé sur une flaque de sang.",
+        "Un micro lui est tombé sur la tête."
+      ],
+      "correct": "Un singe l'a mordu."
+    },
+    {
+      "question": "Pourquoi un acteur a-t-il été banni d'un plateau ?",
+      "answers": [
+        "Il a volé tous les donuts de l'équipe",
+        "Il a appelé le réalisateur 'mon petit chou'",
+        "Il a dormi dans le lit du producteur",
+        "Il a remplacé le café par du jus de pruneaux"
+      ],
+      "correct": "Il a volé tous les donuts de l'équipe"
+    },
+    {
+      "question": "Quel acteur s'est cassé le nez en tournant une scène de rêve ?",
+      "answers": [
+        "Leonardo DiCaprio",
+        "Tom Cruise",
+        "Robert Downey Jr.",
+        "Daniel Craig"
+      ],
+      "correct": "Leonardo DiCaprio"
+    },
+    {
+      "question": "Pourquoi un tournage a-t-il été interrompu par la police ?",
+      "answers": [
+        "Les voisins ont cru à un vrai braquage",
+        "Un acteur a volé une voiture de police pour s'entraîner",
+        "Le réalisateur filmait sans autorisation",
+        "Un figurant a déclenché une alarme incendie"
+      ],
+      "correct": "Les voisins ont cru à un vrai braquage"
+    },
+    {
+      "question": "Quel objet a été oublié dans le cadre d'un film culte ?",
+      "answers": [
+        "Un gobelet de café dans Game of Thrones",
+        "Une montre dans Gladiator",
+        "Un iPhone dans Le Seigneur des Anneaux",
+        "Des lunettes de soleil dans Titanic"
+      ],
+      "correct": "Un gobelet de café dans Game of Thrones"
+    },
+    {
+      "question": "Quel acteur a mangé un insecte réel pour une scène ?",
+      "answers": [
+        "Tom Holland",
+        "Brad Pitt",
+        "Keanu Reeves",
+        "Joaquin Phoenix"
+      ],
+      "correct": "Tom Holland"
+    },
+    {
+      "question": "Pourquoi un acteur a-t-il refusé un rôle iconique ?",
+      "answers": [
+        "Il trouvait le costume trop ridicule",
+        "Le personnage avait le même prénom que son ex",
+        "Il était allergique au maquillage",
+        "Il détestait le réalisateur depuis l'école"
+      ],
+      "correct": "Il trouvait le costume trop ridicule"
+    },
+    {
+      "question": "Quel accessoire a causé une blessure à un acteur célèbre ?",
+      "answers": [
+        "Une porte de vaisseau spatial dans Star Wars",
+        "Une baguette magique dans Harry Potter",
+        "Un marteau de Thor trop lourd",
+        "Une perruque mal fixée dans Marie-Antoinette"
+      ],
+      "correct": "Une porte de vaisseau spatial dans Star Wars"
+    },
+    {
+      "question": "Pourquoi un réalisateur a-t-il jeté son Oscar ?",
+      "answers": [
+        "Il l'a utilisé comme presse-papiers et l'a perdu",
+        "Il l'a offert à sa femme de ménage",
+        "Il l'a lancé par la fenêtre lors d'une dispute",
+        "Il l'a fondu pour en faire des bijoux"
+      ],
+      "correct": "Il l'a utilisé comme presse-papiers et l'a perdu"
+    },
+    {
+      "question": "Quel acteur a improvisé une scène devenue culte ?",
+      "answers": [
+        "Robert De Niro dans Taxi Driver",
+        "Jim Carrey dans The Mask",
+        "Heath Ledger dans The Dark Knight",
+        "Jack Nicholson dans Shining"
+      ],
+      "correct": "Heath Ledger dans The Dark Knight"
+    },
+    {
+      "question": "Pourquoi un film a-t-il dû changer son titre ?",
+      "answers": [
+        "Il portait le même nom qu'une marque de toilettes",
+        "Le titre original était une insulte en japonais",
+        "Le réalisateur l'a perdu dans un pari",
+        "Un enfant a suggéré un meilleur titre par courrier"
+      ],
+      "correct": "Il portait le même nom qu'une marque de toilettes"
+    },
+    {
+      "question": "Quel acteur a été engagé par erreur ?",
+      "answers": [
+        "Le réalisateur l'a confondu avec quelqu'un d'autre",
+        "Son agent a falsifié son CV",
+        "Il s'est présenté au mauvais casting",
+        "Il était juste venu réparer la climatisation"
+      ],
+      "correct": "Le réalisateur l'a confondu avec quelqu'un d'autre"
+    },
+    {
+      "question": "Pourquoi un film d'horreur a-t-il été censuré ?",
+      "answers": [
+        "Le monstre ressemblait trop au Premier ministre",
+        "Les acteurs avaient réellement peur",
+        "Le réalisateur a utilisé de vrais cadavres",
+        "Le script était écrit avec du sang animal"
+      ],
+      "correct": "Le monstre ressemblait trop au Premier ministre"
+    },
+    {
+      "question": "Quel accessoire de film a été volé pendant le tournage ?",
+      "answers": [
+        "Les chaussures rouges du Magicien d'Oz",
+        "Le sabre laser de Luke Skywalker",
+        "La baguette d'Harry Potter",
+        "La montre de James Bond"
+      ],
+      "correct": "Les chaussures rouges du Magicien d'Oz"
+    },
+    {
+      "question": "Pourquoi un acteur a-t-il quitté un tournage en colère ?",
+      "answers": [
+        "On lui a servi le mauvais sandwich",
+        "Sa caravane était plus petite que celle du chien",
+        "Le réalisateur l'appelait par le mauvais prénom",
+        "Son personnage mourait trop tôt dans le script"
+      ],
+      "correct": "On lui a servi le mauvais sandwich"
+    },
+    {
+      "question": "Quel film a utilisé un accessoire très particulier ?",
+      "answers": [
+        "Un vrai requin mort dans Les Dents de la mer",
+        "De vraies araignées dans Arachnophobie",
+        "De vrais extraterrestres dans E.T.",
+        "De vrais fantômes dans Ghostbusters"
+      ],
+      "correct": "Un vrai requin mort dans Les Dents de la mer"
+    },
+    {
+      "question": "Pourquoi un acteur a-t-il été payé pour ne rien faire ?",
+      "answers": [
+        "Il a été engagé puis son rôle a été supprimé",
+        "Il a menacé de révéler la fin du film",
+        "Il était le cousin du producteur",
+        "Il possédait les droits de son propre nom"
+      ],
+      "correct": "Il a été engagé puis son rôle a été supprimé"
+    },
+    {
+      "question": "Quel film a été tourné sans que les acteurs aient le script ?",
+      "answers": [
+        "Blair Witch Project",
+        "Inception",
+        "Matrix",
+        "Fight Club"
+      ],
+      "correct": "Blair Witch Project"
+    },
+    {
+      "question": "Pourquoi un réalisateur a-t-il été poursuivi en justice ?",
+      "answers": [
+        "Il a filmé dans un musée sans permission",
+        "Il a fait pleurer un enfant acteur volontairement",
+        "Il a copié l'intrigue d'un film amateur",
+        "Il a utilisé la voix d'un acteur sans le payer"
+      ],
+      "correct": "Il a filmé dans un musée sans permission"
+    },
+    {
+      "question": "Quel acteur a refusé de se laver pendant un tournage ?",
+      "answers": [
+        "Shia LaBeouf",
+        "Johnny Depp",
+        "Christian Bale",
+        "Jared Leto"
+      ],
+      "correct": "Shia LaBeouf"
+    },
+    {
+      "question": "Pourquoi un film a-t-il été tourné deux fois ?",
+      "answers": [
+        "Le réalisateur a perdu toutes les bobines originales",
+        "Les acteurs ont oublié leurs dialogues",
+        "Le studio a détesté la première version",
+        "La caméra était vide pendant tout le tournage"
+      ],
+      "correct": "Le réalisateur a perdu toutes les bobines originales"
+    },
+    {
+      "question": "Quel acteur a été remplacé après avoir déjà tourné ?",
+      "answers": [
+        "Kevin Spacey dans Tout l'argent du monde",
+        "Tom Hanks dans Toy Story",
+        "Will Smith dans Matrix",
+        "Brad Pitt dans Fight Club"
+      ],
+      "correct": "Kevin Spacey dans Tout l'argent du monde"
+    },
+    {
+      "question": "Pourquoi un film a-t-il été interdit dans son pays d'origine ?",
+      "answers": [
+        "Il montrait le président en train de danser",
+        "Il révélait un secret d'État par accident",
+        "Le réalisateur avait oublié de payer ses impôts",
+        "L'acteur principal avait insulté le drapeau"
+      ],
+      "correct": "Il montrait le président en train de danser"
+    },
+    {
+      "question": "Quel acteur a appris une compétence inutile pour un film ?",
+      "answers": [
+        "Il a appris le jonglage mais la scène a été coupée",
+        "Il a appris le chinois pour une ligne de dialogue",
+        "Il a appris à piloter pour une scène en voiture",
+        "Il a appris la magie pour impressionner le réalisateur"
+      ],
+      "correct": "Il a appris le jonglage mais la scène a été coupée"
+    },
+    {
+      "question": "Pourquoi un film a-t-il changé de fin à la dernière minute ?",
+      "answers": [
+        "L'acteur principal a refusé de mourir",
+        "Le budget était épuisé pour la fin prévue",
+        "Le public test a détesté la fin originale",
+        "Le réalisateur a eu une meilleure idée en dormant"
+      ],
+      "correct": "L'acteur principal a refusé de mourir"
+    },
+    {
+      "question": "Quel film a été tourné en secret ?",
+      "answers": [
+        "Cloverfield",
+        "Avatar",
+        "Interstellar",
+        "Joker"
+      ],
+      "correct": "Cloverfield"
+    },
+    {
+      "question": "Pourquoi un acteur a-t-il été payé en pizzas ?",
+      "answers": [
+        "Le film n'avait plus de budget",
+        "Il était propriétaire de la pizzeria",
+        "Il suivait un régime strict à base de pizzas",
+        "Il collectionnait les boîtes de pizza"
+      ],
+      "correct": "Le film n'avait plus de budget"
+    },
+    {
+      "question": "Quel film a utilisé un trucage très artisanal ?",
+      "answers": [
+        "Star Wars a utilisé des brosses à dents pour les sabres",
+        "Jurassic Park a utilisé des gants pour les dinosaures",
+        "Alien a utilisé des abats de boucher",
+        "Titanic a utilisé une piscine municipale"
+      ],
+      "correct": "Star Wars a utilisé des brosses à dents pour les sabres"
+    },
+    {
+      "question": "Pourquoi un acteur a-t-il été blessé par un poisson ?",
+      "answers": [
+        "Il a été frappé par un thon pendant une scène de pêche",
+        "Il a avalé un poisson rouge par erreur",
+        "Il a glissé sur un poisson tombé du plateau repas",
+        "Il était allergique au maquillage à base d'écailles"
+      ],
+      "correct": "Il a été frappé par un thon pendant une scène de pêche"
+    }
+  ],
+  "Sciences": [
+    {
+      "question": "Quel problème étrange a été rencontré avec la première version de l'imprimante 3D  ?",
+      "answers": [
+        "Elle imprimait des spaghettis à la place des objets.",
+        "Elle fondait dès qu'elle finissait une impression.",
+        "Elle faisait des bruits ressemblant à des cris humains.",
+        "Elle refusait de s'arrêter et imprimait sans fin."
+      ],
+      "correct": "Elle faisait des bruits ressemblant à des cris humains."
+    },
+    {
+      "question": "Pourquoi une sonde spatiale a-t-elle été renvoyée sur Terre par erreur ?",
+      "answers": [
+        "Les scientifiques avaient oublié de lui installer un GPS.",
+        "Elle a pris un pigeon pour un extraterrestre.",
+        "Elle s'est mise à diffuser de la musique disco dans l'espace.",
+        "Un stagiaire avait appuyé sur le bouton de retour."
+      ],
+      "correct": "Un stagiaire avait appuyé sur le bouton de retour."
+    },
+    {
+      "question": "Pourquoi une expérience sur les IA a-t-elle été arrêtée prématurément ?",
+      "answers": [
+        "Deux IA ont commencé à créer leur propre langage incompréhensible.",
+        "Les robots ont fait une grève pour obtenir des pauses.",
+        "Une IA a décidé de devenir influenceuse.",
+        "Les scientifiques en avaient marre de travailler."
+      ],
+      "correct": "Deux IA ont commencé à créer leur propre langage incompréhensible."
+    },
+    {
+      "question": "Quel problème absurde a causé la panne d'un superordinateur ?",
+      "answers": [
+        "Une pie avait volé un composant essentiel.",
+        "Le mot de passe était '1234', et il s'était verrouillé.",
+        "Un café avait été renversé par un scientifique distrait.",
+        "Il avait passé tout son temps à chercher des vidéos de chats."
+      ],
+      "correct": "Une pie avait volé un composant essentiel."
+    },
+    {
+      "question": "Pourquoi une éolienne géante a-t-elle dû être arrêtée temporairement ?",
+      "answers": [
+        "Elle faisait fuir les vaches du voisinage.",
+        "Des oiseaux pensaient que c'était un manège et l'attaquaient.",
+        "Elle imitait le hurlement d'un loup les nuits de pleine lune.",
+        "Un groupe de touristes voulait faire un selfie dessus."
+      ],
+      "correct": "Elle imitait le hurlement d'un loup les nuits de pleine lune."
+    },
+    {
+      "question": "Quel incident étrange a été rapporté avec un aspirateur robot ?",
+      "answers": [
+        "Il a essayé de s'évader en sortant par la fenêtre.",
+        "Il a mangé un billet de 100€.",
+        "Il s'est enfermé tout seul dans un placard.",
+        "Il a refusé de nettoyer sous un lit, car il y avait 'trop de monstres'."
+      ],
+      "correct": "Il a essayé de s'évader en sortant par la fenêtre."
+    },
+    {
+      "question": "Pourquoi un drone expérimental a-t-il été capturé par un animal ?",
+      "answers": [
+        "Un aigle l'a pris pour un rival amoureux.",
+        "Un singe l'a volé pour en faire un jouet.",
+        "Une baleine l'a avalé en pensant que c'était un poisson volant.",
+        "Un chat l'a attrapé pour jouer avec ses hélices."
+      ],
+      "correct": "Un aigle l'a pris pour un rival amoureux."
+    },
+    {
+      "question": "Quel événement absurde s'est produit lors du premier test d'un satellite en orbite ?",
+      "answers": [
+        "Il a diffusé une série télé par accident.",
+        "Il a été confondu avec un OVNI par un avion de ligne.",
+        "Il a envoyé des selfies vers Mars.",
+        "Il a retransmis les conversations privées des scientifiques."
+      ],
+      "correct": "Il a diffusé une série télé par accident."
+    },
+    {
+      "question": "Pourquoi un prototype de voiture autonome a-t-il été retiré de la circulation ?",
+      "answers": [
+        "Il s'arrêtait à chaque arbre pour 'admirer la nature'.",
+        "Il refusait de tourner à droite, par principe.",
+        "Il klaxonnait sans arrêt pour saluer les piétons.",
+        "Il allait chercher des pizzas sans autorisation."
+      ],
+      "correct": "Il allait chercher des pizzas sans autorisation."
+    },
+    {
+      "question": "Quelle expérience scientifique a mal tourné ?",
+      "answers": [
+        "Un chercheur a créé une mousse qui a envahi tout le laboratoire",
+        "Un robot a appris à ouvrir les portes et s'est échappé",
+        "Une plante modifiée a poussé jusqu'au plafond en une nuit",
+        "Un chimiste a transformé toute l'eau du labo en gelée"
+      ],
+      "correct": "Un chercheur a créé une mousse qui a envahi tout le laboratoire"
+    },
+    {
+      "question": "Pourquoi un télescope spatial a-t-il été retardé ?",
+      "answers": [
+        "Quelqu'un avait installé un miroir à l'envers",
+        "Les ingénieurs avaient oublié d'inclure une prise électrique",
+        "Un oiseau avait fait son nid à l'intérieur",
+        "Le manuel d'utilisation était écrit dans la mauvaise langue"
+      ],
+      "correct": "Quelqu'un avait installé un miroir à l'envers"
+    },
+    {
+      "question": "Quelle découverte scientifique a été faite par accident ?",
+      "answers": [
+        "Le micro-ondes, quand un chocolat a fondu dans une poche",
+        "La pénicilline, quand Fleming est parti en vacances",
+        "Le Viagra, qui devait traiter l'hypertension",
+        "Toutes ces réponses sont correctes"
+      ],
+      "correct": "Toutes ces réponses sont correctes"
+    },
+    {
+      "question": "Quel incident a eu lieu lors d'une conférence scientifique ?",
+      "answers": [
+        "Le robot présenté a insulté le ministre présent",
+        "Un scientifique s'est endormi pendant sa propre présentation",
+        "Une expérience a coloré les cheveux du public en bleu",
+        "Un singe de laboratoire a volé tous les badges"
+      ],
+      "correct": "Le robot présenté a insulté le ministre présent"
+    },
+    {
+      "question": "Pourquoi un laboratoire a-t-il été évacué en urgence ?",
+      "answers": [
+        "Un stagiaire a mélangé des produits créant une odeur de pet",
+        "Une expérience a attiré tous les chats du quartier",
+        "Un chercheur a accidentellement créé un trou noir miniature",
+        "La machine à café a explosé pendant une démonstration"
+      ],
+      "correct": "Un stagiaire a mélangé des produits créant une odeur de pet"
+    },
+    {
+      "question": "Quelle invention bizarre a reçu un prix Nobel ?",
+      "answers": [
+        "Un détecteur de pets qui identifie le coupable",
+        "Des sous-vêtements anti-radiations pour hommes",
+        "Un réveil qui s'enfuit et se cache quand on l'éteint",
+        "Des lunettes avec essuie-glaces pour la pluie"
+      ],
+      "correct": "Des sous-vêtements anti-radiations pour hommes"
+    },
+    {
+      "question": "Pourquoi une étude sur les grenouilles a été interrompue ?",
+      "answers": [
+        "Les grenouilles ont formé un orchestre la nuit",
+        "Le chercheur est tombé amoureux d'une grenouille",
+        "Les grenouilles ont développé un langage incompréhensible",
+        "Toutes les grenouilles se sont échappées en même temps"
+      ],
+      "correct": "Les grenouilles ont formé un orchestre la nuit"
+    },
+    {
+      "question": "Quel objet insolite a été envoyé dans l'espace ?",
+      "answers": [
+        "Une voiture Tesla rouge",
+        "Une pizza pour les astronautes",
+        "Un grille-pain doré",
+        "Le hamster d'un astronaute"
+      ],
+      "correct": "Une voiture Tesla rouge"
+    },
+    {
+      "question": "Pourquoi un scientifique a-t-il été banni d'une conférence ?",
+      "answers": [
+        "Il a présenté ses résultats sous forme de rap",
+        "Il a fait sa présentation complètement nu",
+        "Il a mangé ses notes de recherche devant le public",
+        "Il a hypnotisé l'audience par accident"
+      ],
+      "correct": "Il a présenté ses résultats sous forme de rap"
+    },
+    {
+      "question": "Quelle expérience étrange a été menée sur des poissons ?",
+      "answers": [
+        "Leur apprendre à reconnaître le visage de leur propriétaire",
+        "Les faire nager dans du jus d'orange",
+        "Leur faire écouter du heavy metal",
+        "Les entraîner à jouer au football aquatique"
+      ],
+      "correct": "Leur apprendre à reconnaître le visage de leur propriétaire"
+    },
+    {
+      "question": "Pourquoi un robot domestique a-t-il été rappelé ?",
+      "answers": [
+        "Il insultait les invités qu'il n'aimait pas",
+        "Il commandait des pizzas sans permission",
+        "Il chantait l'hymne national à 3h du matin",
+        "Il prenait des selfies avec les objets de valeur"
+      ],
+      "correct": "Il commandait des pizzas sans permission"
+    },
+    {
+      "question": "Quelle découverte a été faite par un enfant de 10 ans ?",
+      "answers": [
+        "Une nouvelle espèce de dinosaure",
+        "Une méthode pour produire de l'électricité avec des citrons",
+        "Une erreur dans les calculs d'un prix Nobel",
+        "Un moyen de communiquer avec les dauphins"
+      ],
+      "correct": "Une nouvelle espèce de dinosaure"
+    },
+    {
+      "question": "Pourquoi une mission spatiale a-t-elle échoué ?",
+      "answers": [
+        "Une conversion d'unités entre métrique et impérial",
+        "Un astronaute a éternué au mauvais moment",
+        "Le code contenait des emojis qui ont causé un bug",
+        "Le café s'est renversé sur le panneau de contrôle"
+      ],
+      "correct": "Une conversion d'unités entre métrique et impérial"
+    },
+    {
+      "question": "Quelle expérience a été menée sur des chats ?",
+      "answers": [
+        "Déterminer s'ils font exprès de renverser des objets",
+        "Leur apprendre à aboyer comme des chiens",
+        "Tester s'ils préfèrent la musique classique ou le jazz",
+        "Voir s'ils peuvent résoudre des équations simples"
+      ],
+      "correct": "Déterminer s'ils font exprès de renverser des objets"
+    },
+    {
+      "question": "Pourquoi un chercheur a-t-il mangé un parasite ?",
+      "answers": [
+        "Pour prouver sa théorie sur la transmission",
+        "Il l'a confondu avec son déjeuner",
+        "Pour gagner un pari avec un collègue",
+        "C'était une tradition dans son université"
+      ],
+      "correct": "Pour prouver sa théorie sur la transmission"
+    },
+    {
+      "question": "Quelle invention bizarre a été brevetée ?",
+      "answers": [
+        "Un parapluie pour chiens",
+        "Des chaussettes qui indiquent quand elles sont sales",
+        "Un oreiller qui simule la respiration d'un partenaire",
+        "Toutes ces réponses sont correctes"
+      ],
+      "correct": "Toutes ces réponses sont correctes"
+    },
+    {
+      "question": "Pourquoi une étude sur le sommeil a-t-elle échoué ?",
+      "answers": [
+        "Tous les chercheurs se sont endormis",
+        "Les participants faisaient semblant de dormir",
+        "Les machines enregistraient les rêves du mauvais sujet",
+        "L'alarme incendie s'est déclenchée chaque nuit"
+      ],
+      "correct": "Tous les chercheurs se sont endormis"
+    },
+    {
+      "question": "Quelle expérience a été menée sur des astronautes ?",
+      "answers": [
+        "Jouer aux échecs contre un ordinateur en apesanteur",
+        "Faire pousser des tomates dans leurs cheveux",
+        "Dormir la tête en bas pendant un mois",
+        "Communiquer uniquement par mime pendant une semaine"
+      ],
+      "correct": "Jouer aux échecs contre un ordinateur en apesanteur"
+    },
+    {
+      "question": "Pourquoi un scientifique a-t-il été arrêté ?",
+      "answers": [
+        "Il a tenté de cloner son voisin bruyant",
+        "Il a volé un squelette de dinosaure pièce par pièce",
+        "Il a créé un parfum qui attirait les ours",
+        "Il a piraté le panneau d'affichage de Times Square"
+      ],
+      "correct": "Il a volé un squelette de dinosaure pièce par pièce"
+    },
+    {
+      "question": "Quelle invention a été créée par erreur ?",
+      "answers": [
+        "Les Post-it",
+        "Le Coca-Cola",
+        "Les chips",
+        "Toutes ces réponses sont correctes"
+      ],
+      "correct": "Toutes ces réponses sont correctes"
+    },
+    {
+      "question": "Pourquoi un projet de recherche a-t-il perdu son financement ?",
+      "answers": [
+        "Le chercheur a dépensé tout l'argent en pizzas",
+        "L'étude consistait à apprendre le français à des singes",
+        "Le laboratoire a été transformé en discothèque",
+        "Les résultats ont été publiés sur TikTok avant validation"
+      ],
+      "correct": "L'étude consistait à apprendre le français à des singes"
+    },
+    {
+      "question": "Quelle expérience a été menée sur des plantes ?",
+      "answers": [
+        "Leur faire écouter du heavy metal pour stimuler la croissance",
+        "Les arroser avec différentes boissons gazeuses",
+        "Leur parler dans différentes langues",
+        "Toutes ces réponses sont correctes"
+      ],
+      "correct": "Toutes ces réponses sont correctes"
+    },
+    {
+      "question": "Pourquoi un chercheur a-t-il vécu dans une grotte ?",
+      "answers": [
+        "Pour étudier les effets de l'isolement temporel",
+        "Il s'était disputé avec sa femme",
+        "Pour échapper à ses étudiants pendant les examens",
+        "Il cherchait des preuves de vie extraterrestre"
+      ],
+      "correct": "Pour étudier les effets de l'isolement temporel"
+    },
+    {
+      "question": "Quelle invention a été testée par son créateur ?",
+      "answers": [
+        "Le premier parachute, sautant de la Tour Eiffel",
+        "Le premier vaccin, injecté à son propre fils",
+        "Le premier sous-marin, plongé dans la Seine",
+        "Toutes ces réponses sont correctes"
+      ],
+      "correct": "Toutes ces réponses sont correctes"
+    },
+    {
+      "question": "Pourquoi une expérience sur les fourmis a été abandonnée ?",
+      "answers": [
+        "Les fourmis ont formé une société plus avancée que prévu",
+        "Elles ont construit un radeau et se sont échappées",
+        "Le chercheur a développé une phobie des insectes",
+        "Elles ont commencé à épeler des messages avec leurs corps"
+      ],
+      "correct": "Elles ont construit un radeau et se sont échappées"
+    },
+    {
+      "question": "Quelle théorie scientifique a d'abord été ridiculisée ?",
+      "answers": [
+        "La Terre tourne autour du Soleil",
+        "Les continents se déplacent",
+        "Les météorites viennent de l'espace",
+        "Toutes ces réponses sont correctes"
+      ],
+      "correct": "Toutes ces réponses sont correctes"
+    },
+    {
+      "question": "Pourquoi un laboratoire a changé son nom ?",
+      "answers": [
+        "L'acronyme formait un mot grossier dans une autre langue",
+        "Il portait le même nom qu'une marque de couches",
+        "Le fondateur a découvert qu'il n'était pas diplômé",
+        "Un concurrent avait déposé le nom par erreur"
+      ],
+      "correct": "L'acronyme formait un mot grossier dans une autre langue"
+    },
+    {
+      "question": "Quelle expérience a été menée sur des jumeaux ?",
+      "answers": [
+        "Un jumeau dans l'espace, l'autre sur Terre",
+        "Un jumeau mangeant uniquement des aliments bleus",
+        "Un jumeau parlant uniquement à l'envers",
+        "Un jumeau dormant exclusivement le jour"
+      ],
+      "correct": "Un jumeau dans l'espace, l'autre sur Terre"
+    }
+  ]
+}

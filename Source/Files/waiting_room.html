@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salon d'attente</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/mobile_style.css">
+  <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
+  <style>
+    /* Styles spécifiques pour l'overlay du compte à rebours et la modal */
+    .modal-overlay, .countdown-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-container, .countdown-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .modal-buttons button, .countdown-content button {
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Contrôles généraux -->
+  <button class="share-control" id="shareToggle">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="white">
+    <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92S19.61 16.08 18 16.08z"/>
+    </svg>
+</button>
+<div id="qrCodeModal" class="modal-overlay">
+    <div class="modal-container">
+    <h2 class="modal-title">Partager le lien</h2>
+    <div class="modal-content">
+        <p id="qrCodeUrl" style="word-break: break-all; margin-bottom: 1rem;"></p>
+        <img id="qrCodeImage" alt="QR Code" style="width: 200px; height: 200px; margin: 0 auto;">
+        <div style="margin-top: 1rem; text-align: center;">
+        <button onclick="copyLink()" class="modal-button modal-button-secondary">Copier le lien</button>
+        </div>
+    </div>
+    <div class="modal-buttons">
+        <button class="modal-button modal-button-primary" onclick="hideModal('qrCodeModal')">Fermer</button>
+    </div>
+    </div>
+</div>
+
+  <div class="bg"></div>
+  <div class="logo-container">
+    <img src="/static/images/logo/logo-demo.png" alt="Party Game Logo" class="logo">
+  </div>
+
+  <div class="container">
+    <div class="waiting-room">
+      <div class="room-info">
+        <h2 class="title">Salon d'attente</h2>
+        <div class="room-code">
+          CODE: <span id="roomCode"></span>
+        </div>
+      </div>
+
+      <div class="players-grid" id="playersGrid">
+        <!-- Les joueurs seront ajoutés ici dynamiquement -->
+      </div>
+
+      <div class="button-container">
+        <button type="button" class="button button-secondary" id="leaveButton">Quitter le salon</button>
+        <button type="button" class="button button-primary" id="startButton" disabled>
+          Lancer la partie (1/8)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmation pour quitter le salon -->
+  <div class="modal-overlay" id="confirmationModal">
+    <div class="modal-container">
+      <h2 class="modal-title">Quitter le Salon ?</h2>
+      <div class="modal-content">
+        <p id="modalMessage">Êtes-vous sûr de vouloir quitter le salon ?</p>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-button modal-button-secondary" id="cancelButton">Annuler</button>
+        <button class="modal-button modal-button-primary" id="confirmButton">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay de compte à rebours -->
+  <div class="countdown-overlay" id="countdownOverlay">
+    <div class="countdown-content">
+      <div id="countdownNumber" class="countdown-number">3</div>
+      <!-- Bouton "Annuler" visible uniquement pour l'owner -->
+      <button type="button" id="cancelCountdown" class="button button-secondary">Annuler</button>
+    </div>
+  </div>
+
+  <script type="module" src="/Javascript/waiting_room.js"></script>
+  <script type="module" src="javascript/button_controls.js"></script>
+  <script type="module">
+    import { initShareButton} from './javascript/button_controls.js';
+    document.addEventListener("DOMContentLoaded", () => {
+      initShareButton();
+    });
+  </script>
+</body>
+</html>
