@@ -7,9 +7,27 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="credits.css">
     <link rel="icon" type="image/png" href="/static/images/favicon/favicon.png">
+    <style>
+        /* Fond de secours en cas d'erreur de chargement vidéo */
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+        
+        #video-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -1;
+            object-fit: cover;
+        }
+    </style>
 </head>
 <body>
-    <video id="video-bg" autoplay muted loop>
+    <video id="video-bg" autoplay muted loop playsinline>
         <source src="images/BG.mp4" type="video/mp4">
         Votre navigateur ne supporte pas la vidéo.
     </video>

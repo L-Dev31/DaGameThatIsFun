@@ -152,7 +152,8 @@
   
   .answer.correct {
     outline: 0.2vh solid #3f330f;
-    color: #ffffff;
+    color: #000000;
+    mix-blend-mode: normal;
     background: linear-gradient(135deg, #bf9b30, #e6c35c, #bf9b30);
     box-shadow: 0.63vw 1.11vh 0.1vh 0.05vh #3f330f !important;
     transform: scale(1.025) translateX(0) !important;

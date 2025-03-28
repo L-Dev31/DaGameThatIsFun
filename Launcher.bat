@@ -20,5 +20,4 @@ if errorlevel 1 (
 REM Lancer l'application
 echo Lancement de l'application...
 start cmd /k "python Python/app.py"
-start cmd /k "python Python/lobby_viewer.py"
 exit
