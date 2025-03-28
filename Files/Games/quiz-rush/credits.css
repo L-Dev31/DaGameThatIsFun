@@ -78,7 +78,7 @@
     padding: 15px;
     border: 3px solid gray;
     backdrop-filter: blur(10px);
-    min-width: 125px;
+    min-width: 110px;
     background: #ffffff30;
     overflow: hidden;
 }
